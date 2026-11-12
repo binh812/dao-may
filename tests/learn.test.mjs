@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { SKILLS, makeQuestion, skillById } from '../src/learn/questions.js';
-import { ADAPTIVE, createProfile, isMastered, masteredCount, pickSkill, recordAnswer, reviveProfile } from '../src/learn/adaptive.js';
+import { ADAPTIVE, changeGrade, createProfile, isMastered, masteredCount, pickSkill, recordAnswer, recordMistake, reviveProfile } from '../src/learn/adaptive.js';
 
 function seeded(seed) { let a = seed; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 
@@ -113,6 +113,31 @@ test('always returns a real skill, even with nothing or everything mastered', ()
   for (let i = 0; i < 300; i++) { assert.ok(skillById(pickSkill(fresh, rng))); assert.ok(skillById(pickSkill(done, rng))); }
 });
 
+test('changing grade keeps what the child earned and withdraws only placed skills', () => {
+  const p = createProfile(1);
+  for (let i = 0; i < 8; i++) recordAnswer(p, 'g1_add_10', true);        // tu thanh thao
+  changeGrade(p, 3);
+  assert.equal(p.grade, 3);
+  assert.equal(isMastered(p, 'g2_add_100'), true, 'lop duoi duoc xep san');
+  assert.equal(p.skills.g2_add_100.placed, true);
+  assert.equal(p.skills.g1_add_10.placed, false, 'ky nang tu thanh thao khong bi ghi de');
+  for (let i = 0; i < 8; i++) recordAnswer(p, 'g2_mul_2_5', true);       // lam that mot ky nang lop 2
+  changeGrade(p, 1);
+  assert.equal(isMastered(p, 'g1_add_10'), true, 'giu ky nang tu thanh thao');
+  assert.equal(isMastered(p, 'g2_mul_2_5'), true, 'giu ky nang lop tren da lam that');
+  assert.equal(p.skills.g2_add_100, undefined, 'thu lai ky nang xep san');
+  assert.throws(() => changeGrade(p, 7), RangeError);
+});
+
+test('mistakes are kept for review, newest last, capped', () => {
+  const p = createProfile(1), rng = seeded(4);
+  for (let i = 0; i < ADAPTIVE.keepMistakes + 5; i++) recordMistake(p, { ...makeQuestion('g1_add_10', rng), text: `bai ${i}` });
+  assert.equal(p.mistakes.length, ADAPTIVE.keepMistakes);
+  assert.equal(p.mistakes.at(-1).text, `bai ${ADAPTIVE.keepMistakes + 4}`);
+  assert.equal(p.mistakes[0].text, 'bai 5');
+  assert.ok(p.mistakes[0].solution.at(-1).startsWith('Đáp số:'));
+});
+
 test('saved profiles are validated on load', () => {
   const p = createProfile(2); recordAnswer(p, 'g2_add_100', true);
   assert.deepEqual(reviveProfile(JSON.parse(JSON.stringify(p))), p);
@@ -123,4 +148,7 @@ test('saved profiles are validated on load', () => {
   assert.deepEqual(Object.keys(dirty.skills), ['g1_add_10']);
   assert.equal(dirty.skills.g1_add_10.mastery, 1);
   assert.equal(dirty.skills.g1_add_10.seen, 0);
+  assert.deepEqual(dirty.mistakes, []);
+  const withJunk = reviveProfile({ version: 1, grade: 1, skills: {}, mistakes: [{ text: 'ok', answer: 3, solution: ['Đáp số: 3'] }, { text: 5 }, null, { text: 'x', answer: 1, solution: [7] }] });
+  assert.equal(withJunk.mistakes.length, 1);
 });

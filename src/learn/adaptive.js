@@ -7,6 +7,7 @@ export const ADAPTIVE = Object.freeze({
   masteredAt: 0.8, minSeen: 5,
   placedMastery: 0.9,                          // ky nang lop duoi khi xep lop
   minGrade: 1, maxGrade: 3,
+  keepMistakes: 12,                            // so bai sai gan nhat giu lai de xem lai
 });
 
 const blank = () => ({ mastery: 0, seen: 0, streak: 0, placed: false });
@@ -16,7 +17,29 @@ export function createProfile(grade) {
   if (!Number.isInteger(grade) || grade < ADAPTIVE.minGrade || grade > ADAPTIVE.maxGrade) throw new RangeError(`lop khong hop le: ${grade}`);
   const skills = {};
   for (const s of SKILLS) if (s.grade < grade) skills[s.id] = { mastery: ADAPTIVE.placedMastery, seen: ADAPTIVE.minSeen, streak: 0, placed: true };
-  return { version: 1, grade, skills };
+  return { version: 1, grade, skills, mistakes: [] };
+}
+
+/**
+ * Bo me doi lop: ky nang lop duoi duoc coi la da biet; ky nang "xep san" tu lop moi tro len bi thu lai,
+ * con ky nang be tu thanh thao thi giu nguyen.
+ */
+export function changeGrade(profile, grade) {
+  if (!Number.isInteger(grade) || grade < ADAPTIVE.minGrade || grade > ADAPTIVE.maxGrade) throw new RangeError(`lop khong hop le: ${grade}`);
+  for (const s of SKILLS) {
+    const st = profile.skills[s.id];
+    if (s.grade < grade) { if (!st || !isMastered(profile, s.id)) profile.skills[s.id] = { mastery: ADAPTIVE.placedMastery, seen: ADAPTIVE.minSeen, streak: 0, placed: true }; }
+    else if (st?.placed) delete profile.skills[s.id];
+  }
+  profile.grade = grade;
+  return profile;
+}
+
+/** Ghi mot bai be vua lam sai de xem lai trong So hoc (chi giu cac bai gan nhat). */
+export function recordMistake(profile, question) {
+  const list = profile.mistakes ?? (profile.mistakes = []);
+  list.push({ skillId: question.skillId, text: question.text, answer: question.answer, solution: [...question.solution] });
+  while (list.length > ADAPTIVE.keepMistakes) list.shift();
 }
 
 const stateOf = (profile, id) => profile.skills[id] ?? blank();
@@ -46,6 +69,8 @@ export function recordAnswer(profile, skillId, correct) {
   s.seen += 1;
   s.mastery += ((correct ? 1 : 0) - s.mastery) * ADAPTIVE.rate;
   s.streak = correct ? s.streak + 1 : 0;
+  if (!correct) s.placed = false; // da lam that thi khong con la "xep san" nua
+  else if (s.placed && s.seen > ADAPTIVE.minSeen) s.placed = false;
   return { masteredNow: !before && isMastered(profile, skillId) };
 }
 
@@ -59,5 +84,7 @@ export function reviveProfile(raw) {
     if (!v || typeof v.mastery !== 'number' || typeof v.seen !== 'number') continue;
     skills[s.id] = { mastery: Math.min(1, Math.max(0, v.mastery)), seen: Math.max(0, Math.floor(v.seen)), streak: Math.max(0, Math.floor(v.streak ?? 0)), placed: Boolean(v.placed) };
   }
-  return { version: 1, grade: raw.grade, skills };
+  const mistakes = Array.isArray(raw.mistakes) ? raw.mistakes.filter((m) => m && typeof m.text === 'string' && Number.isFinite(m.answer) && Array.isArray(m.solution) && m.solution.every((l) => typeof l === 'string'))
+    .slice(-ADAPTIVE.keepMistakes).map((m) => ({ skillId: String(m.skillId ?? ''), text: m.text, answer: m.answer, solution: [...m.solution] })) : [];
+  return { version: 1, grade: raw.grade, skills, mistakes };
 }
