@@ -11,7 +11,14 @@
     ".pb-dev/**",
     "archive/**"
   ],
-  "protected": [],
+  "protected": [
+    "scripts/verify-quick.ps1",
+    "scripts/ci.ps1",
+    "scripts/check-modules.mjs",
+    "scripts/smoke.mjs",
+    ".pb-dev.json",
+    ".claude/settings.json"
+  ],
   "stopGate": {
     "maxBlocks": 3,
     "timeoutSec": 300,
