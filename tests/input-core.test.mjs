@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { stickFromDrag, cameraRelative } from '../src/game/input-core.js';
+import { stickFromDrag, cameraRelative, steerYaw } from '../src/game/input-core.js';
 
 const near = (actual, expected, msg) => assert.ok(Math.abs(actual - expected) < 1e-9, `${msg}: ${actual} != ${expected}`);
 
@@ -32,6 +32,15 @@ test('yaw 0 pushes away from camera', () => {
 test('yaw 90 degrees rotates', () => {
   const m = cameraRelative({ x: 0, y: 1 }, Math.PI / 2);
   near(m.x, -1, 'x'); near(m.z, 0, 'z');
+});
+
+test('steering is bounded and only follows the stick', () => {
+  near(steerYaw({ x: 1, y: 0 }, 0.5, 0.8), -0.4, 'full right for half a second');
+  near(steerYaw({ x: 0, y: 1 }, 0.5, 0.8), 0, 'straight ahead never turns');
+  near(steerYaw({ x: 0, y: -1 }, 0.5, 0.8), 0, 'straight back never turns');
+  // 10 s of full sideways stick turns exactly rate * time, independent of the player's heading
+  let yaw = 0; for (let i = 0; i < 600; i++) yaw += steerYaw({ x: -1, y: 0 }, 1 / 60, 0.8);
+  near(yaw, 8, 'ten seconds left');
 });
 
 test('right is right', () => {

@@ -21,6 +21,7 @@ export function createTouchControls(host) {
   const stick = { id: null, originX: 0, originY: 0, x: 0, y: 0 };
   const look = { id: null, lastX: 0, lastY: 0, dx: 0, dy: 0 };
   const jumpPointers = new Set(), keys = new Set();
+  let jumpTapped = false; // co lan nhan ke tu lan read() truoc, ke ca khi da nha truoc khung hinh ke tiep
 
   function releaseStick() { stick.id = null; stick.x = stick.y = 0; base.style.display = 'none'; }
 
@@ -48,11 +49,17 @@ export function createTouchControls(host) {
     if (e.pointerId === stick.id) releaseStick();
     if (e.pointerId === look.id) look.id = null;
   }
-  const jumpDown = (e) => { jumpPointers.add(e.pointerId); jumpButton.setPointerCapture(e.pointerId); jumpButton.style.background = 'rgba(255,255,255,.5)'; e.preventDefault(); };
+  const jumpDown = (e) => { jumpTapped = true; jumpPointers.add(e.pointerId); jumpButton.setPointerCapture(e.pointerId); jumpButton.style.background = 'rgba(255,255,255,.5)'; e.preventDefault(); };
   const jumpUp = (e) => { jumpPointers.delete(e.pointerId); if (!jumpPointers.size) jumpButton.style.background = 'rgba(255,255,255,.28)'; };
-  const keyDown = (e) => { if (e.code in KEY_AXES || e.code === 'Space') { keys.add(e.code); e.preventDefault(); } };
+  const keyDown = (e) => {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;                       // khong nuot phim tat cua trinh duyet
+    if (e.code === 'Space' && e.target instanceof HTMLButtonElement) return; // de Space bam duoc nut dang focus
+    if (!(e.code in KEY_AXES) && e.code !== 'Space') return;
+    if (e.code === 'Space' && !e.repeat) jumpTapped = true;
+    keys.add(e.code); e.preventDefault();
+  };
   const keyUp = (e) => keys.delete(e.code);
-  const clearAll = () => { keys.clear(); jumpPointers.clear(); releaseStick(); look.id = null; };
+  const clearAll = () => { jumpTapped = false; keys.clear(); jumpPointers.clear(); releaseStick(); look.id = null; };
 
   layer.addEventListener('pointerdown', onDown); layer.addEventListener('pointermove', onMove);
   for (const type of ['pointerup', 'pointercancel', 'lostpointercapture']) { layer.addEventListener(type, onUp); jumpButton.addEventListener(type, jumpUp); }
@@ -66,8 +73,8 @@ export function createTouchControls(host) {
       let x = stick.x, y = stick.y;
       for (const code of keys) if (code in KEY_AXES) { x += KEY_AXES[code][0]; y += KEY_AXES[code][1]; }
       const len = Math.hypot(x, y); if (len > 1) { x /= len; y /= len; }
-      const result = { stickX: x, stickY: y, jump: jumpPointers.size > 0 || keys.has('Space'), lookDX: look.dx, lookDY: look.dy };
-      look.dx = look.dy = 0;
+      const result = { stickX: x, stickY: y, jump: jumpTapped || jumpPointers.size > 0 || keys.has('Space'), lookDX: look.dx, lookDY: look.dy };
+      look.dx = look.dy = 0; jumpTapped = false;
       return result;
     },
     dispose() {

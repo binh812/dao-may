@@ -11,9 +11,10 @@ const GROUND_EPS = 0.05;
 
 export function createPlayer(x, z, world) {
   const ground = world.heightAt(x, z);
+  if (!Number.isFinite(ground)) throw new RangeError(`createPlayer: (${x}, ${z}) khong co mat dat de dung`);
   return {
-    x, y: Number.isFinite(ground) ? ground : 0, z, vx: 0, vy: 0, vz: 0, yaw: 0,
-    grounded: Number.isFinite(ground), gliding: false, coyote: 0,
+    x, y: ground, z, vx: 0, vy: 0, vz: 0, yaw: 0,
+    grounded: true, gliding: false, coyote: 0,
     jumpLatch: false,      // nut nhay dang duoc giu tu lan nhan truoc
     glideArmed: false,     // da nha nut sau khi bat nhay, nen giu lan nua la luon
     safeX: x, safeZ: z,

@@ -73,6 +73,24 @@ test('ledge 0.8 needs a jump', () => {
   assert.equal(jumper.y, 0.8);
 });
 
+test('holding jump while walking off a ledge does not glide', () => {
+  const world = flat({ heightAt: (x) => (x < 1 ? 5 : 0) }), s = createPlayer(0, 0, world);
+  let glided = false, jumps = 0;
+  run(s, world, 3, { moveX: 1, moveZ: 0, jump: true }, (st) => { if (st.gliding) glided = true; if (st.events.jumped) jumps++; });
+  assert.equal(jumps, 1, 'only the initial jump');
+  // sau cu nhay dau, nut van giu suot: roi khoi mep khong duoc tu luon
+  const walker = createPlayer(0, 0, world); walker.jumpLatch = true;
+  let walkerGlided = false;
+  run(walker, world, 3, { moveX: 1, moveZ: 0, jump: true }, (st) => { if (st.gliding) walkerGlided = true; });
+  assert.equal(walkerGlided, false);
+  assert.equal(glided, false);
+});
+
+test('spawning with no ground under it fails loudly', () => {
+  const world = flat({ heightAt: () => -Infinity });
+  assert.throws(() => createPlayer(0, 0, world), RangeError);
+});
+
 test('collider pushes out', () => {
   const world = flat({ colliders: [{ x: 3, z: 0, r: 1 }] }), s = createPlayer(0, 0, world);
   run(s, world, 2, { moveX: 1, moveZ: 0, jump: false });

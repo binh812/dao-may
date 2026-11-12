@@ -12,6 +12,14 @@ export function stickFromDrag(dx, dy, maxRadius = 56, deadZone = 0.15) {
 }
 
 /**
+ * Luong xoay may quay (rad) khi nguoi choi day can sang ngang va khong tu keo may quay: de lai bang mot ngon.
+ * Toc do co gioi han va chi phu thuoc can ao, nen khong the tu quay mai nhu cach "duoi theo huong nhan vat".
+ */
+export function steerYaw(stick, dt, rate = 0.8) {
+  return -stick.x * rate * dt;
+}
+
+/**
  * Doi can ao sang huong trong the gioi. Quy uoc: may quay dung tai target + (sin yaw, ., cos yaw) * dist,
  * nen "day len" la di ra xa may quay.
  */

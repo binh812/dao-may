@@ -6,11 +6,11 @@ import { R, height } from '../world/layout.js';
 import { colliders, groundAt } from '../world/colliders.js';
 import { chr, eyes, sprout, squash } from '../actors/actors.js';
 import { TUNING, createPlayer, stepPlayer } from './player-core.js';
-import { cameraRelative } from './input-core.js';
+import { cameraRelative, steerYaw } from './input-core.js';
 import { createTouchControls } from './touch-controls.js';
 
 const SPAWN = { x: -3.2, z: 2.4 };
-const CAMERA = { distance: 8.5, portraitDistance: 10.5, pitch: 0.42, minPitch: 0.12, maxPitch: 1.1, lookHeight: 1.1, clearance: 0.6, follow: 9, yawPerPixel: 0.006, pitchPerPixel: 0.004, recentreAfter: 1.5, recentreRate: 0.9 };
+const CAMERA = { distance: 8.5, portraitDistance: 10.5, pitch: 0.42, minPitch: 0.12, maxPitch: 1.1, lookHeight: 1.1, clearance: 0.6, follow: 9, yawPerPixel: 0.006, pitchPerPixel: 0.004, steerAfter: 1.5, steerRate: 0.8 };
 const HINT_SECONDS = 6;
 
 const angleDelta = (from, to) => Math.atan2(Math.sin(to - from), Math.cos(to - from));
@@ -33,11 +33,9 @@ export function createPlay() {
   document.body.append(hint);
   let hintLeft = HINT_SECONDS;
 
-  function updateCamera(dt, stickY, speed) {
+  function updateCamera(dt, stick) {
     const portrait = innerHeight > innerWidth, dist = portrait ? CAMERA.portraitDistance : CAMERA.distance;
-    if (cam.idle > CAMERA.recentreAfter && speed > 1 && stickY > -0.3) {
-      cam.yaw += angleDelta(cam.yaw, player.yaw + Math.PI) * Math.min(1, dt * CAMERA.recentreRate);
-    }
+    if (cam.idle > CAMERA.steerAfter) cam.yaw += steerYaw(stick, dt, CAMERA.steerRate);
     target.set(player.x, player.y + CAMERA.lookHeight, player.z);
     const cp = Math.cos(cam.pitch);
     desired.set(target.x + Math.sin(cam.yaw) * cp * dist, target.y + Math.sin(cam.pitch) * dist, target.z + Math.cos(cam.yaw) * cp * dist);
@@ -83,7 +81,7 @@ export function createPlay() {
       stepPlayer(player, { moveX: move.x, moveZ: move.z, jump: r.jump }, dt, world);
       const speed = Math.hypot(player.vx, player.vz);
       updateActor(dt, speed);
-      updateCamera(dt, r.stickY, speed);
+      updateCamera(dt, { x: r.stickX, y: r.stickY });
       if (hintLeft > 0) { hintLeft -= dt; if (hintLeft <= 0 || speed > TUNING.runSpeed * 0.5 && hintLeft < HINT_SECONDS - 2) { hint.style.opacity = '0'; hintLeft = 0; } }
     },
     focusDistance: () => camera.position.distanceTo(chr.position),
