@@ -29,6 +29,7 @@ import { WATER_Y, height } from './world/layout.js';
 import { clamp } from './core/util.js';
 import { rotor } from './world/windmill.js';
 import { createPlay } from './game/play.js';
+import { createSession } from './game/session.js';
 import { updateWeather, weatherNow } from './fx/weather.js';
 import { clouds } from './world/scenery.js';
 
@@ -50,12 +51,14 @@ addEventListener('resize', resize); resize();
 // ---------------------------------------------------------------- loop
 // Mac dinh la che do choi; ?mode=view giu che do ngam canh cu (xoay tu do, Mam tu nhay theo vong).
 const play = qs.get('mode') === 'view' ? null : createPlay();
+const session = play ? createSession(play) : null;
+if (session && qs.has('ask')) setTimeout(() => session.debugAsk(), 600); // chi de chup anh kiem tra the bai tap
 const clock = new THREE.Clock(), fpsEl = document.getElementById('fps'), infoEl = document.getElementById('info');
 const _v = new THREE.Vector3(), _t = new THREE.Vector3();
 let frames = 0, accTime = 0, slow = 0;
 function tick() {
   const dt = Math.min(clock.getDelta(), 0.05), t = (U.time.value += dt);
-  if (play) play.update(dt); else controls.update();
+  if (play) { play.update(dt * session.timeScale()); session.update(dt); } else controls.update();
   sky.position.copy(camera.position);
   U.sunView.value.copy(SUN_DIR).transformDirection(camera.matrixWorldInverse);
 

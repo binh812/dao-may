@@ -26,3 +26,10 @@ Mẫu: `- [ ] <tiêu đề> — Khi <tình huống> thì app phải <kết quả
 - [ ] Vật che nhân vật — Khi bụi cây hoặc tán cây nằm giữa máy quay và Mầm thì phải mờ đi để vẫn thấy Mầm. Kiểm chứng: ảnh chụp khung dọc ở chỗ sinh ra. Phạm vi: `game/play.js`, `world/materials.js`.
 - [ ] Cỏ cao che nửa người Mầm — Khi Mầm đứng trong cỏ thì phải thấy được ít nhất 2/3 thân. Kiểm chứng: ảnh chụp. Phạm vi: `world/meadow.js`.
 - [ ] Nút Nhảy ở khung dọc 412 px bị cắt mép phải trong ảnh chụp headless — chưa rõ do cửa sổ headless rộng hơn 412 px hay do bố cục. Kiểm chứng: xem trên điện thoại thật. Phạm vi: `game/touch-controls.js`.
+
+## Sau M2 (12/11/2026)
+- [ ] Chơi thử với một bé thật — Khi một bé lớp 1–3 chơi một chuyến thì bé phải tự hiểu cách ra chiêu và muốn chơi chuyến nữa. Kiểm chứng: anh Ben quan sát, ghi tỉ lệ bé dùng Lá so với Tia Nắng. Phạm vi: `game/session.js`, `game/battle-core.js`.
+- [ ] Đóng gói three.js vào repo để chơi không mạng và cài như ứng dụng (PWA) — cần anh Ben đồng ý cho tải thư viện về. Phạm vi: `index.html`, thư mục `vendor/`.
+- [ ] Bài học làm mẫu 30–60 giây khi gặp kỹ năng mới (GDD 5.3) — chưa làm.
+- [ ] Đọc to đề bài cho lớp 1–2 bằng giọng đọc của máy (GDD 7) — chưa làm.
+- [ ] Các phần chơi khác trong GDD chưa có: đua lượn, chèo bè, mua bán, trồng trọt, trùm, các Linh và chiêu khác ngoài Tia Nắng, nhiều hồ sơ, giới hạn thời gian chơi.

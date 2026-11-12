@@ -8,7 +8,7 @@ code, không asset ngoài. Trả lời anh Ben bằng tiếng Việt có dấu. 
 - Kiểm đầy đủ (trước khi merge; 3 mức đồ họa + 6 kiểu thời tiết): `scripts/ci.ps1`
 - Test lõi game (không cần trình duyệt): `node --test "tests/*.test.mjs"`
 - Chạy: `npx http-server . -p 8123 -c-1` rồi mở http://127.0.0.1:8123 (cần mạng: three.js 0.180 nạp từ CDN).
-- Tham số URL: `mode=view` (ngắm cảnh, Mầm tự nhảy; mặc định là chế độ chơi), `q=low|medium|high`, `w=sun|wind|mist|rain|storm|snow|night`, `cam=x,y,z`, `ui=0`, `spin=0`, `dyn=0`, `flash=0.6`.
+- Tham số URL: `grade=1|2|3` (tạo hồ sơ tạm, bỏ qua màn chọn lớp), `ask=1` (mở sẵn một thẻ bài tập để chụp ảnh), `mode=view` (ngắm cảnh, Mầm tự nhảy; mặc định là chế độ chơi), `q=low|medium|high`, `w=sun|wind|mist|rain|storm|snow|night`, `cam=x,y,z`, `ui=0`, `spin=0`, `dyn=0`, `flash=0.6`.
 - Kiểm hình ảnh: chụp bằng Edge headless theo skill `threejs-stylized-scene` (bước 4), tự đọc ảnh trước khi báo xong.
 
 ## Cấu trúc (`src/`, ES module thuần, không build)
@@ -18,6 +18,10 @@ code, không asset ngoài. Trả lời anh Ben bằng tiếng Việt có dấu. 
 - `game/` — phần chơi. `*-core.js` là luật thuần (không import three.js hay DOM, có test trong `tests/`): `player-core.js`
   (chạy, nhảy, lượn, va chạm), `input-core.js` (cần ảo). `touch-controls.js` đọc cảm ứng và bàn phím, `play.js` nối tất cả với
   nhân vật và máy quay. `world/colliders.js` cấp vật cản và mặt đất cho game.
+- `learn/` — hệ học tập, toàn bộ là luật thuần có test: `questions.js` (chương trình lớp 1–3, sinh bài kèm gợi ý và lời giải),
+  `adaptive.js` (hồ sơ, xếp lớp, chọn bài theo sức, bài đã sai), `parent-gate.js` (cổng phụ huynh).
+- `game/battle-core.js` luật đối đầu (thuần, có test); `game/session.js` nối trận đấu, học tập, giao diện, âm thanh;
+  `game/enemy-views.js`, `game/heart-tree.js`, `game/sfx.js` là phần nhìn và nghe. `ui/hud.js`, `ui/question-card.js`, `ui/notebook.js`.
 - `actors/` nhân vật và sinh vật; `fx/` hạt (mưa, tuyết, lá) và `weather.js` (preset + nội suy); `render/post.js` hậu kỳ, AO,
   ánh sáng thể tích; `ui/panel.js` bảng điều khiển; `main.js` đổi kích thước + vòng lặp.
 - **Thứ tự `import` trong `main.js` là thứ tự dựng cảnh**: mọi module dùng chung một bộ sinh số ngẫu nhiên có seed, đổi thứ tự
@@ -42,7 +46,14 @@ Danh sách trong `.pb-dev.json` → `protected`. Chỉ đổi khi anh Ben duyệ
 | Không báo xong khi kiểm tra đỏ | cổng Stop (`verify.quick`) | (mặc định pb-dev) |
 | Mỗi module ≤ 400 dòng; import tương đối phải tồn tại và tên phải được export | `scripts/check-modules.mjs` | main.js một file 1.160 dòng, 12/11/2026 |
 | Luật di chuyển của Mầm (12 tình huống) | `tests/player-core.test.mjs` — hiện chỉ chạy trên CI GitHub và khi gọi tay, chưa nằm trong cổng Stop | M1, 12/11/2026 |
+| Bài tập phải đúng: đáp án tính lại độc lập, 4 lựa chọn khác nhau, gợi ý không lộ đáp án, lời giải kết bằng "Đáp số" | `tests/learn.test.mjs` (400 bài mỗi kỹ năng) | M2, 12/11/2026 |
+| Sai không mất tim; một đòn ≤ 40% tim; ngã thì tỉnh lại và địch chậm dần | `tests/battle-core.test.mjs` | quy tắc kids-games |
 | Trang phải mở được không lỗi runtime | `scripts/smoke.mjs` | shader treo lúc biên dịch, 12/11/2026 |
+
+## Quy tắc nội dung (game cho trẻ em)
+- Không quảng cáo, không mua bằng tiền thật, không thu thập dữ liệu, không hỏi tên thật; tiến độ chỉ lưu `localStorage`.
+- Không đổi `id` kỹ năng đã phát hành (hồ sơ lưu tham chiếu theo id); kỹ năng mới thêm vào đúng vị trí thứ tự học.
+- Lời thoại và thông báo không chê bai, không đe dọa. Sai chỉ làm chiêu yếu đi.
 
 ## Bẫy riêng của repo
 - Lấy mẫu texture trong `if` bên trong vòng lặp shader làm trang treo hơn 1 phút ở lần mở đầu trên Windows; dùng `textureLod` và bỏ rẽ nhánh (12/11/2026).
