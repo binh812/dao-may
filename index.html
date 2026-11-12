@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Phòng thử đồ họa 3D</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #f3c9a0; font-family: system-ui, "Segoe UI", Roboto, sans-serif; }
+  canvas { display: block; width: 100vw; height: 100vh; touch-action: none; }
+  #panel {
+    position: fixed; left: max(10px, env(safe-area-inset-left)); top: max(10px, env(safe-area-inset-top));
+    background: rgba(28, 22, 34, .55); color: #fff; border-radius: 16px; padding: 10px 12px;
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); font-size: 13px; line-height: 1.35;
+    max-width: 230px; user-select: none; -webkit-user-select: none;
+  }
+  #panel.min #body { display: none; }
+  #head { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+  #fps { font-weight: 700; font-variant-numeric: tabular-nums; min-width: 54px; }
+  #info { opacity: .75; font-size: 11px; font-variant-numeric: tabular-nums; }
+  .row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  button {
+    font: inherit; color: #fff; background: rgba(255,255,255,.14); border: 0; border-radius: 999px;
+    padding: 7px 11px; min-height: 34px; cursor: pointer;
+  }
+  button.on { background: #ffb44d; color: #3a2408; font-weight: 600; }
+  #loading {
+    position: fixed; inset: 0; display: grid; place-items: center; background: #f3c9a0; color: #5a3a22;
+    font-size: 18px; font-weight: 600; transition: opacity .6s;
+  }
+  #err { position: fixed; left: 8px; right: 8px; bottom: 8px; color: #fff; background: #b00020; padding: 8px 10px;
+    border-radius: 10px; font: 12px/1.4 monospace; white-space: pre-wrap; display: none; }
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<div id="loading">Đang dựng cảnh…</div>
+<div id="panel">
+  <div id="head"><span id="fps">– fps</span><span id="info"></span></div>
+  <div id="body">
+    <div class="row" id="tiers"></div>
+    <div class="row" id="weather"></div>
+    <div class="row" id="toggles"></div>
+    <div class="row"><button id="flat">So sánh: tắt hết</button></div>
+  </div>
+</div>
+<div id="err"></div>
+<script>
+  window.addEventListener('error', e => { const el = document.getElementById('err'); el.style.display = 'block'; el.textContent += (e.message || e) + '\n'; });
+  window.addEventListener('unhandledrejection', e => { const el = document.getElementById('err'); el.style.display = 'block'; el.textContent += (e.reason && e.reason.message || e.reason) + '\n'; });
+</script>
+<script type="module" src="./src/main.js"></script>
+</body>
+</html>
