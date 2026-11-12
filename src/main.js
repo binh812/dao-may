@@ -28,6 +28,7 @@ import { butterflies, chr, chrState, eyes, sprout, squash, walk } from './actors
 import { WATER_Y, height } from './world/layout.js';
 import { clamp } from './core/util.js';
 import { rotor } from './world/windmill.js';
+import { createPlay } from './game/play.js';
 import { updateWeather, weatherNow } from './fx/weather.js';
 import { clouds } from './world/scenery.js';
 
@@ -47,15 +48,18 @@ function resize() {
 addEventListener('resize', resize); resize();
 
 // ---------------------------------------------------------------- loop
+// Mac dinh la che do choi; ?mode=view giu che do ngam canh cu (xoay tu do, Mam tu nhay theo vong).
+const play = qs.get('mode') === 'view' ? null : createPlay();
 const clock = new THREE.Clock(), fpsEl = document.getElementById('fps'), infoEl = document.getElementById('info');
 const _v = new THREE.Vector3(), _t = new THREE.Vector3();
 let frames = 0, accTime = 0, slow = 0;
 function tick() {
   const dt = Math.min(clock.getDelta(), 0.05), t = (U.time.value += dt);
-  controls.update();
+  if (play) play.update(dt); else controls.update();
   sky.position.copy(camera.position);
   U.sunView.value.copy(SUN_DIR).transformDirection(camera.matrixWorldInverse);
 
+  if (!play) {
   // character: hop along the loop
   const st = chrState; st.hop += dt * 2.3; const ph = st.hop % 1, air = ph < 0.62;
   if (air) st.u = (st.u + dt * 0.03) % 1;
@@ -70,6 +74,7 @@ function tick() {
   st.blink -= dt; const bl = st.blink < 0.12 ? 0.12 : 1.15; if (st.blink < 0) st.blink = 2 + Math.random() * 3;
   eyes.forEach(e => e.scale.y = bl);
   U.player.value.set(_v.x, gy, _v.z);
+  }
 
   rotor.rotation.z += dt * 0.7 * weatherNow.wind;
   clouds.rotation.y += dt * 0.006 * weatherNow.wind;
@@ -79,7 +84,7 @@ function tick() {
     b.g.rotation.y = Math.atan2(Math.cos(a) * 1.8, -Math.sin(a * 0.8) * 1.44);
     const f = Math.sin(t * 16 + b.ph) * 0.9; b.l.rotation.z = f; b.r.rotation.z = -f;
   }
-  dofPass.uniforms.uFocus.value = camera.position.distanceTo(controls.target);
+  dofPass.uniforms.uFocus.value = play ? play.focusDistance() : camera.position.distanceTo(controls.target);
   dofPass.uniforms.uRange.value = dofPass.uniforms.uFocus.value * 0.5;
 
   updateWeather(dt);

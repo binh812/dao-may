@@ -19,3 +19,10 @@ Mẫu: `- [ ] <tiêu đề> — Khi <tình huống> thì app phải <kết quả
 - [ ] Đóng gói three.js vào repo — Khi máy không có mạng thì trang vẫn phải mở được. Kiểm chứng: `scripts/smoke.mjs` chạy khi ngắt mạng. Phạm vi: `index.html` (import map).
 - [ ] Phản chiếu trên mặt nước — Khi nhìn ao ở góc thấp thì phải thấy bóng vách đá và cây. Kiểm chứng: ảnh chụp `cam=-3,1.5,9`. Phạm vi: `world/water.js`.
 - [ ] Nét cọ trên đá và vách — Khi nhìn gần vách đá thì bề mặt phải có vệt màu vẽ tay, không còn mặt đa giác trơn. Kiểm chứng: ảnh chụp cận. Phạm vi: `world/flora.js`, `world/materials.js`.
+
+## Sau M1 (12/11/2026)
+- [ ] Thử tay trên điện thoại thật — Khi kéo cần ảo và bấm Nhảy bằng hai ngón cùng lúc thì Mầm phải chạy và nhảy đồng thời, nhấc ngón ra ngoài vùng thì dừng. Kiểm chứng: anh Ben chơi 2 phút, ghi lại chỗ vướng. Phạm vi: `game/touch-controls.js`.
+- [ ] Đưa `node --test` vào cổng Stop — Khi một test lõi đỏ thì `verify-quick.ps1` phải đỏ. Cần anh Ben duyệt vì file được bảo vệ. Phạm vi: `scripts/verify-quick.ps1`, `scripts/ci.ps1`.
+- [ ] Vật che nhân vật — Khi bụi cây hoặc tán cây nằm giữa máy quay và Mầm thì phải mờ đi để vẫn thấy Mầm. Kiểm chứng: ảnh chụp khung dọc ở chỗ sinh ra. Phạm vi: `game/play.js`, `world/materials.js`.
+- [ ] Cỏ cao che nửa người Mầm — Khi Mầm đứng trong cỏ thì phải thấy được ít nhất 2/3 thân. Kiểm chứng: ảnh chụp. Phạm vi: `world/meadow.js`.
+- [ ] Nút Nhảy ở khung dọc 412 px bị cắt mép phải trong ảnh chụp headless — chưa rõ do cửa sổ headless rộng hơn 412 px hay do bố cục. Kiểm chứng: xem trên điện thoại thật. Phạm vi: `game/touch-controls.js`.
