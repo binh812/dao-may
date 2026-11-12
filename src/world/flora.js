@@ -96,4 +96,4 @@ for (let i = 0; i < 12; i++) {
   for (let k = 0; k < 6; k++) B.add('gloss', new THREE.SphereGeometry(0.05, 10, 8), TRS(x + (rnd() - .5) * s * 1.6, y + s * (0.5 + rnd() * 0.6), z + (rnd() - .5) * s * 1.6), 0xff4f6d);
 }
 
-export { LEAF, blossomCrowns, tree };
+export { LEAF, TREES, blossomCrowns, tree };

@@ -6,14 +6,18 @@ code, không asset ngoài. Trả lời anh Ben bằng tiếng Việt có dấu. 
 ## Lệnh
 - Kiểm nhanh (cổng Stop tự chạy, ~5 giây): `scripts/verify-quick.ps1`
 - Kiểm đầy đủ (trước khi merge; 3 mức đồ họa + 6 kiểu thời tiết): `scripts/ci.ps1`
+- Test lõi game (không cần trình duyệt): `node --test "tests/*.test.mjs"`
 - Chạy: `npx http-server . -p 8123 -c-1` rồi mở http://127.0.0.1:8123 (cần mạng: three.js 0.180 nạp từ CDN).
-- Tham số URL: `q=low|medium|high`, `w=sun|wind|mist|rain|storm|snow|night`, `cam=x,y,z`, `ui=0`, `spin=0`, `dyn=0`, `flash=0.6`.
+- Tham số URL: `mode=view` (ngắm cảnh, Mầm tự nhảy; mặc định là chế độ chơi), `q=low|medium|high`, `w=sun|wind|mist|rain|storm|snow|night`, `cam=x,y,z`, `ui=0`, `spin=0`, `dyn=0`, `flash=0.6`.
 - Kiểm hình ảnh: chụp bằng Edge headless theo skill `threejs-stylized-scene` (bước 4), tự đọc ảnh trước khi báo xong.
 
 ## Cấu trúc (`src/`, ES module thuần, không build)
 - `core/` — `quality.js` (mức đồ họa), `util.js` (seed, nhiễu, `Builder` gộp lưới), `stage.js` (renderer, camera, đèn, uniform dùng chung `U`).
 - `world/` — `layout.js` (hàm độ cao, bậc thang, suối: nguồn sự thật về địa hình), `materials.js` (toon ramp, tuyết phủ), và các
   phần dựng cảnh: `island`, `village`, `flora`, `windmill`, `scenery`, `meadow` (cỏ, hoa), `water` (ao, suối, thác), `sky`.
+- `game/` — phần chơi. `*-core.js` là luật thuần (không import three.js hay DOM, có test trong `tests/`): `player-core.js`
+  (chạy, nhảy, lượn, va chạm), `input-core.js` (cần ảo). `touch-controls.js` đọc cảm ứng và bàn phím, `play.js` nối tất cả với
+  nhân vật và máy quay. `world/colliders.js` cấp vật cản và mặt đất cho game.
 - `actors/` nhân vật và sinh vật; `fx/` hạt (mưa, tuyết, lá) và `weather.js` (preset + nội suy); `render/post.js` hậu kỳ, AO,
   ánh sáng thể tích; `ui/panel.js` bảng điều khiển; `main.js` đổi kích thước + vòng lặp.
 - **Thứ tự `import` trong `main.js` là thứ tự dựng cảnh**: mọi module dùng chung một bộ sinh số ngẫu nhiên có seed, đổi thứ tự
@@ -37,6 +41,7 @@ Danh sách trong `.pb-dev.json` → `protected`. Chỉ đổi khi anh Ben duyệ
 | Không commit thẳng lên `main`, không `--no-verify`, không force-push | hook `pbdev guard` | (mặc định pb-dev) |
 | Không báo xong khi kiểm tra đỏ | cổng Stop (`verify.quick`) | (mặc định pb-dev) |
 | Mỗi module ≤ 400 dòng; import tương đối phải tồn tại và tên phải được export | `scripts/check-modules.mjs` | main.js một file 1.160 dòng, 12/11/2026 |
+| Luật di chuyển của Mầm (12 tình huống) | `tests/player-core.test.mjs` — hiện chỉ chạy trên CI GitHub và khi gọi tay, chưa nằm trong cổng Stop | M1, 12/11/2026 |
 | Trang phải mở được không lỗi runtime | `scripts/smoke.mjs` | shader treo lúc biên dịch, 12/11/2026 |
 
 ## Bẫy riêng của repo
