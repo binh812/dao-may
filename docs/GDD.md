@@ -1,191 +1,213 @@
-# Đảo Mây — bản thiết kế game (GDD) v0.1
+# Đảo Mây — bản thiết kế game (GDD) v0.2
 
-Ngày 12/11/2026. Trạng thái: **bản nháp chờ anh Ben duyệt**. Mọi lựa chọn dưới đây là đề xuất của Claude, chưa có mục nào
-là quyết định của anh Ben, trừ ba điều anh đã nói: game mobile, đồ họa dễ thương, dựng trên three.js với phong cách tranh
-vẽ đã chốt ở cảnh mẫu. Tên "Đảo Mây" và mọi tên riêng là tên tạm.
+Ngày 12/11/2026. Trạng thái: **bản nháp chờ anh Ben duyệt**. Tên "Đảo Mây" và mọi tên riêng là tên tạm.
+
+**Điều anh Ben đã quyết** (không phải đề xuất của Claude):
+- Game mobile, đồ họa dễ thương, three.js, phong cách tranh vẽ như cảnh mẫu.
+- Không làm game chỉ giải đố. Phải là game có các phần chơi thật, và bài học, bài tập được lồng vào trong đó
+  (góp ý ngày 12/11/2026 sau khi đọc v0.1).
+
+Mọi thứ còn lại là đề xuất của Claude. Thay đổi so với v0.1: bỏ hướng "phiêu lưu giải đố", chuyển sang **phiêu lưu hành động
+có học tập**; thêm mục 5 (hệ học tập); thời tiết từ "lời giải câu đố" thành "chiêu thức và luật của thế giới".
 
 ## 1. Tầm nhìn
 
-**Một câu:** Bé Mầm đi qua những hòn đảo bay đã ngủ quên và đánh thức chúng bằng cách gọi nắng, mưa, gió, tuyết, đêm.
+**Một câu:** Bé Mầm chạy, lượn, đối đầu và gây dựng trên những hòn đảo bay, dùng sức mạnh thời tiết để đánh thức thế
+giới; mỗi lần ra chiêu, mở khóa hay mua bán là một bài tập được giải.
 
-**Thể loại:** phiêu lưu giải đố nhẹ nhàng (cozy puzzle-adventure), góc nhìn sa bàn 3D, chơi một tay trên điện thoại.
+**Thể loại:** phiêu lưu hành động nhẹ (action-adventure) 3D góc nhìn sau lưng, có xây dựng đảo nhà, lồng học tập.
 
-**Vì sao là game này:** thứ mạnh nhất đang có trong tay là hệ thời tiết bảy kiểu chạy thật trên một hòn đảo đẹp. Thay vì
-để thời tiết làm phông nền, game biến nó thành **công cụ của người chơi**: mỗi kiểu thời tiết làm thế giới thay đổi theo
-một quy luật dễ hiểu, và câu đố là tìm đúng thứ tự gọi thời tiết.
+**Người chơi:** học sinh tiểu học (đề xuất lớp 1–5), chơi một mình trên điện thoại. Theo bộ quy tắc `kids-games`: không
+quảng cáo, không mua bằng tiền thật, không dark pattern, sai không mất gì, không bao giờ kẹt.
 
-**Cảm giác muốn đạt:** tò mò ("nếu mình gọi tuyết ở đây thì sao?"), nhẹ nhõm, và phần thưởng nhìn thấy được: cả hòn đảo
-nở hoa sau khi giải xong.
+**Phiên chơi:** một chuyến phiêu lưu 8–12 phút, trong đó có khoảng 15–25 bài tập (mục tiêu thiết kế, chưa đo).
 
-**Người chơi:** trẻ 7–12 tuổi và người lớn thích game nhẹ nhàng. Vì có trẻ em, game theo bộ quy tắc `kids-games` của
-anh: không quảng cáo, không mua bằng tiền thật, không đếm ngược ép quay lại, không bao giờ để kẹt.
+**Cảm giác muốn đạt:** "mình giỏi lên thì nhân vật mạnh lên". Bé muốn giải bài vì bài tập là cách ra đòn, không phải
+vì bị bắt.
 
-**Phiên chơi:** 3–8 phút cho một câu đố; một đảo gồm 4–6 câu đố, khoảng 25–40 phút.
+## 2. Bốn trụ cột thiết kế
 
-## 2. Ba trụ cột thiết kế
-
-Mọi tính năng phải phục vụ ít nhất một trụ cột, nếu không thì bỏ.
-
-1. **Thời tiết là bàn tay của người chơi.** Mọi tương tác chính đi qua bảy kiểu thời tiết. Không có nút "dùng vật phẩm".
-2. **Thế giới trả lời ngay và dễ đọc.** Gọi mưa thì trong 2 giây phải thấy suối dâng. Luật của mỗi thời tiết giống nhau ở
-   mọi nơi; game không bao giờ phá luật để tạo câu đố.
-3. **Đẹp là phần thưởng.** Không điểm số, không sao. Phần thưởng là đảo hồi sinh, sinh vật quay về, và góc nhìn mới.
+1. **Chơi thật trước.** Bỏ hết bài tập đi thì chạy nhảy, lượn gió, đối đầu, thu thập vẫn phải vui. Nếu một phần chơi
+   chỉ vui khi có phần thưởng thì thiết kế lại phần đó.
+2. **Bài tập là động tác của game.** Không có màn hình kiểm tra tách rời. Mỗi bài tập gắn với một hành động có nghĩa
+   trong thế giới (nạp chiêu, mở khóa, đong hàng, bắc cầu) và có kết quả nhìn thấy ngay.
+3. **Sai không phạt, đúng thì mạnh.** Sai chỉ làm chiêu yếu hơn và mở gợi ý; đúng nhanh và liên tiếp thì chiêu đẹp và
+   mạnh hơn. Không trừ máu, không mất đồ, không tụt cấp vì sai.
+4. **Thế giới lớn lên theo điều bé học được.** Tiến bộ thật (thành thạo một kỹ năng) làm đảo nhà mọc thêm thứ nhìn
+   thấy được, không chỉ là một con số.
 
 ## 3. Thế giới và cốt truyện
 
 ### 3.1 Bối cảnh
-Quần đảo Mây là những hòn đảo trôi giữa trời. Ngày trước, bảy Linh Thời Tiết thay nhau đi qua các đảo, nên nơi nào cũng có
-đủ nắng mưa. Rồi một ngày đến **Cơn Lặng**: trời đứng yên, không gió, không mưa, không đêm. Các đảo bạc màu dần, cây
-ngừng lớn, suối cạn, sinh vật ngủ vùi. Các Linh không biến mất; mỗi Linh đang mắc kẹt trên một hòn đảo vì chính
-thời tiết của mình bị khóa lại.
+Quần đảo Mây là những hòn đảo trôi giữa trời. Bảy Linh Thời Tiết từng thay nhau đi qua các đảo. Rồi **Cơn Lặng** đến:
+trời đứng yên, đảo bạc màu, suối cạn, và từ những chỗ bạc màu sinh ra **Bóng Lặng**, những khối xám lờ đờ làm mọi thứ
+quanh nó ngủ theo. Mỗi Linh đang bị một Bóng Lặng lớn giữ chân trên một hòn đảo.
 
-Cơn Lặng không phải kẻ ác. Ở chương cuối người chơi biết nó là Linh thứ tám, Linh của sự Yên Tĩnh, bị bỏ quên vì không
-ai gọi tới. Kết thúc là mời nó nhập hội, không phải đánh bại nó. Từ đó game có kiểu thời tiết thứ tám: Lặng.
+Bóng Lặng không ác; chúng là những mảnh thế giới bị quên. Mầm không tiêu diệt mà **đánh thức** chúng: trúng đủ chiêu,
+Bóng Lặng tan thành hoa, bướm, đom đóm. Chương cuối, Cơn Lặng hóa ra là Linh thứ tám, Linh của sự Yên Tĩnh, và được mời
+nhập hội.
 
 ### 3.2 Nhân vật
-| Nhân vật | Vai trò | Tính cách, hình dáng |
+| Nhân vật | Vai trò | Ghi chú |
 |---|---|---|
-| **Mầm** | Người chơi điều khiển | Sinh vật tròn lông nhung, mầm lá trên đầu (đã có trong cảnh mẫu). Không nói, biểu cảm bằng mầm lá và mắt |
-| **Bà Cối** | Người dẫn đường | Cối xay gió biết nói ở đảo nhà. Giao việc, kể chuyện, giữ sổ tay |
-| **Nắng** | Linh chương 1 | Chim nhỏ màu vàng, hấp tấp, hay đi trước |
-| **Gió** | Linh chương 2 | Dải lụa dài hay trêu, không bao giờ đứng yên |
-| **Mưa** | Linh chương 3 | Ếch con đội lá, hay khóc nhưng tốt bụng |
-| **Sương** | Linh chương 4 | Cừu bông mờ ảo, nhút nhát, nói thầm |
-| **Tuyết** | Linh chương 5 | Cáo trắng, điềm đạm, thích xếp mọi thứ ngay ngắn |
-| **Đêm** | Linh chương 6 | Cú mèo đội mũ sao, hay kể chuyện |
-| **Bão** | Linh chương 7 | Bê con sấm sét, ồn ào, sợ bị ghét |
-| **Lặng** | Chương kết | Một đốm sáng nhỏ, không hình dạng rõ |
+| **Mầm** | Người chơi điều khiển | Tròn, lông nhung, mầm lá trên đầu dùng để lượn. Không nói |
+| **Bà Cối** | Dẫn đường, giữ sổ học | Cối xay gió biết nói ở đảo nhà |
+| **Nắng, Gió, Mưa, Sương, Tuyết, Đêm, Bão** | Bảy Linh, mỗi Linh cho một bộ chiêu | Chim vàng, dải lụa, ếch đội lá, cừu bông, cáo trắng, cú mèo, bê con sấm |
+| **Bóng Lặng** | Đối thủ thường | Nhiều dạng: lăn, nhảy, bay, núp |
+| **Lặng** | Chương kết | Đốm sáng nhỏ |
+| **Dân đảo** | Giao việc, mở tiệm | Thỏ thợ mộc, rùa lái đò, sóc chủ tiệm hạt... |
 
-### 3.3 Kịch bản theo chương
-Mỗi chương là một đảo, một Linh, một kiểu thời tiết mới, và một nỗi buồn nhỏ được gỡ.
-
-| Chương | Đảo | Thời tiết mở | Chuyện của đảo | Câu đố đại diện |
+### 3.3 Chương
+| Chương | Đảo | Linh và chiêu mở | Phần chơi mới | Trùm |
 |---|---|---|---|---|
-| 0 | Đảo Nhà | (học đi lại) | Mầm tỉnh dậy dưới gốc cây, Bà Cối không quay được | Đi, nhìn, chạm; tìm thấy Nắng trong lồng đèn |
-| 1 | Đảo Ruộng Hoa | Nắng | Ruộng bậc thang không nở | Rọi nắng cho hoa hướng dương quay mặt, mở lối |
-| 2 | Đảo Cối Xay | Gió | Cầu treo đứt, hạt giống không bay được | Gió quay cối kéo cầu; gió thổi hạt sang bờ kia rồi nắng cho mọc thành dây leo |
-| 3 | Đảo Thác | Mưa | Suối cạn, cá mắc kẹt trong vũng | Mưa làm đầy suối để bè nổi; nắng làm cạn để lộ lối đi đáy hồ |
-| 4 | Đảo Rừng Mờ | Sương | Rừng có lối đi chỉ hiện trong sương | Sương làm hiện cầu ánh sáng; nắng xua sương để thấy đường thật |
-| 5 | Đảo Băng | Tuyết | Hồ quá rộng, không qua được | Mưa làm đầy rồi tuyết đóng băng thành cầu; nắng làm tan đúng chỗ để thả bè |
-| 6 | Đảo Đom Đóm | Đêm | Hoa trăng chỉ nở ban đêm, đom đóm lạc đàn | Đêm cho hoa trăng nở thành bậc thang; ngày cho hoa ngủ để hạ cầu |
-| 7 | Đảo Sấm | Bão | Tháp đá cần sét để thức | Gió xoay cột thu lôi, bão đánh sét đúng trụ, mưa dẫn điện qua kênh |
-| 8 | Đảo Lặng | Lặng | Mọi thời tiết đều bị nuốt | Dùng cả bảy theo thứ tự; cuối cùng không gọi gì cả và đứng yên |
-
-Lời thoại ngắn (tối đa hai câu một lượt), không đe dọa, không chê bai. Chuyện kể bằng cảnh là chính.
+| 0 | Đảo Nhà | (học điều khiển) | Chạy, nhảy, lượn, chiêu Lá cơ bản | Bóng Lặng tập sự |
+| 1 | Đảo Ruộng Hoa | Nắng: Tia Nắng, Vòng Hoa | Trồng và thu hoạch | Bù Nhìn Ngủ Gật |
+| 2 | Đảo Cối Xay | Gió: Lốc Con, Lượn Xa | Đua lượn gió qua vòng | Chong Chóng Khổng Lồ |
+| 3 | Đảo Thác | Mưa: Mưa Rào, Bong Bóng | Chèo bè xuôi suối | Cá Trê Bùn |
+| 4 | Đảo Rừng Mờ | Sương: Màn Sương, Phân Thân | Lẻn qua, tìm lối ẩn | Cây Cổ Thụ Mộng Du |
+| 5 | Đảo Băng | Tuyết: Cầu Băng, Bóng Tuyết | Trượt dốc tuyết | Người Tuyết Lười |
+| 6 | Đảo Đom Đóm | Đêm: Mưa Sao, Ánh Trăng | Bắt đom đóm, soi ký hiệu | Cú Đá Ngủ Ngày |
+| 7 | Đảo Sấm | Bão: Sét Đánh, Cuồng Phong | Chạy tránh sét, nạp tháp | Mây Đen Cáu Kỉnh |
+| 8 | Đảo Lặng | Lặng: Dừng Thời Gian | Kết hợp tất cả | Cơn Lặng (không đánh, mời về) |
 
 ## 4. Gameplay
 
-### 4.1 Vòng chơi
+### 4.1 Một chuyến phiêu lưu (8–12 phút)
 ```
-Vòng 30 giây:  nhìn cảnh → gọi một thời tiết → thế giới đổi → đi tới chỗ mới
-Vòng 5 phút:   giải một câu đố → mở một phần đảo, một sinh vật quay về
-Vòng 30 phút:  đánh thức Cây Tâm của đảo → đảo nở hoa → mở đảo kế, kết bạn một Linh
-Vòng dài:      Đảo Nhà đẹp dần lên bằng những thứ mang về từ các đảo
+Bà Cối giao việc ở Đảo Nhà
+  → lượn sang đảo → khám phá (chạy, nhảy, lượn, thu thập, gặp dân đảo)
+  → 3–5 lần đối đầu Bóng Lặng + 1–2 thử thách dọc đường (đua lượn, chèo bè, mở cổng, bắc cầu)
+  → trùm của đảo (khi đủ điều kiện)
+  → mang quà về Đảo Nhà: trồng, xây, mở tiệm, xem đảo lớn lên
 ```
 
-### 4.2 Điều khiển (một ngón, màn dọc lẫn ngang)
-- **Đi:** chạm vào chỗ muốn tới; Mầm tự tìm đường. Giữ và kéo để đi tự do bằng cần ảo.
-- **Nhìn:** kéo ở vùng trống để xoay sa bàn; chụm hai ngón để phóng to.
-- **Gọi thời tiết:** vòng tròn bảy cánh ở góc dưới, mỗi cánh là một Linh đã kết bạn. Chạm một cánh là đổi.
-- **Chạm vật:** chạm vào vật có viền sáng để Mầm tương tác (đẩy, leo, hái).
-- Không có nút nhảy, không cần phản xạ nhanh, không có giới hạn thời gian.
+### 4.2 Điều khiển
+- Cần ảo bên trái để chạy; bên phải có ba nút: **Nhảy/Lượn** (giữ để lượn bằng mầm lá), **Chiêu** (mở bàn chiêu),
+  **Chạm** (nói chuyện, hái, đẩy).
+- Máy quay tự bám sau lưng; kéo ở vùng trống để xoay.
+- Hành động không đòi phản xạ gắt: né bằng cách chạy ra khỏi vùng báo trước trên mặt đất, không có né theo khung hình.
 
-### 4.3 Luật của bảy thời tiết
-Đây là lõi của game. Mỗi thời tiết có đúng ba hệ quả, áp dụng ở mọi đảo.
+### 4.3 Các phần chơi thật
+| Phần chơi | Bé làm gì | Vui ở đâu (kể cả khi không có bài tập) |
+|---|---|---|
+| **Khám phá** | Chạy, nhảy, lượn giữa các mỏm đá và đảo con, tìm rương, lối tắt, sinh vật ẩn | Cảm giác lượn; thế giới đẹp; bí mật |
+| **Đối đầu** | Vừa di chuyển tránh vùng báo trước vừa ra chiêu đánh thức Bóng Lặng | Chọn chiêu khắc dạng địch, đứng đúng chỗ |
+| **Thử thách** | Đua lượn qua vòng, chèo bè xuôi suối, trượt dốc tuyết, bắt đom đóm | Tốc độ, nhịp điệu, điểm kỷ lục của chính mình |
+| **Gây dựng** | Trồng cây, dựng nhà, mở tiệm cho dân đảo, bày biện Đảo Nhà | Thấy đảo của mình lớn lên |
+| **Sưu tầm** | Sổ sinh vật, bộ trang phục cho Mầm, bạn đồng hành nhỏ | Có thứ để khoe |
+| **Đố nhẹ bằng thời tiết** | Dùng chiêu để đổi cảnh: mưa cho đầy hồ, tuyết cho đóng băng | Gia vị giữa các đoạn hành động, không phải món chính |
 
-| Thời tiết | Hệ quả 1 | Hệ quả 2 | Hệ quả 3 |
-|---|---|---|---|
-| **Nắng** | Cây nắng lớn lên, hoa nở | Vũng nước cạn dần, băng tan | Xua sương, tắt đom đóm |
-| **Gió** | Cối xay và chong chóng quay | Hạt giống, lá, bè buồm bị thổi theo hướng gió | Cỏ rạp lộ vật giấu bên dưới |
-| **Mưa** | Suối, ao, thùng chứa dâng lên | Đất khô thành bùn, hạt nảy mầm | Dập lửa, làm ướt (nước dẫn điện) |
-| **Sương** | Cầu và lối ánh sáng hiện ra | Sinh vật nhút nhát dám ra ngoài | Che tầm nhìn của vật canh gác |
-| **Tuyết** | Nước đóng băng, đi qua được | Tuyết dày lên thành bậc, dốc trượt | Cây ngủ, hoa khép |
-| **Đêm** | Hoa trăng nở, đom đóm bay | Đá phát sáng hiện ký hiệu | Sinh vật ngày đi ngủ, sinh vật đêm thức |
-| **Bão** | Sét đánh vào vật cao nhất | Gió rất mạnh, đẩy được vật nặng | Mưa lớn, nước dâng nhanh gấp đôi |
+### 4.4 Đối đầu chi tiết
+- Mầm có thanh **Năng lượng** và thanh **Tim** (3–5 tim). Bóng Lặng có thanh **Ngủ**; đầy "thức" thì tan thành hoa.
+- **Chiêu Lá** (đòn thường): bấm là ra, yếu, không cần bài tập, để trận đấu luôn trôi.
+- **Chiêu Thời Tiết:** bấm Chiêu → thời gian chậm lại → hiện một bài tập → trả lời → chiêu bung ra.
+  - Đúng: chiêu đủ lực. Đúng liên tiếp: bậc combo tăng, chiêu to và đẹp hơn (tối đa bậc 3).
+  - Sai: chiêu vẫn ra nhưng yếu, combo về 0, Linh nhắc một câu gợi ý. Không mất tim.
+- Bóng Lặng đánh chậm, có vùng báo trước 1,5 giây; một đòn không quá 40% tim. Hết tim: Mầm ngủ gật, tỉnh lại ngay tại
+  chỗ với đủ tim và Bóng Lặng giữ nguyên thanh thức. Thua liên tiếp thì địch chậm dần (luật thương hại).
+- **Khắc chế:** mỗi dạng Bóng Lặng yếu trước một thời tiết (Bóng Bùn sợ Nắng, Bóng Lửa sợ Mưa) để bé chọn chiêu.
 
-Nguyên tắc dựng câu đố:
-- Câu đố hay đến từ **ghép hai luật** (mưa rồi tuyết = cầu băng), không từ luật mới.
-- Trạng thái thế giới **giữ lại** khi đổi thời tiết: nước đã dâng thì vẫn đầy cho tới khi nắng làm cạn.
-- Mọi câu đố giải được từ bất kỳ trạng thái nào; không có nước đi làm hỏng màn. Luôn có nút "Về lúc đầu" cho từng câu đố.
+## 5. Hệ học tập
 
-### 4.4 Độ khó và chống kẹt
-- Mỗi chương dạy luật mới bằng một câu đố chỉ có một bước, rồi mới ghép với luật cũ.
-- **Gợi ý ba nấc** qua Linh đi cùng: (1) nhìn về phía chỗ cần chú ý, (2) nói một câu gợi, (3) làm mẫu bước kế tiếp.
-  Gợi ý luôn miễn phí và không làm mất gì.
-- Đứng yên 60 giây mà chưa tiến: Linh tự đưa nấc 1.
+### 5.1 Bài tập nằm ở đâu trong game
+| Hành động trong game | Dạng bài hợp | Ví dụ lớp 2 |
+|---|---|---|
+| Nạp chiêu khi đối đầu | Tính nhanh, một bước | 37 + 8 = ? |
+| Mở Cổng Đố, rương khóa | Bài có suy luận, không vội | Tìm số còn thiếu trong dãy 2, 5, 8, ? |
+| Mua bán ở tiệm dân đảo | Tiền, cộng trừ có nhớ, thối tiền | Mua 3 hạt giá 4 xu, đưa 20 xu, thối bao nhiêu? |
+| Trồng trọt, nấu nướng | Đo lường, thời gian, phân số | Tưới mỗi luống 1/4 thùng, 3 luống hết mấy phần? |
+| Bắc cầu, dựng nhà | Hình học, đếm khối, chu vi | Cầu dài 12 ô, mỗi ván 3 ô, cần mấy ván? |
+| Đua lượn, chèo bè | Chọn cổng mang đáp án đúng | Lượn qua vòng có kết quả của 6 × 4 |
+| Giao hàng cho dân đảo | Toán có lời văn | Bà Rùa cần 15 quả, đã có 9, hái thêm mấy? |
 
-### 4.5 Ngoài câu đố
-- **Sổ tay của Bà Cối:** ghi sinh vật đã gặp, hoa đã thấy, mỗi mục kèm thời tiết nó thích. Vừa là sưu tầm vừa là gợi ý.
-- **Đảo Nhà:** mỗi đảo cho một món mang về (hạt giống, đèn lồng, tổ chim). Người chơi tự đặt chúng và tự chọn thời tiết
-  cho đảo nhà. Không có mục tiêu, chỉ để ngắm.
-- **Chụp ảnh:** nút chụp sa bàn với thời tiết đang chọn, lưu vào máy.
-- **Sinh vật ẩn:** mỗi đảo có 3 sinh vật chỉ ra ở một tổ hợp thời tiết (ví dụ ốc sên sau mưa vào ban đêm).
+Nguyên tắc:
+- Bài tập luôn xuất phát từ tình huống trong game, lời văn dùng đồ vật và nhân vật của đảo.
+- Lúc hành động chỉ dùng bài một bước, trả lời bằng chọn hoặc bàn phím số to. Bài nhiều bước để ở chỗ không vội.
+- Mọi bài có **gợi ý** (không lộ đáp án) và **lời giải từng bước**; sai lần ba thì hiện lời giải. Đáp án được test tính
+  lại độc lập.
 
-## 5. Tiến trình và phần thưởng
+### 5.2 Chọn bài cho đúng sức
+- Dùng lại thiết kế đã chạy ở MathQuest và Tiệm Bánh: chương trình theo kỹ năng (`g1_...`, `g2_...`), xếp lớp ban đầu,
+  máy chọn bài theo mức thành thạo, ôn lại theo khoảng cách. Phần này phải viết lại bằng JavaScript, không chép C#.
+- Mỗi chuyến đi trộn khoảng 70% bài đang học, 20% ôn, 10% nâng cao (tỉ lệ đề xuất, cần chỉnh qua chơi thử).
+- Mỗi đảo gắn với một nhóm kỹ năng (ví dụ Đảo Ruộng Hoa: cộng trừ; Đảo Cối Xay: nhân chia; Đảo Thác: đo lường và thời
+  gian), nhưng lớp nào cũng chơi được mọi đảo vì bài lấy theo lớp của bé.
 
-- Mở khóa theo tuyến thẳng: xong đảo N thì mở đảo N+1 và thời tiết mới. Thời tiết mới dùng được ở **mọi** đảo cũ, nên đảo
-  cũ có thêm sinh vật ẩn và góc mới để quay lại.
-- Không có tiền trong game, không có năng lượng, không có nhiệm vụ hằng ngày bắt buộc.
-- Lý do quay lại: đảo nhà, sinh vật ẩn, và mỗi ngày Bà Cối kể một mẩu chuyện ngắn (bỏ lỡ không mất, đọc lại được).
-- Lưu tự động trên máy sau mỗi câu đố. Nhiều hồ sơ cho anh chị em chung máy (tối đa 4).
+### 5.3 Bài học (không chỉ bài tập)
+- Khi gặp kỹ năng mới, Linh đi cùng dạy bằng một **cảnh làm mẫu 30–60 giây** ngay trong thế giới (xếp hoa thành hàng
+  để thấy phép nhân), rồi mới ra bài.
+- **Sổ học của Bà Cối:** xem lại bài học, những bài đã sai kèm lời giải, và luyện lại bài sai để nhận hạt giống.
 
-## 6. Hình ảnh và âm thanh
+### 5.4 Học giỏi lên thì được gì
+- Thành thạo một kỹ năng → **Cây Tâm** ở Đảo Nhà mọc thêm một cành có quả phát sáng; đủ cành thì mở một khu mới.
+- Combo đúng trong trận → chiêu lên bậc, hiệu ứng đẹp hơn. Đây là phần thưởng tức thì cho việc làm đúng.
+- Thưởng không cày được: hạt giống từ bài tập chỉ tính lần giải đầu trong ngày cho mỗi dạng; đoán bừa (trả lời dưới
+  1,5 giây và sai) không được tính.
 
-**Hình ảnh:** giữ nguyên phong cách cảnh mẫu (bậc sáng tối, bóng ngả xanh, tán cây cụm lá, đá gãy cạnh). Mỗi đảo một bảng
-màu chủ đạo và một hình khối nhận diện: ruộng bậc thang, cối xay, thác, rừng thông, hồ băng, hoa trăng, tháp đá.
+### 5.5 Phụ huynh
+Cổng phụ huynh (phép nhân bảng 6–9) vào màn xem: kỹ năng đã thành thạo, kỹ năng đang yếu, thời gian chơi, đổi lớp, đặt
+giới hạn thời gian mỗi ngày.
 
-**Đọc được trên màn nhỏ:** vật tương tác có viền sáng nhẹ; thứ thay đổi theo thời tiết có chuyển động báo trước (nước
-gợn trước khi dâng).
+## 6. Tiến trình
 
-**Âm thanh:** tổng hợp bằng code như Saltline (không file âm thanh). Mỗi thời tiết một lớp nền (mưa, gió, dế đêm) trộn
-dần theo cùng hệ số với hình ảnh; mỗi Linh một nhạc cụ, kết bạn thêm Linh thì bản nhạc đảo nhà thêm một bè.
+- **Cấp của Mầm** tăng theo chuyến đi hoàn thành: thêm tim, thêm năng lượng. Không tụt.
+- **Chiêu** mở theo Linh đã cứu; mỗi chiêu có ba bậc, lên bậc bằng quả từ Cây Tâm (tức bằng việc học).
+- **Đảo Nhà:** nhà của Mầm, vườn, xưởng, tiệm của dân đảo về ở. Vật liệu đến từ thu thập và thử thách.
+- **Xu lá** là tiền trong game, chỉ kiếm bằng chơi, dùng mua hạt giống, đồ trang trí, trang phục. Không bao giờ âm.
+- Việc mỗi ngày của Bà Cối: ba việc nhỏ, bỏ lỡ không mất gì, không đếm ngược.
+- Lưu trên máy, tối đa 4 hồ sơ.
 
-**Chữ:** tiếng Việt trước, tách chuỗi để thêm tiếng Anh sau.
+## 7. Hình ảnh và âm thanh
 
-## 7. Kỹ thuật
+Giữ phong cách cảnh mẫu. Bảy kiểu thời tiết đã dựng được dùng ở hai chỗ: thời tiết nền của từng đảo (đổi theo chương và
+giờ trong ngày) và hiệu ứng chiêu (chiêu Mưa Rào kéo một đám mưa nhỏ tới chỗ địch). Âm thanh tổng hợp bằng code. Lời
+thoại ngắn, có đọc to cho lớp 1–2 (dùng giọng đọc của máy).
 
-- Nền: repo `games-3d-lab` (three.js, ES module, không build), quy trình pb-dev, skill `threejs-stylized-scene`.
-- **Ngân sách hiệu năng (mục tiêu, chưa đo):** ≥ 30 fps ở mức Vừa trên điện thoại tầm trung; một đảo ≤ 300 nghìn tam giác,
-  ≤ 120 lệnh vẽ. Số thật phải chờ anh Ben đo trên máy; nếu không đạt thì cắt lớp tia nắng và giảm cỏ trước.
-- **Việc kỹ thuật mới cần làm cho game** (cảnh mẫu chưa có):
-  1. Trạng thái thế giới tách khỏi hình ảnh: mức nước, băng, cây đã lớn là dữ liệu thuần, có test đơn vị, hình ảnh chỉ đọc.
-  2. Nhân vật do người chơi điều khiển: tìm đường trên lưới đi được, va chạm đơn giản.
-  3. Đảo mô tả bằng dữ liệu (file mô tả địa hình, vật thể, câu đố) thay cho code cứng như hiện nay.
-  4. Lưu/nạp, màn chọn đảo, hội thoại, sổ tay.
-  5. three.js đóng gói kèm để chơi không cần mạng; cài như ứng dụng (PWA).
-- Mỗi luật thời tiết ở mục 4.3 là một hàm thuần có test; câu đố có test "giải được" tự động bằng cách chạy lời giải mẫu.
+## 8. Kỹ thuật
 
-## 8. Phạm vi và lộ trình
+- Nền: repo `games-3d-lab`, quy trình pb-dev, skill `threejs-stylized-scene`.
+- **Ngân sách (mục tiêu, chưa đo):** ≥ 30 fps ở mức Vừa trên điện thoại tầm trung.
+- **Việc mới so với cảnh mẫu:**
+  1. Điều khiển nhân vật góc nhìn sau lưng: chạy, nhảy, lượn, va chạm với địa hình và vật thể.
+  2. Lõi luật chơi thuần (không phụ thuộc three.js), có test: trận đấu, chiêu, tiến trình, kinh tế.
+  3. Lõi học tập thuần, có test: chương trình, sinh bài, chấm, chọn bài theo sức, lời giải.
+  4. Địch, vùng báo trước, hiệu ứng chiêu.
+  5. Đảo mô tả bằng dữ liệu thay cho code cứng; đảo lớn hơn cảnh mẫu và phải chia vùng để giữ hiệu năng.
+  6. Giao diện: bàn chiêu, thẻ bài tập, sổ học, tiệm, màn phụ huynh, lưu/nạp.
+  7. Đóng gói three.js để chơi không mạng; cài như ứng dụng.
 
-**Bản chơi thử đầu tiên (vertical slice):** Đảo Nhà + chương 1 (Nắng) + chương 3 (Mưa), tức hai thời tiết và 6–8 câu đố,
-đủ để biết ghép hai luật có vui không. Chọn Nắng và Mưa vì hai luật này đối nhau (đầy/cạn) và hình ảnh đã có sẵn.
+## 9. Phạm vi và lộ trình
+
+**Bản chơi thử đầu tiên:** Đảo Nhà (thu nhỏ) + Đảo Ruộng Hoa, một Linh (Nắng), toán lớp 1–3. Gồm: chạy, nhảy, lượn; ba
+dạng Bóng Lặng; hai chiêu Nắng; một thử thách đua lượn; một tiệm mua bán; trồng một loại cây; trùm Bù Nhìn Ngủ Gật.
 
 | Mốc | Nội dung | Xong khi |
 |---|---|---|
-| M1 | Lõi trạng thái thế giới + Mầm đi lại bằng chạm | Chạm đâu Mầm tới đó trên đảo mẫu; mức nước đổi theo mưa/nắng có test |
-| M2 | Một câu đố hoàn chỉnh (làm đầy suối để bè nổi) | Chơi được từ đầu đến cuối trên điện thoại, có gợi ý ba nấc |
-| M3 | Bản chơi thử: 2 thời tiết, 6–8 câu đố, Đảo Nhà, lưu game | Một người chưa biết game chơi hết mà không cần chỉ |
-| M4 | Thêm Gió, Tuyết, Đêm (chương 2, 5, 6) | Mỗi chương có câu đố ghép với luật cũ |
-| M5 | Sương, Bão, chương kết; sổ tay, chụp ảnh, âm thanh | Chơi trọn cốt truyện |
-| M6 | Đóng gói PWA, tối ưu máy yếu, tiếng Anh | Cài được lên điện thoại, chơi không mạng |
+| M1 | Mầm chạy, nhảy, lượn trên đảo mẫu bằng cần ảo | Điều khiển mượt trên điện thoại thật, FPS đo được |
+| M2 | Lõi học tập (cộng trừ lớp 1–3) + thẻ bài tập + một trận đối đầu có nạp chiêu | Một bé chơi một trận và muốn chơi trận nữa |
+| M3 | Bản chơi thử như trên | Một bé chơi trọn chuyến 10 phút không cần người lớn chỉ |
+| M4 | Thêm Gió và Mưa, đua lượn, chèo bè, nhân chia và đo lường | Ba đảo chơi được, có trùm |
+| M5 | Các chương còn lại, sổ học, màn phụ huynh, âm thanh | Chơi trọn cốt truyện |
+| M6 | Đóng gói, tối ưu máy yếu | Cài lên điện thoại, chơi không mạng |
 
-Không làm ở phiên bản đầu: nhiều người chơi, bảng xếp hạng, tài khoản trực tuyến, trình dựng đảo cho người chơi.
+Không làm ở phiên bản đầu: nhiều người chơi, tài khoản trực tuyến, bảng xếp hạng.
 
-## 9. Rủi ro
+## 10. Rủi ro
 
 | Rủi ro | Dấu hiệu | Cách giảm |
 |---|---|---|
-| Câu đố thời tiết không vui, chỉ là thử lần lượt bảy nút | Người chơi thử bấm hết mà không nghĩ | Làm M2 sớm nhất có thể và cho người thật chơi; giới hạn số thời tiết dùng được ở mỗi câu đố |
-| Điện thoại không kham nổi đồ họa hiện tại | FPS dưới 30 ở mức Vừa | Đo ngay (việc đang nợ); có sẵn mức Thấp và độ phân giải động |
-| Dựng 9 đảo bằng code quá tốn công | Một đảo mất hơn một tuần | Chuyển sang đảo mô tả bằng dữ liệu ở M1–M3 |
-| Hình khối dựng bằng code không đủ duyên cho 8 Linh | Nhân vật nhìn như khối cầu ghép | Thử dựng một Linh ở M3; nếu không đạt thì bàn với anh Ben về model làm tay hoặc AI |
-| Điều khiển chạm-để-đi vướng khi xoay sa bàn | Chạm nhầm giữa đi và xoay | Thử trên máy thật ở M1, có phương án cần ảo |
+| Bài tập làm đứt nhịp hành động | Bé bấm Chiêu Lá suốt để né bài | Bài lúc đối đầu chỉ một bước; chiêu thời tiết phải mạnh hơn hẳn; đo tỉ lệ dùng chiêu ở M2 |
+| Phần chơi không đủ vui khi đứng riêng | Tắt bài tập đi thì chán | Thử M1 không có bài tập nào trước khi làm M2 |
+| Điện thoại không kham nổi đồ họa + nhân vật + địch | FPS dưới 30 ở mức Vừa | Đo ở M1; cắt lớp tia nắng, giảm cỏ, chia vùng đảo |
+| Khối lượng quá lớn (9 đảo, 7 bộ chiêu, lõi học) | Một đảo mất hơn hai tuần | Đảo bằng dữ liệu; chốt chất lượng ở bản chơi thử rồi mới nhân rộng |
+| Nhân vật và địch dựng bằng code không đủ duyên | Trông như khối cầu ghép | Thử một Linh và ba Bóng Lặng ở M3; không đạt thì bàn với anh Ben về model làm tay hoặc AI |
+| Nội dung toán sai | Đáp án hoặc lời giải sai | Test tính lại độc lập cho mọi bộ sinh bài; soát độc lập trước khi phát hành |
 
-## 10. Những điểm cần anh Ben quyết
+## 11. Những điểm cần anh Ben quyết
 
-1. **Hướng game:** phiêu lưu giải đố bằng thời tiết như trên, hay anh muốn thể loại khác.
-2. **Có lồng nội dung học không:** hai game trước của anh đều dạy toán. Bản này đang là game thuần giải trí; nếu muốn, có
-   thể gắn kiến thức tự nhiên (vòng tuần hoàn nước, mùa, ngày đêm) vào sổ tay mà không đổi gameplay.
-3. **Đối tượng:** 7–12 tuổi và gia đình như đề xuất, hay nhắm người lớn (câu đố khó hơn, ít gợi ý hơn).
+1. **Môn và lớp:** đề xuất toán tiểu học lớp 1–5 trước. Anh có muốn môn khác (tiếng Việt, tiếng Anh, khoa học) hoặc lớp
+   lớn hơn không.
+2. **Mức hành động:** đối đầu thời gian thực nhẹ nhàng như trên, hay theo lượt như MathQuest.
+3. **Tỉ lệ học/chơi:** khoảng 15–25 bài tập mỗi chuyến 10 phút là đề xuất; anh muốn dày hay thưa hơn.
 4. **Tên game và tên nhân vật.**
-5. **Phạm vi bản chơi thử:** Nắng + Mưa như đề xuất, hay cặp khác.
+5. **Phạm vi bản chơi thử:** Đảo Nhà + Đảo Ruộng Hoa với Linh Nắng, hay bắt đầu bằng đảo khác.
