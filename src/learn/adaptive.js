@@ -10,13 +10,14 @@ export const ADAPTIVE = Object.freeze({
   keepMistakes: 12,                            // so bai sai gan nhat giu lai de xem lai
 });
 
-const blank = () => ({ mastery: 0, seen: 0, streak: 0, placed: false });
+const blank = () => ({ mastery: 0, seen: 0, streak: 0, placed: false, celebrated: false });
+const placedState = () => ({ mastery: ADAPTIVE.placedMastery, seen: ADAPTIVE.minSeen, streak: 0, placed: true, celebrated: true });
 
 /** Ho so moi: coi ky nang cac lop duoi la da biet (xep lop), be tu chung minh lai khi on tap. */
 export function createProfile(grade) {
   if (!Number.isInteger(grade) || grade < ADAPTIVE.minGrade || grade > ADAPTIVE.maxGrade) throw new RangeError(`lop khong hop le: ${grade}`);
   const skills = {};
-  for (const s of SKILLS) if (s.grade < grade) skills[s.id] = { mastery: ADAPTIVE.placedMastery, seen: ADAPTIVE.minSeen, streak: 0, placed: true };
+  for (const s of SKILLS) if (s.grade < grade) skills[s.id] = placedState();
   return { version: 1, grade, skills, mistakes: [] };
 }
 
@@ -28,7 +29,7 @@ export function changeGrade(profile, grade) {
   if (!Number.isInteger(grade) || grade < ADAPTIVE.minGrade || grade > ADAPTIVE.maxGrade) throw new RangeError(`lop khong hop le: ${grade}`);
   for (const s of SKILLS) {
     const st = profile.skills[s.id];
-    if (s.grade < grade) { if (!st || !isMastered(profile, s.id)) profile.skills[s.id] = { mastery: ADAPTIVE.placedMastery, seen: ADAPTIVE.minSeen, streak: 0, placed: true }; }
+    if (s.grade < grade) { if (!st || !isMastered(profile, s.id)) profile.skills[s.id] = placedState(); }
     else if (st?.placed) delete profile.skills[s.id];
   }
   profile.grade = grade;
@@ -62,7 +63,10 @@ export function pickSkill(profile, rng) {
   return (stretch ?? learning ?? pickReview()).id;
 }
 
-/** Ghi nhan mot lan tra loi. Tra ve { masteredNow } de game an mung dung luc. */
+/**
+ * Ghi nhan mot lan tra loi. Tra ve { masteredNow }: chi true o LAN DAU ky nang dat thanh thao,
+ * de ky nang xep san hoac ky nang lo sai mot bai roi lam dung lai khong duoc an mung lan nua.
+ */
 export function recordAnswer(profile, skillId, correct) {
   if (!skillById(skillId)) throw new RangeError(`khong co ky nang: ${skillId}`);
   const before = isMastered(profile, skillId), s = profile.skills[skillId] ?? (profile.skills[skillId] = blank());
@@ -71,7 +75,9 @@ export function recordAnswer(profile, skillId, correct) {
   s.streak = correct ? s.streak + 1 : 0;
   if (!correct) s.placed = false; // da lam that thi khong con la "xep san" nua
   else if (s.placed && s.seen > ADAPTIVE.minSeen) s.placed = false;
-  return { masteredNow: !before && isMastered(profile, skillId) };
+  const masteredNow = !before && isMastered(profile, skillId) && !s.celebrated;
+  if (masteredNow) s.celebrated = true;
+  return { masteredNow };
 }
 
 /** Kiem tra du lieu doc tu bo nho may truoc khi dung; sai dang thi tra null de tao ho so moi. */
@@ -82,7 +88,7 @@ export function reviveProfile(raw) {
   for (const s of SKILLS) {
     const v = raw.skills?.[s.id];
     if (!v || typeof v.mastery !== 'number' || typeof v.seen !== 'number') continue;
-    skills[s.id] = { mastery: Math.min(1, Math.max(0, v.mastery)), seen: Math.max(0, Math.floor(v.seen)), streak: Math.max(0, Math.floor(v.streak ?? 0)), placed: Boolean(v.placed) };
+    skills[s.id] = { mastery: Math.min(1, Math.max(0, v.mastery)), seen: Math.max(0, Math.floor(v.seen)), streak: Math.max(0, Math.floor(v.streak ?? 0)), placed: Boolean(v.placed), celebrated: Boolean(v.celebrated ?? v.placed) };
   }
   const mistakes = Array.isArray(raw.mistakes) ? raw.mistakes.filter((m) => m && typeof m.text === 'string' && Number.isFinite(m.answer) && Array.isArray(m.solution) && m.solution.every((l) => typeof l === 'string'))
     .slice(-ADAPTIVE.keepMistakes).map((m) => ({ skillId: String(m.skillId ?? ''), text: m.text, answer: m.answer, solution: [...m.solution] })) : [];

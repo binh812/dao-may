@@ -16,9 +16,10 @@ export function createEnemy(id, x, z, maxWake = 8) {
   return { id, x, z, wake: 0, maxWake, awake: false, attack: { phase: 'idle', timer: BATTLE.attackEvery, x: 0, z: 0 } };
 }
 
-export function createBattle(enemies) {
+/** faints: so lan da nga o cac tran truoc trong cung phien, de luat thuong hai khong mat khi sang chuyen moi. */
+export function createBattle(enemies, faints = 0) {
   return {
-    enemies, hearts: BATTLE.hearts, combo: 0, faints: 0, leafTimer: 0, invulnerable: 0,
+    enemies, hearts: BATTLE.hearts, combo: 0, faints, leafTimer: 0, invulnerable: 0,
     events: { hit: false, fainted: false, struck: [] },
   };
 }
@@ -56,8 +57,8 @@ export function leafAttack(b, player) {
  */
 export function castSkill(b, player, correct) {
   const target = nearestEnemy(b, player, BATTLE.skillRange);
+  if (!target) return null; // khong co dich trong tam: khong doi combo, nguoi goi tu bao cho be
   b.combo = correct ? Math.min(b.combo + 1, BATTLE.comboBonus.length) : 0;
-  if (!target) return null;
   const tier = Math.max(b.combo, 1), damage = correct ? BATTLE.skillDamage * BATTLE.comboBonus[tier - 1] : BATTLE.weakSkillDamage;
   return { target, damage, tier: correct ? tier : 0, woke: wakeUp(target, damage) };
 }

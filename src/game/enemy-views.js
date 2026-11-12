@@ -13,6 +13,7 @@ export function createEnemyViews(scene, makeToon, groundAt) {
   const barFill = new THREE.MeshBasicMaterial({ color: 0xffd04a, depthTest: false });
   const warnMat = new THREE.MeshBasicMaterial({ color: 0xff5a4a, transparent: true, opacity: 0.3, depthWrite: false });
   const beamMat = new THREE.MeshBasicMaterial({ color: 0xffe9a0, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
+  const barBackGeo = new THREE.PlaneGeometry(BAR_WIDTH, 0.16), barFillGeo = new THREE.PlaneGeometry(BAR_WIDTH - 0.06, 0.1), warnGeo = new THREE.CircleGeometry(BATTLE.attackRadius, 40).rotateX(-Math.PI / 2);
   const bitMats = FLOWER_COLORS.map((c) => new THREE.MeshBasicMaterial({ color: c }));
   const leafMat = new THREE.MeshBasicMaterial({ color: 0x6fd65a });
   const views = new Map(), transient = [];
@@ -22,9 +23,9 @@ export function createEnemyViews(scene, makeToon, groundAt) {
     const body = new THREE.Mesh(bodyGeo, bodyMat); body.scale.set(1, 0.82, 1); body.position.y = BODY_RADIUS * 0.82; body.castShadow = true;
     const eyes = [-0.24, 0.24].map((x) => { const e = new THREE.Mesh(eyeGeo, eyeMat); e.position.set(x, 0.68, 0.6); e.scale.set(1.5, 0.25, 0.6); g.add(e); return e; });
     const bar = new THREE.Group(); bar.position.y = BAR_Y;
-    const back = new THREE.Mesh(new THREE.PlaneGeometry(BAR_WIDTH, 0.16), barBack), fill = new THREE.Mesh(new THREE.PlaneGeometry(BAR_WIDTH - 0.06, 0.1), barFill);
+    const back = new THREE.Mesh(barBackGeo, barBack), fill = new THREE.Mesh(barFillGeo, barFill);
     back.renderOrder = 20; fill.renderOrder = 21; fill.position.z = 0.01; bar.add(back, fill);
-    const warn = new THREE.Mesh(new THREE.CircleGeometry(BATTLE.attackRadius, 40).rotateX(-Math.PI / 2), warnMat.clone()); warn.visible = false; warn.renderOrder = 5;
+    const warn = new THREE.Mesh(warnGeo, warnMat.clone()); warn.visible = false; warn.renderOrder = 5;
     g.add(body, bar); root.add(g, warn);
     views.set(enemy.id, { g, body, eyes, bar, fill, warn, phase: Math.random() * 6 });
   }
@@ -40,14 +41,14 @@ export function createEnemyViews(scene, makeToon, groundAt) {
   return {
     /** Dong bo danh sach hinh voi danh sach dich cua mot tran moi. */
     reset(battle) {
-      for (const v of views.values()) { root.remove(v.g, v.warn); }
+      for (const v of views.values()) { root.remove(v.g, v.warn); v.warn.material.dispose(); }
       views.clear();
       battle.enemies.forEach(addView);
     },
     /** Bong Lang thuc giac: bien mat trong mot chum hoa. */
     wake(enemy) {
       const v = views.get(enemy.id); if (!v) return;
-      root.remove(v.g, v.warn); views.delete(enemy.id);
+      root.remove(v.g, v.warn); v.warn.material.dispose(); views.delete(enemy.id);
       burst(enemy.x, groundAt(enemy.x, enemy.z) + 0.7, enemy.z, 18, bitMats, 3.2);
     },
     /** Tia nang doi xuong muc tieu; bac cang cao tia cang to. */

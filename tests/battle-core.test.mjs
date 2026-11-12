@@ -36,11 +36,23 @@ test('correct answers build combo tiers; a wrong one resets and still lands a we
   assert.equal(castSkill(b, at(0, 0), true).tier, 1, 'combo bat dau lai tu bac 1');
 });
 
-test('a wrong answer never costs hearts', () => {
-  const b = createBattle([createEnemy('e', 3, 0, 1000)]);
-  for (let i = 0; i < 20; i++) castSkill(b, at(0, 0), false);
+test('wrong answers never cost hearts, even with the fight running between them', () => {
+  // dich nam ngoai tam duoi theo (khong tan cong) nhung trong tam chieu: moi thay doi cua tim chi co the den tu cau tra loi
+  const b = createBattle([createEnemy('e', BATTLE.aggroRange + 0.5, 0, 1000)]);
+  assert.ok(BATTLE.aggroRange + 0.5 <= BATTLE.skillRange);
+  for (let i = 0; i < 30; i++) { assert.notEqual(castSkill(b, at(0, 0), false), null); run(b, at(0, 0), 1); }
   assert.equal(b.hearts, BATTLE.hearts);
   assert.equal(b.faints, 0);
+  assert.equal(b.enemies[0].wake, 30 * BATTLE.weakSkillDamage);
+});
+
+test('casting with no enemy in range changes nothing, including the combo', () => {
+  const b = createBattle([createEnemy('e', BATTLE.skillRange + 3, 0, 1000)]);
+  b.combo = 2;
+  assert.equal(castSkill(b, at(0, 0), true), null);
+  assert.equal(castSkill(b, at(0, 0), false), null);
+  assert.equal(b.combo, 2);
+  assert.equal(b.enemies[0].wake, 0);
 });
 
 test('enemy wakes exactly once and is then ignored', () => {
@@ -71,16 +83,21 @@ test('standing still in the warned circle costs one heart; stepping out avoids i
 });
 
 test('one hit never takes more than 40% of the hearts', () => {
-  assert.ok(1 / BATTLE.hearts <= 0.4);
+  const b = createBattle([createEnemy('a', 3, 0, 1000), createEnemy('b', -3, 0, 1000), createEnemy('c', 0, 3, 1000)]);
+  let worst = 0, last = b.hearts;
+  run(b, at(0, 0), 30, (bb) => { if (bb.events.hit && !bb.events.fainted) worst = Math.max(worst, last - bb.hearts); last = bb.hearts; });
+  assert.ok(worst > 0, 'chua tung trung don');
+  assert.ok(worst / BATTLE.hearts <= 0.4, `mot khung hinh mat ${worst} tim`);
 });
 
 test('losing all hearts revives on the spot with full hearts and slows later attacks', () => {
   const b = createBattle([createEnemy('e', 3, 0, 1000)]);
   const before = telegraphTime(b);
   let fainted = 0;
-  run(b, at(0, 0), 40, (bb) => { if (bb.events.fainted) fainted++; });
+  run(b, at(0, 0), 40, (bb) => { if (bb.events.fainted) { fainted++; assert.equal(bb.hearts, BATTLE.hearts, 'tinh lai phai day tim'); assert.equal(bb.combo, 0); } });
   assert.ok(fainted >= 1, 'chua nga lan nao');
-  assert.ok(b.hearts >= 1 && b.hearts <= BATTLE.hearts);
+  assert.equal(b.faints, fainted);
+  assert.equal(createBattle([], b.faints).faints, fainted, 'luat thuong hai theo sang chuyen sau');
   assert.ok(telegraphTime(b) > before);
   b.faints = 999;
   assert.equal(telegraphTime(b), BATTLE.telegraph + BATTLE.mercyMax, 'thuong hai co tran');
