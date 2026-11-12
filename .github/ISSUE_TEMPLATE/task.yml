@@ -1,0 +1,40 @@
+name: Việc cần làm (pb-dev)
+description: Một việc giao được cho agent — có tiêu chí nghiệm thu và cách kiểm chứng.
+labels: ["pb-dev:can-lam-ro"]
+body:
+  - type: textarea
+    id: muc-tieu
+    attributes:
+      label: Mục tiêu
+      description: Việc gì, vì sao cần. 2–4 dòng.
+    validations:
+      required: true
+  - type: textarea
+    id: nghiem-thu
+    attributes:
+      label: Tiêu chí nghiệm thu
+      description: 'Dạng EARS: "Khi <tình huống> thì app phải <kết quả>"; lỗi: "Nếu <điều kiện> thì app phải <hành vi>". Mỗi dòng một tiêu chí, kiểm được.'
+      placeholder: |
+        - Khi <tình huống> thì app phải <kết quả đo được>.
+        - Nếu <điều kiện lỗi> thì app phải <thông báo/hành vi>.
+    validations:
+      required: true
+  - type: textarea
+    id: kiem-chung
+    attributes:
+      label: Cách kiểm chứng
+      description: Lệnh/ảnh chứng minh đạt (vd. verify-quick.ps1 xanh, bảng PASS/FAIL giao diện, ảnh trước/sau trong .pb-dev/evidence).
+    validations:
+      required: true
+  - type: textarea
+    id: prior-art
+    attributes:
+      label: Giải pháp có sẵn đã xem
+      description: 'Repo/thư viện/code sẵn trong repo đã xem và quyết định (Dùng nguyên / Bọc / Ghép / Học rồi tự viết / Tự xây). Sửa lỗi nhỏ ghi "bỏ qua — <lý do>".'
+    validations:
+      required: true
+  - type: input
+    id: pham-vi
+    attributes:
+      label: File/module dự kiến chạm
+      description: Để người điều phối biết việc nào chạy song song được.
