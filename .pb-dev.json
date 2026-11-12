@@ -1,0 +1,27 @@
+{
+  "_doc": "Đăng ký pb-dev (pbdev.exe, nguồn C:/Users/Ben/pb-hub/pbdev). Hook Stop chạy verify.quick khi code đổi; guard chặn lách cổng và sửa file bảo vệ.",
+  "stack": "node",
+  "verify": {
+    "quick": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify-quick.ps1",
+    "full": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/ci.ps1"
+  },
+  "skipGlobs": [
+    "docs/**",
+    "*.md",
+    ".pb-dev/**",
+    "archive/**"
+  ],
+  "protected": [
+    "scripts/verify-quick.ps1",
+    "scripts/ci.ps1",
+    "scripts/check-modules.mjs",
+    "scripts/smoke.mjs",
+    ".pb-dev.json",
+    ".claude/settings.json"
+  ],
+  "stopGate": {
+    "maxBlocks": 3,
+    "timeoutSec": 300,
+    "tailLines": 60
+  }
+}
