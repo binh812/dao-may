@@ -12,6 +12,7 @@ import { createSky } from '../valley/sky.js';
 import { createGrass } from '../valley/grass.js';
 import { createScenery } from '../valley/scenery.js';
 import { seedSpots } from '../valley/seeds.js';
+import { gatherSpots } from '../valley/gather.js';
 
 const FAR_PLANE = 10500, SHADOW_HALF = 26, SHADOW_DISTANCE = 70;
 // Tham so thu `at=x,z`: sinh ra o cho khac de chup anh kiem tra (vd. at=300,-215 la mep lang)
@@ -64,6 +65,7 @@ export default {
   mill: { x: MILL.x, z: MILL.z, reach: MILL_REACH },   // xay bot: giai bai lay Hat Nang (moi chuyen mot me)
   millBoost: 0,                        // phan choi dat len khi xay xong me bot
   wading: false,                       // Mam dang loi trong ho (phan choi dung de phat tieng nuoc)
+  gatherables: gatherSpots(groundAt, scenery.colliders),   // hoa, nam, go, da pha le quanh cac trai; moc lai moi chuyen
   collectibles: seedSpots(groundAt, scenery.colliders),   // Hat Nang rai doc duong, quanh ho va coi xay
   cameraYaw: Number(qs.get('yaw')) || -0.92, cameraPitch: 0.04, cameraLookHeight: 3.0, fogScale: 0.18, paint: true,
   sky: sky.mesh,
