@@ -16,7 +16,7 @@ const angleDelta = (from, to) => Math.atan2(Math.sin(to - from), Math.cos(to - f
 
 export function createPlay() {
   controls.enabled = false; controls.autoRotate = false;
-  const world = { heightAt: (x, z) => realm.groundAt(x, z), colliders: realm.colliders, safeRadius: realm.safeRadius };
+  const world = { heightAt: (x, z) => realm.groundAt(x, z), colliders: realm.colliders, safeRadius: realm.safeRadius, respawnY: realm.respawnY };
   const player = createPlayer(realm.spawn.x, realm.spawn.z, world);
   const input = createTouchControls(document.body);
   const cam = { yaw: realm.cameraYaw, pitch: realm.cameraPitch ?? CAMERA.pitch, idle: 99, snapped: false };

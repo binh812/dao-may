@@ -23,6 +23,7 @@ const weatherNow = { ...WEATHER[weatherState.name] };
 const FOG_CLEAR = new THREE.Color(0.60, 0.82, 0.97), FOG_GREY = new THREE.Color(0.50, 0.56, 0.63);
 const FOG_NIGHT = new THREE.Color(0.03, 0.05, 0.12), SUN_DAY = new THREE.Color(1.0, 0.94, 0.82), SUN_MOON = new THREE.Color(0.52, 0.66, 1.0);
 const HEMI_DAY = new THREE.Color(0.52, 0.76, 1.0), HEMI_NIGHT = new THREE.Color(0.22, 0.32, 0.70), VOL_DAY = new THREE.Color(1.0, 0.93, 0.78), VOL_MOON = new THREE.Color(0.40, 0.55, 0.95);
+const ISLAND_MIST_FLOOR = 0.2; // ngay tren mat ao cua dao
 const WKEYS = ['fog', 'mist', 'vol', 'sunI', 'hemiI', 'overcast', 'rain', 'wind', 'night', 'snow'];
 let flashTimer = 2, flashEcho = -1;
 function updateWeather(dt) {
@@ -46,7 +47,7 @@ function updateWeather(dt) {
   U.windT.value += dt * (0.4 + 0.6 * weatherNow.wind); U.gust.value = smooth(1.8, 2.6, weatherNow.wind) * 0.9;
   U.dim.value = (1 - 0.72 * weatherNow.night) * (1 - 0.3 * storm) + fl * 0.3;
   rainMesh.visible = weatherNow.rain > 0.02; snowFlakes.visible = weatherNow.snow > 0.02; windLeaves.visible = U.gust.value > 0.02;
-  volMat.uniforms.uVol.value = weatherNow.vol; volMat.uniforms.uMist.value = weatherNow.mist; volMat.uniforms.uFog.value = weatherNow.fog;
+  volMat.uniforms.uVol.value = weatherNow.vol; volMat.uniforms.uMist.value = weatherNow.mist * (realm.mistScale ?? 1); volMat.uniforms.uFog.value = weatherNow.fog * realm.fogScale; volMat.uniforms.uMistFloor.value = realm.mistFloor ?? ISLAND_MIST_FLOOR;
   volMat.uniforms.uSunCol.value.copy(VOL_DAY).lerp(VOL_MOON, weatherNow.night); volMat.uniforms.uSkyCol.value.copy(scene.fog.color);
 }
 

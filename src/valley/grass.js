@@ -13,7 +13,12 @@ const FLOWER_SHARE = 0.07;             // so hoa so voi so la co
 const COMMON = /* glsl */`
   uniform float uWindT, uWind, uTile, uSize, uCells; uniform vec2 uCenter; uniform sampler2D uHeight; uniform vec3 uPlayer;
   attribute vec3 aSeed;
-  float groundH(vec2 p){ vec2 g = (p + uSize * 0.5) / (uSize / uCells); return texture2D(uHeight, (g + 0.5) / (uCells + 1.)).r; }
+  // noi suy theo dung hai tam giac cua moi o luoi (duong cheo b-c), giong groundAt trong terrain.js
+  float groundH(vec2 p){
+    vec2 g = clamp((p + uSize * 0.5) / (uSize / uCells), vec2(0.), vec2(uCells - 0.001)); ivec2 i = ivec2(floor(g)); vec2 t = g - vec2(i);
+    float a = texelFetch(uHeight, i, 0).r, b = texelFetch(uHeight, i + ivec2(1, 0), 0).r, c = texelFetch(uHeight, i + ivec2(0, 1), 0).r, d = texelFetch(uHeight, i + ivec2(1, 1), 0).r;
+    return t.x + t.y <= 1. ? a + (b - a) * t.x + (c - a) * t.y : d + (c - d) * (1. - t.x) + (b - d) * (1. - t.y);
+  }
   vec2 wrapped(){ return (fract(aSeed.xz - uCenter / uTile + 0.5) - 0.5) * uTile + uCenter; }
   float edgeFade(vec2 base){ return 1. - smoothstep(uTile * 0.34, uTile * 0.49, length(base - uCenter)); }
 `;

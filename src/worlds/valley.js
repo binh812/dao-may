@@ -14,6 +14,7 @@ import { createScenery } from '../valley/scenery.js';
 
 const FAR_PLANE = 9000, SHADOW_HALF = 26, SHADOW_DISTANCE = 70;
 const SPAWN = { x: 0, z: 0 };
+const MIST_BELOW_PLAYER = 5; // suong dong o cho trung, thap hon cho nguoi choi dung
 
 // nang cao, hoi chech sau lung nguoi choi luc dau: dong co sang, may co khoi
 SUN_DIR.set(-0.38, 0.78, 0.5).normalize();
@@ -32,6 +33,8 @@ chr.position.set(SPAWN.x, groundAt(SPAWN.x, SPAWN.z), SPAWN.z);
 export default {
   name: 'valley',
   groundAt, colliders: scenery.colliders, safeRadius: EDGE - 10,
+  respawnY: -Infinity,                 // co tuong chan o mep, khong the roi; long thung lung nam duoi muc roi mac dinh
+  mistScale: 0.12, mistFloor: 0,                        // cap nhat moi khung hinh: suong bam theo mat dat cho nguoi choi dung
   spawn: SPAWN,
   spawnSpots: [[14, 6], [-12, 10], [6, -16], [-18, -8], [22, -10], [-6, 20], [18, 18]],
   treeSpot: { x: 5, z: -6 },
@@ -41,6 +44,7 @@ export default {
   update(dt, time, ctx) {
     const focus = ctx.player ?? controls.target;
     grass.setCenter(focus.x, focus.z);
+    this.mistFloor = groundAt(focus.x, focus.z) - MIST_BELOW_PLAYER;
     if (!ctx.playing) U.player.value.set(SPAWN.x, chr.position.y, SPAWN.z);
     // bong do chi phu vung quanh nguoi choi
     sun.target.position.set(focus.x, ctx.player ? ctx.player.y : controls.target.y, focus.z);

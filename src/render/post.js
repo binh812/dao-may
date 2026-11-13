@@ -42,11 +42,11 @@ const volRT = new THREE.WebGLRenderTarget(4, 4, { type: THREE.HalfFloatType, dep
 const volMat = new THREE.ShaderMaterial({
   defines: { STEPS: Math.max(Q.volSteps, 1) }, depthTest: false, depthWrite: false,
   uniforms: { tDepth: { value: rtScene.depthTexture }, tShadow: { value: null }, uProjInv: { value: camera.projectionMatrixInverse }, uCamWorld: { value: camera.matrixWorld }, uShadowMat: { value: sun.shadow.matrix },
-    uCamPos: { value: camera.position }, uSunDir: { value: SUN_DIR }, uSunCol: { value: new THREE.Color(1.0, 0.93, 0.78) }, uSkyCol: { value: new THREE.Color(0.62, 0.82, 0.98) }, uTime: U.time, uVol: { value: 1 }, uMist: { value: 0 }, uFog: { value: 0.004 } },
+    uCamPos: { value: camera.position }, uSunDir: { value: SUN_DIR }, uSunCol: { value: new THREE.Color(1.0, 0.93, 0.78) }, uSkyCol: { value: new THREE.Color(0.62, 0.82, 0.98) }, uTime: U.time, uVol: { value: 1 }, uMist: { value: 0 }, uFog: { value: 0.004 }, uMistFloor: { value: 0.2 } },
   vertexShader: VS,
   fragmentShader: /* glsl */`
     #include <packing>
-    uniform sampler2D tDepth, tShadow; uniform mat4 uProjInv, uCamWorld, uShadowMat; uniform vec3 uCamPos, uSunDir, uSunCol, uSkyCol; uniform float uTime, uVol, uMist, uFog; varying vec2 vUv;
+    uniform sampler2D tDepth, tShadow; uniform mat4 uProjInv, uCamWorld, uShadowMat; uniform vec3 uCamPos, uSunDir, uSunCol, uSkyCol; uniform float uTime, uVol, uMist, uFog, uMistFloor; varying vec2 vUv;
     float hash(vec2 p){ p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
     float vnoise(vec2 p){ vec2 i = floor(p), f = fract(p); f = f*f*(3.-2.*f); return mix(mix(hash(i), hash(i+vec2(1,0)), f.x), mix(hash(i+vec2(0,1)), hash(i+vec2(1,1)), f.x), f.y); }
     void main(){
@@ -57,7 +57,7 @@ const volMat = new THREE.ShaderMaterial({
       vec3 scat = vec3(0.);
       for (int i = 0; i < STEPS; i++) {
         vec3 p = uCamPos + dir * ds * (float(i) + ign);
-        float low = exp(-max(p.y - 0.2, 0.) * 0.85), n = 1.0 + 0.4 * sin(p.x * 0.37 + uTime * 0.21) * sin(p.z * 0.31 - uTime * 0.13) + 0.25 * sin(p.x * 0.9 - p.z * 0.7 + uTime * 0.3);
+        float low = exp(-max(p.y - uMistFloor, 0.) * 0.85), n = 1.0 + 0.4 * sin(p.x * 0.37 + uTime * 0.21) * sin(p.z * 0.31 - uTime * 0.13) + 0.25 * sin(p.x * 0.9 - p.z * 0.7 + uTime * 0.3);
         float dens = uFog * 0.35 + uMist * 0.09 * low * n;
         vec4 sc = uShadowMat * vec4(p, 1.); sc.xyz /= sc.w; float vis = 1.;
         float inside = step(0., sc.x) * step(sc.x, 1.) * step(0., sc.y) * step(sc.y, 1.) * step(sc.z, 1.);
