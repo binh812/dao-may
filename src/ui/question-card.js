@@ -23,7 +23,8 @@ export function createQuestionCard() {
   }
 
   /** Hien mot bai; tra ve Promise<{ choice, correct }> sau khi be chon va da xem ket qua. */
-  function ask(question, title) {
+  /** skippable: them nut "De sau" (bai tu nguyen); be bam thi tra ve { skipped: true } va khong tinh la da tra loi. */
+  function ask(question, title, { skippable = false } = {}) {
     if (open) throw new Error('dang co mot bai chua tra loi');
     const card = node('div', CARD_CSS);
     const heading = node('div', 'font:600 14px system-ui,sans-serif;opacity:.7;margin-bottom:4px;', title);
@@ -46,6 +47,12 @@ export function createQuestionCard() {
       });
       const onKey = (e) => { const i = ['Digit1', 'Digit2', 'Digit3', 'Digit4'].indexOf(e.code); if (i >= 0 && i < buttons.length) choose(question.choices[i]); };
       let chosen = false;
+      const finish = (result) => { removeEventListener('keydown', onKey); card.remove(); open = null; resolve(result); };
+      if (skippable) {
+        const later = node('button', 'margin-left:8px;padding:4px 12px;min-height:34px;border:0;border-radius:999px;background:#eadfce;font:700 13px system-ui,sans-serif;color:#3a2a4a;cursor:pointer;', 'Để sau');
+        later.onclick = () => { if (chosen) return; chosen = true; if (canSpeak) speechSynthesis.cancel(); finish({ skipped: true }); };
+        heading.append(later);
+      }
       const openedAt = performance.now();
       function choose(value) {
         if (chosen || performance.now() - openedAt < ARM_MS) return;
@@ -58,7 +65,7 @@ export function createQuestionCard() {
         });
         note.textContent = correct ? 'Đúng rồi!' : `Chưa đúng. ${question.hint}`;
         if (canSpeak) speechSynthesis.cancel();
-        setTimeout(() => { removeEventListener('keydown', onKey); card.remove(); open = null; resolve({ choice: value, correct }); }, correct ? REVEAL_MS : REVEAL_WRONG_MS);
+        setTimeout(() => finish({ choice: value, correct }), correct ? REVEAL_MS : REVEAL_WRONG_MS);
       }
       addEventListener('keydown', onKey);
       document.body.append(card);

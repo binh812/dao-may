@@ -31,6 +31,7 @@ export function createSfx() {
     buy: () => chord([784, 988, 1319, 1568], 0.07, { dur: 0.26, type: 'triangle', gain: 0.16 }),
     splash: () => { note({ from: 760, to: 300, dur: 0.07, type: 'sine', gain: 0.07 }); note({ from: 520, to: 240, dur: 0.09, type: 'triangle', gain: 0.05, delay: 0.05 }); },
     leaf: () => note({ from: 900, to: 500, dur: 0.09, type: 'triangle', gain: 0.12 }),
+    orb: () => { note({ from: 520, to: 1040, dur: 0.18, type: 'triangle', gain: 0.16 }); note({ from: 1040, to: 780, dur: 0.3, type: 'sine', gain: 0.12, delay: 0.2 }); },
     correct: (tier) => chord([523, 659, 784, 1047].slice(0, 2 + Math.min(tier, 2)), 0.07, { dur: 0.22, type: 'triangle' }),
     wrong: () => chord([330, 277], 0.12, { dur: 0.25, type: 'sine', gain: 0.14 }),   // nhe nhang, khong che trach
     woke: () => chord([659, 784, 988, 1319], 0.06, { dur: 0.3, type: 'sine' }),

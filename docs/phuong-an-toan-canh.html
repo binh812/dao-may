@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Thung lũng của Mầm: phương án toàn cảnh</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* Bo cuc: mot cot doc 720px; ban do va bang duoc phep rong hon, tu cuon ngang trong khung rieng. */
+  :root {
+    --paper: #f3f7f1; --card: #ffffff; --ink: #1e2b24; --muted: #5b6c62; --line: #d5dfd6;
+    --leaf: #2f8a4c; --sun: #e9a019; --sky: #2f7fc2; --rose: #c6476b;
+    --play-bg: #dff3e3; --play-ink: #1d6a38; --hid-bg: #dcecfb; --hid-ink: #1f5f97; --card-bg: #fdecc6; --card-ink: #8a5a00;
+    --display: "Baloo 2", "Be Vietnam Pro", system-ui, sans-serif;
+    --body: "Be Vietnam Pro", system-ui, "Segoe UI", Roboto, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --paper: #121a16; --card: #1a2520; --ink: #e6efe8; --muted: #9db0a4; --line: #2e3d35;
+      --leaf: #6fcf8b; --sun: #f2bb4a; --sky: #7fbdf0; --rose: #f08aa8;
+      --play-bg: #1f3d2a; --play-ink: #9fe3b3; --hid-bg: #1c3550; --hid-ink: #a6d3f7; --card-bg: #45360f; --card-ink: #f6d488;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --paper: #121a16; --card: #1a2520; --ink: #e6efe8; --muted: #9db0a4; --line: #2e3d35;
+    --leaf: #6fcf8b; --sun: #f2bb4a; --sky: #7fbdf0; --rose: #f08aa8;
+    --play-bg: #1f3d2a; --play-ink: #9fe3b3; --hid-bg: #1c3550; --hid-ink: #a6d3f7; --card-bg: #45360f; --card-ink: #f6d488;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 400 16px/1.6 var(--body); }
+  main { max-width: 760px; margin: 0 auto; padding: 28px 18px 64px; display: flex; flex-direction: column; gap: 34px; }
+  h1 { font: 800 clamp(30px, 6vw, 42px)/1.1 var(--display); margin: 0 0 8px; text-wrap: balance; }
+  h2 { font: 800 25px/1.2 var(--display); margin: 0 0 10px; text-wrap: balance; }
+  h3 { font: 700 17px/1.3 var(--body); margin: 18px 0 6px; }
+  p { margin: 0 0 10px; max-width: 66ch; }
+  ul, ol { margin: 0 0 10px; padding-left: 22px; max-width: 66ch; }
+  li { margin: 4px 0; }
+  .lede { font-size: 18px; color: var(--muted); }
+  .stamp { font-size: 13px; color: var(--muted); }
+  section { display: block; }
+  .box { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; }
+  .three { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+  .three .box h3 { margin-top: 0; }
+  .big { font: 800 30px/1 var(--display); font-variant-numeric: tabular-nums; }
+  .was { color: var(--muted); text-decoration: line-through; font-weight: 500; }
+  .scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; background: var(--card); }
+  table { border-collapse: collapse; width: 100%; min-width: 620px; font-size: 14.5px; }
+  th, td { text-align: left; vertical-align: top; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+  th { font-weight: 700; font-size: 13px; color: var(--muted); }
+  tr:last-child td { border-bottom: 0; }
+  td.n { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .chip { display: inline-block; padding: 1px 9px; border-radius: 999px; font-size: 12.5px; font-weight: 600; white-space: nowrap; }
+  .play { background: var(--play-bg); color: var(--play-ink); }
+  .hid { background: var(--hid-bg); color: var(--hid-ink); }
+  .ask { background: var(--card-bg); color: var(--card-ink); }
+  .st { font-size: 12.5px; color: var(--muted); white-space: nowrap; }
+  .st b { color: var(--leaf); }
+  .map { background: #bfe3f2; border-radius: 16px; border: 1px solid var(--line); overflow: hidden; }
+  .map svg { display: block; width: 100%; height: auto; }
+  .legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 8px 18px; margin-top: 12px; padding: 0; list-style: none; max-width: none; }
+  .legend li { display: grid; grid-template-columns: 30px 1fr; gap: 8px; margin: 0; font-size: 14.5px; }
+  .legend .no { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font: 700 13px var(--body); color: #fff; background: var(--leaf); }
+  .legend .no.part { background: var(--sun); }
+  .legend .no.new { background: transparent; color: var(--ink); border: 2px dashed var(--muted); }
+  .key { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--muted); margin-top: 10px; }
+  .timeline { list-style: none; padding: 0; max-width: none; display: flex; flex-direction: column; gap: 8px; }
+  .timeline li { display: grid; grid-template-columns: 76px 1fr; gap: 12px; margin: 0; padding: 10px 14px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; }
+  .timeline .t { font: 700 14px var(--body); color: var(--sky); font-variant-numeric: tabular-nums; }
+  .ask-list li { margin: 10px 0; }
+  .note { border-left: 4px solid var(--sun); padding: 4px 0 4px 14px; color: var(--muted); }
+</style>
+</head>
+<body>
+<main>
+
+<header>
+  <div class="stamp">Bản đề xuất 13/11/2026, lần 2 (thêm sơ đồ làng và địa điểm cụ thể) · chờ duyệt · thay cho mục 4 và 5 của GDD v0.2</div>
+  <h1>Thung lũng của Mầm: phương án toàn cảnh</h1>
+  <p class="lede">Một thung lũng để sống trong đó: đi chơi, nhặt nhạnh, câu cá, buôn bán, dựng nhà, làm đẹp, đánh thức Bóng Lặng. Toán là phép màu bé tự chọn dùng, không phải vé qua cửa.</p>
+</header>
+
+<section>
+  <h2>Ba thay đổi lớn nhất</h2>
+  <div class="three">
+    <div class="box"><h3>Ít thẻ bài hơn hẳn</h3><div class="big">3–6 <span class="was">15–25</span></div><p>thẻ bài tập trong một phiên 12 phút. Bé tự bấm mới có bài; không việc gì bắt buộc phải giải.</p></div>
+    <div class="box"><h3>Một bài, thưởng lớn</h3><div class="big">24 <span class="was">4</span></div><p>điểm đánh thức cho một bài đúng: nạp đầy Túi Nắng 3 viên, dùng dần cho cả trận.</p></div>
+    <div class="box"><h3>Phần lớn là chơi tự nhiên</h3><div class="big">15 / 22</div><p>hoạt động không có bài toán nào. 5 hoạt động có toán ẩn trong thao tác, 2 hoạt động dùng thẻ bài.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2>Vì sao bản hiện tại dễ gây nản</h2>
+  <p>Em đối chiếu nhận xét của anh với các con số đang chạy trong game:</p>
+  <ul>
+    <li>Bóng Lặng chuyến đầu cần 8 điểm đánh thức, đến chuyến 5 cần 16. Một bài đúng cho chiêu Tia Nắng 4 điểm (6 và 8 nếu đúng liên tiếp). Vậy mỗi con cần 2–3 bài, mỗi chuyến có 3–5 con: 6–15 bài chỉ để qua một chuyến.</li>
+    <li>Chiêu Lá không cần bài, mỗi phát 1 điểm, bấm được hơn 2 phát mỗi giây. Một bài toán mất chừng 10 giây mà chỉ bằng 4 phát lá. Giải toán đang là món hời tệ nhất trong game, nên bé cảm thấy bị bắt làm.</li>
+    <li>Cối xay em vừa làm cũng mắc đúng lỗi này: 3 bài liền để lấy tối đa 4 hạt.</li>
+    <li>Gốc của vấn đề nằm ở GDD v0.2, chỗ em viết "mỗi lần ra chiêu, mở khóa hay mua bán là một bài tập" và đặt mục tiêu 15–25 bài mỗi phiên. Em đề nghị bỏ câu đó.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Bốn luật mới về toán</h2>
+  <ol>
+    <li><strong>Không có bài vẫn chơi trọn.</strong> Mọi hoạt động, kể cả đánh trùm, đều hoàn thành được mà không mở thẻ bài nào.</li>
+    <li><strong>Bài là phép màu, không phải phí.</strong> Một bài đúng phải cho thứ gì đó lớn và dùng được lâu, đáng hơn hẳn việc bấm thường.</li>
+    <li><strong>Bé chọn lúc nào giải.</strong> Game không tự bật thẻ bài. Tối đa một chuỗi là 1 bài; không còn 3 bài liền.</li>
+    <li><strong>Toán có ba dạng, dạng thẻ bài là ít nhất.</strong>
+      <span class="chip play">Chơi thuần</span> không có toán ·
+      <span class="chip hid">Toán ẩn</span> bé đếm, đong, xếp bằng tay trên đồ vật, không có câu hỏi ·
+      <span class="chip ask">Thẻ bài</span> câu hỏi 4 lựa chọn như hiện nay.</li>
+  </ol>
+  <p>Giữ nguyên các luật cũ: sai không mất gì, luôn có gợi ý và lời giải, bài chọn theo sức, không quảng cáo, không tiền thật, không hẹn giờ thúc giục.</p>
+</section>
+
+<section>
+  <h2>Bài không chỉ là phép tính: đố vui tương tác</h2>
+  <p>Theo ý anh khi duyệt (13/11/2026): bài phải có dạng đố vui trí tuệ, bé thao tác trực tiếp trên hình và thấy kết quả ngay. Thẻ bốn lựa chọn chỉ còn là một phần nhỏ.</p>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Loại đố</th><th>Bé làm gì</th><th>Luyện gì</th><th>Hiện trạng</th></tr></thead>
+    <tbody>
+      <tr><td>Cân thăng bằng</td><td>Chạm quả cân để đặt lên đĩa, cân nghiêng theo từng quả</td><td>Cộng, tách số, ước lượng nặng nhẹ</td><td class="st"><b>Đã có</b> (đợt 1)</td></tr>
+      <tr><td>Đong nước</td><td>Hai bình khác cỡ: đổ đầy, rót qua lại, đổ đi để được đúng số lít</td><td>Trừ, suy luận nhiều bước</td><td class="st"><b>Đã có</b> (đợt 1)</td></tr>
+      <tr><td>Tìm quy luật</td><td>Điền hình hoặc số còn thiếu trong dãy</td><td>Nhận ra quy luật, đếm cách đều, gấp đôi</td><td class="st"><b>Đã có</b> (đợt 1)</td></tr>
+      <tr><td>Vườn hoa</td><td>Trồng hoa sao cho mỗi hàng, mỗi cột đủ loài (kiểu Sudoku nhỏ)</td><td>Suy luận loại trừ</td><td class="st"><b>Đã có</b> (đợt 1)</td></tr>
+      <tr><td>Que diêm, xếp hình</td><td>Dời một que để phép tính đúng; ghép mảnh thành hình</td><td>Hình học, nhìn không gian</td><td class="st">Đợt sau</td></tr>
+      <tr><td>Nối ống nước, mê cung số</td><td>Xoay ô để nước chảy tới vườn; đi đường có tổng đúng</td><td>Lập kế hoạch, cộng dồn</td><td class="st">Đợt sau</td></tr>
+      <tr><td>Chia bánh, đếm xu</td><td>Cắt bánh chia đều cho khách; trả đúng tiền ở tiệm</td><td>Chia, phân số, tiền</td><td class="st">Đợt 6</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <ul style="margin-top:12px">
+    <li>Mọi câu đố đều không giới hạn giờ, có nút gợi ý, có nút xem cách giải, và có nút "Để sau". Giải kiểu nào cũng có thưởng, tự giải thì thưởng nhiều hơn.</li>
+    <li>Đề sinh ngẫu nhiên theo lớp nên không lặp lại; test tự giải lại 300 đề mỗi loại mỗi lớp để chắc không có đề sai.</li>
+    <li>Mỗi nơi trong thung lũng sẽ có loại đố hợp cảnh: cối xay cân bột, bến thuyền đong nước, lớp học gốc sồi tìm quy luật, vườn rau xếp vườn hoa.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Bản đồ thung lũng</h2>
+  <p>Vẽ đúng tỉ lệ trên thung lũng đang có (đường kính vùng đi được 2,1 km). Cả thung lũng đi được ngay từ đầu. Mỗi vùng ban đầu đang "ngủ": màu nhạt, dân làng ngủ gật, tiệm đóng cửa. Đánh thức Bóng Lặng lớn của vùng thì màu trở lại và các trò của vùng mở ra.</p>
+  <div class="map">
+  <svg viewBox="-1120 -1120 2240 2240" role="img" aria-label="Bản đồ thung lũng với 12 vùng đánh số">
+    <defs>
+      <pattern id="pines" width="70" height="70" patternUnits="userSpaceOnUse"><rect width="70" height="70" fill="#2e6e4a"/><path d="M18 50 L30 18 L42 50 Z M48 66 L57 42 L66 66 Z" fill="#1f5438"/></pattern>
+    </defs>
+    <circle r="1060" fill="url(#pines)"/>
+    <path d="M-760 -160 C-800 -520 -520 -840 -120 -820 C260 -860 700 -700 800 -380 C900 -60 760 380 420 560 C120 760 -360 700 -600 420 C-720 260 -740 40 -760 -160 Z" fill="#9fd67a"/>
+    <path d="M-560 -120 C-560 -420 -360 -640 -60 -640 C260 -660 560 -520 620 -300 C680 -80 560 240 320 360 C80 480 -260 440 -420 240 C-520 120 -560 0 -560 -120 Z" fill="#b6e38a"/>
+    <!-- o ruong quanh lang -->
+    <g opacity=".85"><rect x="250" y="-190" width="120" height="70" transform="rotate(-18 310 -155)" fill="#e9d56f"/><rect x="420" y="-400" width="130" height="80" transform="rotate(-18 485 -360)" fill="#d7e56f"/><rect x="560" y="-470" width="150" height="90" transform="rotate(-18 635 -425)" fill="#f0d98a"/><rect x="520" y="-330" width="120" height="70" transform="rotate(-18 580 -295)" fill="#c9e07a"/></g>
+    <!-- nui tuyet phia dong -->
+    <g><path d="M880 -420 L1000 -700 L1110 -420 Z" fill="#8f97a6"/><path d="M962 -610 L1000 -700 L1040 -606 L1012 -630 L990 -604 Z" fill="#fff"/><path d="M940 -140 L1040 -400 L1118 -140 Z" fill="#a2a9b6"/><path d="M1010 -322 L1040 -400 L1066 -318 L1040 -340 Z" fill="#fff"/></g>
+    <!-- suoi va ho -->
+    <path d="M-230 -960 C-200 -800 -120 -720 -60 -640 C10 -540 120 -420 190 -340" fill="none" stroke="#4aa3dc" stroke-width="26" stroke-linecap="round" stroke-dasharray="1 0"/>
+    <ellipse cx="215" cy="-305" rx="62" ry="48" fill="#3f97d6"/><ellipse cx="205" cy="-312" rx="34" ry="22" fill="#6fb9ea"/>
+    <!-- duong mon da co -->
+    <g fill="none" stroke="#c9a56a" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M0 0 L95 -70 L205 -150 L292 -208 L360 -280"/><path d="M292 -208 L440 -185 L470 -150"/><path d="M0 0 L150 185"/>
+    </g>
+    <!-- duong de xuat -->
+    <g fill="none" stroke="#7a5a2e" stroke-width="11" stroke-linecap="round" stroke-dasharray="34 30">
+      <path d="M150 185 L260 330"/><path d="M0 0 L-200 -150 L-420 -330"/><path d="M95 -70 L20 -330 L-60 -640"/><path d="M360 -280 L640 -420"/><path d="M0 0 L-240 180 L-480 360"/><path d="M470 -150 L700 -130 L900 -120"/><path d="M0 0 L-120 150"/>
+    </g>
+    <!-- duong bay len Dao May -->
+    <path d="M-120 150 C-520 60 -820 -360 -820 -760" fill="none" stroke="#ffffff" stroke-width="9" stroke-dasharray="10 26" stroke-linecap="round"/>
+    <g><ellipse cx="-820" cy="-830" rx="150" ry="62" fill="#ffffff"/><ellipse cx="-820" cy="-850" rx="92" ry="34" fill="#9fd67a"/><path d="M-880 -822 L-820 -760 L-760 -822 Z" fill="#b9a48a"/></g>
+    <!-- lang, coi xay, quay -->
+    <g><rect x="330" y="-312" width="26" height="22" fill="#fbf7ec"/><path d="M326 -312 L343 -332 L360 -312 Z" fill="#e9843a"/><rect x="364" y="-296" width="26" height="22" fill="#fbf7ec"/><path d="M360 -296 L377 -316 L394 -296 Z" fill="#db5f2c"/><rect x="352" y="-350" width="16" height="40" fill="#fbf7ec"/><path d="M348 -350 L360 -376 L372 -350 Z" fill="#d9482e"/></g>
+    <g><path d="M458 -128 L464 -176 L476 -176 L482 -128 Z" fill="#f6f1e4"/><path d="M470 -176 L440 -206 M470 -176 L500 -206 M470 -176 L440 -146 M470 -176 L500 -146" stroke="#fff" stroke-width="8"/></g>
+    <!-- trai Bong Lang da co -->
+    <g fill="#6f7f93" stroke="#fff" stroke-width="5"><circle cx="95" cy="-70" r="15"/><circle cx="205" cy="-150" r="15"/><circle cx="292" cy="-208" r="15"/><circle cx="440" cy="-185" r="15"/><circle cx="150" cy="185" r="15"/></g>
+    <!-- 12 vung -->
+    <g font-family="Be Vietnam Pro, system-ui, sans-serif" font-weight="700" font-size="52" text-anchor="middle">
+      <g fill="#2f8a4c" stroke="#fff" stroke-width="7">
+        <circle cx="0" cy="38" r="46"/><circle cx="352" cy="-222" r="46"/><circle cx="150" cy="-360" r="46"/><circle cx="548" cy="-112" r="46"/>
+      </g>
+      <g fill="#e9a019" stroke="#fff" stroke-width="7"><circle cx="130" cy="-40" r="46"/></g>
+      <g fill="#ffffff" stroke="#3b4a41" stroke-width="7" stroke-dasharray="16 12">
+        <circle cx="260" cy="330" r="46"/><circle cx="-420" cy="-330" r="46"/><circle cx="-60" cy="-640" r="46"/><circle cx="640" cy="-420" r="46"/><circle cx="-480" cy="360" r="46"/><circle cx="900" cy="-120" r="46"/><circle cx="-120" cy="150" r="46"/>
+      </g>
+      <g fill="#fff"><text x="0" y="56">1</text><text x="130" y="-22">2</text><text x="352" y="-204">3</text><text x="150" y="-342">4</text><text x="548" y="-94">5</text></g>
+      <g fill="#1e2b24"><text x="260" y="348">6</text><text x="-420" y="-312">7</text><text x="-60" y="-622">8</text><text x="640" y="-402">9</text><text x="-480" y="378" font-size="44">10</text><text x="900" y="-102" font-size="44">11</text><text x="-120" y="168" font-size="44">12</text></g>
+    </g>
+    <!-- thuoc ti le va huong -->
+    <g font-family="Be Vietnam Pro, system-ui, sans-serif" font-size="44" font-weight="600" fill="#fff">
+      <path d="M-1000 980 H-500" stroke="#fff" stroke-width="12"/><path d="M-1000 955 V1005 M-500 955 V1005" stroke="#fff" stroke-width="10"/><text x="-750" y="950" text-anchor="middle">500 m</text>
+      <text x="960" y="-960" text-anchor="middle">Bắc</text><path d="M960 -1090 L990 -1020 L930 -1020 Z" fill="#fff"/>
+    </g>
+  </svg>
+  </div>
+  <div class="key">
+    <span><span class="chip" style="background:#2f8a4c;color:#fff">số nền xanh</span> đã có cảnh và có trò</span>
+    <span><span class="chip" style="background:#e9a019;color:#fff">số nền vàng</span> có cảnh, chưa có trò</span>
+    <span><span class="chip" style="border:2px dashed var(--muted)">số viền đứt</span> đề xuất mới</span>
+    <span>chấm xám: chỗ Bóng Lặng ngủ đã có · đường liền: đường mòn đã có · đường đứt: đường sẽ làm</span>
+  </div>
+  <ul class="legend">
+    <li><span class="no">1</span><span><strong>Đồi Mầm.</strong> Chỗ bắt đầu, Cây Tâm. Học chạy, nhảy, lượn, bắn lá.</span></li>
+    <li><span class="no part">2</span><span><strong>Đồng Hoa.</strong> Hái hoa, bắt bướm, lùa cừu về chuồng.</span></li>
+    <li><span class="no">3</span><span><strong>Làng Mái Cam.</strong> 16 công trình, 13 dân làng, mảnh đất dựng nhà. Sơ đồ chi tiết ở mục dưới.</span></li>
+    <li><span class="no">4</span><span><strong>Hồ Gương.</strong> Câu cá, chèo thuyền, cho vịt ăn.</span></li>
+    <li><span class="no">5</span><span><strong>Đồi Cối Xay.</strong> Xay bột, tiệm bánh, giao bánh cho làng.</span></li>
+    <li><span class="no new">6</span><span><strong>Rừng Thông.</strong> Hái nấm, trốn tìm với sóc, nhảy trên nấm khổng lồ, Bóng Lặng biết núp.</span></li>
+    <li><span class="no new">7</span><span><strong>Vách Gió.</strong> Đường đua lượn qua các vòng gió, tổ chim, điểm ngắm toàn thung lũng.</span></li>
+    <li><span class="no new">8</span><span><strong>Suối Đá và Thác.</strong> Thả bè xuôi suối về hồ, dựng cầu, nhặt đá pha lê.</span></li>
+    <li><span class="no new">9</span><span><strong>Nông trại và Chợ phiên.</strong> Trồng luống rau, bán nông sản, đổi đồ với khách chợ.</span></li>
+    <li><span class="no new">10</span><span><strong>Bãi Đom Đóm.</strong> Chỉ thức về đêm: bắt đom đóm, cắm trại, ngắm sao.</span></li>
+    <li><span class="no new">11</span><span><strong>Đèo Tuyết.</strong> Trượt dốc tuyết, trùm cuối của thung lũng, cửa sang vùng đất sau này.</span></li>
+    <li><span class="no new">12</span><span><strong>Bến Khí Cầu.</strong> Bay lên Đảo Mây (cảnh đảo bay đã có), dùng làm điểm đến phụ thay vì thế giới riêng.</span></li>
+  </ul>
+</section>
+
+<section>
+  <h2>Làng Mái Cam chi tiết</h2>
+  <p>Sơ đồ vẽ đúng mét trên nền làng đang có: tâm làng (360, −280), hồ ở phía tây, đường mòn từ Đồi Mầm vào ở góc tây nam, quầy cô Thỏ Bông và tòa nhà có tháp giữ nguyên chỗ. Làng hiện có 36 nhà đặt ngẫu nhiên; phương án này thay bằng 16 công trình có việc để làm, 9 nhà có chủ, và chừng 10 nhà nền ở vòng ngoài cho đông vui.</p>
+  <div class="map" style="background:#b6e38a">
+  <svg viewBox="245 -366 212 178" role="img" aria-label="Sơ đồ Làng Mái Cam với 16 công trình đánh chữ và 9 nhà đánh số">
+    <rect x="245" y="-366" width="212" height="178" fill="#b6e38a"/>
+    <ellipse cx="358" cy="-280" rx="84" ry="74" fill="#c8eba0"/>
+    <circle cx="215" cy="-305" r="46" fill="#3f97d6"/><circle cx="215" cy="-305" r="40" fill="#5fb0e6"/>
+    <!-- duong lang -->
+    <g fill="none" stroke="#dcc590" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M286 -202 L305 -222 L346 -262" stroke-width="5.5"/>
+      <path d="M346 -262 L358 -274" stroke-width="5"/>
+      <path d="M346 -262 L318 -282 L274 -292" stroke-width="3.6"/>
+      <path d="M346 -262 L382 -257 L410 -276 L432 -312 L452 -330" stroke-width="3.6"/>
+      <path d="M350 -290 L346 -306 L356 -324" stroke-width="3"/>
+      <path d="M344 -302 L312 -316" stroke-width="3"/>
+      <path d="M346 -262 L364 -234 L382 -222" stroke-width="3"/>
+    </g>
+    <circle cx="346" cy="-262" r="12" fill="#ecdcae" stroke="#cdb57c" stroke-width=".8"/>
+    <circle cx="346" cy="-262" r="2.6" fill="#7fb8de" stroke="#8a7a5a" stroke-width=".8"/>
+    <!-- ben thuyen -->
+    <rect x="259" y="-293.5" width="15" height="3" fill="#9a6b3c"/><path d="M256 -299 q4 3 8 0 l-1 3 h-6 Z" fill="#e2504a"/>
+    <!-- manh dat cua Mam -->
+    <rect x="293" y="-330" width="18" height="16" fill="#d8f0b0" stroke="#c6476b" stroke-width="1" stroke-dasharray="3 2"/>
+    <!-- san choi, vuon, chuong cuu -->
+    <circle cx="318" cy="-290" r="7" fill="#d8f0b0" stroke="#2f8a4c" stroke-width=".8" stroke-dasharray="2 1.5"/>
+    <g><rect x="400" y="-297" width="16" height="13" fill="#8a6a3c"/><path d="M400 -294 h16 M400 -290.5 h16 M400 -287 h16" stroke="#6fbf5a" stroke-width="1.6"/></g>
+    <g><rect x="375" y="-221" width="18" height="13" rx="3" fill="#d8f0b0" stroke="#8a5a2e" stroke-width="1" stroke-dasharray="2 1.4"/><circle cx="380" cy="-215" r="1.5" fill="#fff"/><circle cx="385" cy="-213" r="1.5" fill="#fff"/><circle cx="388" cy="-217" r="1.5" fill="#fff"/></g>
+    <!-- cong lang -->
+    <g stroke="#8a5a2e" stroke-width="1.6" fill="none"><path d="M300 -219 v-5 h9 v5"/><path d="M428 -309 v-5 h9 v5"/></g>
+    <!-- nha dan co chu -->
+    <g fill="#fbf7ec" stroke="#b9a98a" stroke-width=".6">
+      <rect x="307.500" y="-253.500" width="9" height="7"/><rect x="283.500" y="-307.500" width="9" height="7"/><rect x="407.500" y="-265.500" width="9" height="7"/>
+      <rect x="317.500" y="-341.500" width="9" height="7"/><rect x="377.500" y="-335.500" width="9" height="7"/><rect x="295.500" y="-271.500" width="9" height="7"/>
+      <rect x="387.500" y="-239.500" width="9" height="7"/><rect x="399.500" y="-321.500" width="9" height="7"/><rect x="351.500" y="-339.500" width="9" height="7"/>
+    </g>
+    <!-- cong trinh co viec -->
+    <g stroke="#fff" stroke-width=".8">
+      <rect x="355" y="-288" width="10" height="16" fill="#8a93a6" transform="rotate(23 360 -280)"/><rect x="361.400" y="-273.300" width="5" height="5" fill="#d9482e"/>
+      <rect x="319.500" y="-233.700" width="11" height="7" fill="#e2504a"/>
+      <rect x="366" y="-256.500" width="12" height="9" fill="#e9843a"/><rect x="386" y="-266.500" width="12" height="9" fill="#db5f2c"/>
+      <rect x="322" y="-272.500" width="12" height="9" fill="#f19a44"/><rect x="372" y="-304.500" width="12" height="9" fill="#e9843a"/>
+      <rect x="334" y="-316.500" width="12" height="9" fill="#db5f2c"/><rect x="346" y="-244.500" width="12" height="9" fill="#f19a44"/>
+      <rect x="275" y="-296" width="8" height="7" fill="#e9843a"/>
+    </g>
+    <!-- nhan chu va so -->
+    <g font-family="Be Vietnam Pro, system-ui, sans-serif" font-weight="700" text-anchor="middle">
+      <g fill="#1e2b24" stroke="#fff" stroke-width=".7">
+        <circle cx="297" cy="-214" r="4.2"/><circle cx="332" cy="-222" r="4.2"/><circle cx="336" cy="-252" r="4.2"/><circle cx="370" cy="-290" r="4.2"/>
+        <circle cx="372" cy="-244" r="4.2"/><circle cx="398" cy="-252" r="4.2"/><circle cx="322" cy="-278" r="4.2"/><circle cx="388" cy="-308" r="4.2"/>
+        <circle cx="330" cy="-320" r="4.2"/><circle cx="268" cy="-284" r="4.2"/><circle cx="302" cy="-336" r="4.2"/><circle cx="309" cy="-296" r="4.2"/>
+        <circle cx="422" cy="-292" r="4.2"/><circle cx="398" cy="-212" r="4.2"/><circle cx="440" cy="-304" r="4.2"/><circle cx="352" cy="-230" r="4.2"/>
+      </g>
+      <g fill="#fff" font-size="5.2">
+        <text x="297" y="-212.100">A</text><text x="332" y="-220.100">B</text><text x="336" y="-250.100">C</text><text x="370" y="-288.100">D</text>
+        <text x="372" y="-242.100">E</text><text x="398" y="-250.100">F</text><text x="322" y="-276.100">G</text><text x="388" y="-306.100">H</text>
+        <text x="330" y="-318.100">I</text><text x="268" y="-282.100">J</text><text x="302" y="-334.100">K</text><text x="309" y="-294.100">L</text>
+        <text x="422" y="-290.100">M</text><text x="398" y="-210.100">N</text><text x="440" y="-302.100">O</text><text x="352" y="-228.100">P</text>
+      </g>
+      <g fill="#5b4a2e" font-size="4.4">
+        <text x="312" y="-248.400">1</text><text x="288" y="-302.400">2</text><text x="412" y="-260.400">3</text><text x="322" y="-336.400">4</text><text x="382" y="-330.400">5</text>
+        <text x="300" y="-266.400">6</text><text x="392" y="-234.400">7</text><text x="404" y="-316.400">8</text><text x="356" y="-334.400">9</text>
+      </g>
+      <g fill="#1e2b24" font-size="4.6" font-weight="600">
+        <text x="258" y="-322" fill="#fff">Hồ Gương</text><text x="276" y="-195">về Đồi Mầm</text><text x="440" y="-336">đi Chợ phiên</text>
+        <path d="M400 -196 h20" stroke="#1e2b24" stroke-width="1"/><path d="M400 -198 v4 M420 -198 v4" stroke="#1e2b24" stroke-width=".8"/><text x="410" y="-199.500">20 m</text>
+      </g>
+    </g>
+  </svg>
+  </div>
+  <div class="key">
+    <span>chữ A–P: công trình có việc để làm · số 1–9: nhà dân có chủ · khung đứt màu hồng: mảnh đất của Mầm</span>
+    <span>Tọa độ ghi theo (x, z) của game, tính bằng mét; phía bắc là z âm.</span>
+  </div>
+
+  <h3>16 công trình</h3>
+  <div class="scroll">
+  <table>
+    <thead><tr><th></th><th>Công trình</th><th>Vị trí</th><th>Ai ở đó</th><th>Bé làm được gì</th><th>Toán</th></tr></thead>
+    <tbody>
+      <tr><td>A</td><td>Cổng làng</td><td class="n">305, −222</td><td>Bảng chào, đèn lồng</td><td>Mốc vào làng; bảng chỉ đường tới các vùng</td><td><span class="chip play">Chơi thuần</span></td></tr>
+      <tr><td>B</td><td>Quầy trang phục <span class="st"><b>đã có</b></span></td><td class="n">325, −230</td><td>Cô Thỏ Bông</td><td>Đổi mũ, khăn, ba lô, kiểu chồi</td><td><span class="chip hid">Toán ẩn</span> đếm xu</td></tr>
+      <tr><td>C</td><td>Quảng trường Giếng Nắng</td><td class="n">346, −262</td><td>Mọi người qua lại</td><td>Bảng việc làng, giếng ước, sân gõ trống và chuông gió, nơi làng mở hội khi một vùng thức dậy</td><td><span class="chip play">Chơi thuần</span></td></tr>
+      <tr><td>D</td><td>Nhà Chung và Tháp Đồng Hồ <span class="st"><b>đã có nhà</b></span></td><td class="n">360, −280</td><td>Ông Cú, trưởng làng</td><td>Nhận việc lớn của từng vùng, mua mảnh đất, xem bản đồ; lên tháp chỉnh kim đồng hồ để đổi sáng, chiều, tối</td><td><span class="chip hid">Toán ẩn</span> xem giờ</td></tr>
+      <tr><td>E</td><td>Tiệm tạp hóa Hạt Dẻ</td><td class="n">372, −252</td><td>Cô Sóc</td><td>Mua cần câu, vợt, hạt giống, thức ăn cho bạn nhỏ; bán hoa, nấm, cá</td><td><span class="chip hid">Toán ẩn</span> đếm xu</td></tr>
+      <tr><td>F</td><td>Tiệm mộc</td><td class="n">392, −262</td><td>Bác Hải Ly</td><td>Đổi gỗ và hạt lấy bàn, ghế, giường, kệ; nâng cỡ nhà; đặt làm cầu</td><td><span class="chip hid">Toán ẩn</span> chọn ván</td></tr>
+      <tr><td>G</td><td>Tiệm làm đẹp Mây Bông</td><td class="n">328, −268</td><td>Chị Cừu</td><td>Đổi màu lông, má hồng, kiểu mắt; thử trước rồi mới đổi</td><td><span class="chip play">Chơi thuần</span></td></tr>
+      <tr><td>H</td><td>Trạm thư</td><td class="n">378, −300</td><td>Cô Bồ Câu</td><td>Nhận gói giao tới đúng số nhà; nhận thư cảm ơn và quà</td><td><span class="chip hid">Toán ẩn</span> số nhà</td></tr>
+      <tr><td>I</td><td>Lớp học gốc sồi</td><td class="n">340, −312</td><td>Cô Hươu</td><td>Xem bài làm mẫu, tự xin làm thêm thẻ bài, ôn bài đã sai</td><td><span class="chip ask">Thẻ bài</span> tự xin</td></tr>
+      <tr><td>J</td><td>Bến thuyền</td><td class="n">270, −292</td><td>Bác Rùa</td><td>Mượn thuyền chèo quanh hồ, mua mồi, cân cá, xem sổ các loài cá</td><td><span class="chip play">Chơi thuần</span></td></tr>
+      <tr><td>K</td><td>Mảnh đất của Mầm</td><td class="n">302, −322</td><td>Mầm và bạn nhỏ</td><td>Dựng lều, rồi nhà gỗ, rồi nhà mái cam; sân, bồn hoa, hộp thư; cửa vào phòng riêng</td><td><span class="chip play">Chơi thuần</span></td></tr>
+      <tr><td>L</td><td>Sân chơi</td><td class="n">318, −290</td><td>Bé Nhím, Bé Vịt</td><td>Xích đu, bập bênh; rủ trốn tìm, đuổi bắt, đua quanh làng</td><td><span class="chip play">Chơi thuần</span></td></tr>
+      <tr><td>M</td><td>Vườn rau chung</td><td class="n">408, −290</td><td>Bác Chuột Đồng</td><td>Gieo, tưới, nhổ cỏ giúp; học trồng trước khi có ruộng riêng ở Nông trại</td><td><span class="chip hid">Toán ẩn</span> hàng cột</td></tr>
+      <tr><td>N</td><td>Chuồng cừu</td><td class="n">384, −214</td><td>Chú Chó Cỏ</td><td>Lùa cừu ở Đồng Hoa về chuồng, chải lông, xin len</td><td><span class="chip play">Chơi thuần</span></td></tr>
+      <tr><td>O</td><td>Cổng Đông</td><td class="n">432, −312</td><td>Xe hàng chợ phiên</td><td>Đường sang Nông trại và Chợ phiên</td><td><span class="chip play">Chơi thuần</span></td></tr>
+      <tr><td>P</td><td>Quán Trà Lá</td><td class="n">352, −240</td><td>Cô Gấu Mèo</td><td>Nấu món theo công thức, nghe chuyện làng để biết chỗ có bí mật</td><td><span class="chip hid">Toán ẩn</span> đong</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p style="margin-top:12px">Chỉ có nhà của Mầm là vào được bên trong. Các tiệm là quầy mở ra mặt đường như quầy cô Thỏ Bông hiện nay: lại gần, bấm nút, bảng hiện ra. Cách này nhẹ máy và bé không phải qua màn chờ.</p>
+
+  <h3>Dân làng và nhà của họ</h3>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Ai</th><th>Việc</th><th>Ban ngày ở</th><th>Nhà</th><th>Hay nhờ bé</th></tr></thead>
+    <tbody>
+      <tr><td>Ông Cú</td><td>Trưởng làng</td><td>D</td><td>Gác trên Nhà Chung</td><td>Đánh thức Bóng Lặng lớn của từng vùng</td></tr>
+      <tr><td>Cô Thỏ Bông</td><td>Thợ may</td><td>B</td><td class="n">Nhà 1 · 312, −250</td><td>Tìm hoa, len để may kiểu mới</td></tr>
+      <tr><td>Bác Rùa</td><td>Lái đò</td><td>J</td><td class="n">Nhà 2 · 288, −304</td><td>Câu đủ cá, tìm mái chèo trôi</td></tr>
+      <tr><td>Bác Hải Ly</td><td>Thợ mộc</td><td>F</td><td class="n">Nhà 3 · 412, −262</td><td>Mang gỗ, giúp dựng cầu</td></tr>
+      <tr><td>Cô Hươu</td><td>Cô giáo</td><td>I</td><td class="n">Nhà 4 · 322, −338</td><td>Không nhờ; tặng sao khi bé tự xin bài</td></tr>
+      <tr><td>Cô Bồ Câu</td><td>Đưa thư</td><td>H</td><td class="n">Nhà 5 · 382, −332</td><td>Giao gói tới đúng nhà</td></tr>
+      <tr><td>Chị Cừu</td><td>Làm đẹp</td><td>G</td><td class="n">Nhà 6 · 300, −268</td><td>Hái hoa làm màu</td></tr>
+      <tr><td>Chú Chó Cỏ</td><td>Chăn cừu</td><td>N và Đồng Hoa</td><td class="n">Nhà 7 · 392, −236</td><td>Lùa cừu lạc về</td></tr>
+      <tr><td>Bác Chuột Đồng</td><td>Làm vườn</td><td>M</td><td class="n">Nhà 8 · 404, −318</td><td>Tưới luống, đuổi quạ</td></tr>
+      <tr><td>Nhà Vịt (bố mẹ và Bé Vịt)</td><td>Thả vịt ở hồ</td><td>Hồ, L</td><td class="n">Nhà 9 · 356, −336</td><td>Dẫn vịt con về, chơi cùng Bé Vịt</td></tr>
+      <tr><td>Cô Sóc</td><td>Chủ tiệm</td><td>E</td><td>Gác trên tiệm</td><td>Hái nấm, hạt dẻ trong rừng</td></tr>
+      <tr><td>Cô Gấu Mèo</td><td>Chủ quán trà</td><td>P</td><td>Gác trên quán</td><td>Tìm nguyên liệu cho món mới</td></tr>
+      <tr><td>Bé Nhím</td><td>Bạn chơi</td><td>L</td><td>Ở với bà Nhím tại Nông trại</td><td>Rủ trốn tìm, đua</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p style="margin-top:12px">Ban đêm dân làng về nhà, cửa sổ sáng đèn, tiệm đóng; quảng trường và sân chơi vẫn vào được. Khi làng còn "ngủ" ở đầu game, mọi người gật gù tại chỗ làm và chỉ nói được một câu; đánh thức Bóng Lặng lớn ở cổng làng thì từng tiệm mở lần lượt.</p>
+</section>
+
+<section>
+  <h2>Địa điểm cụ thể ở các vùng khác</h2>
+  <p>Vùng 1, 2, 4, 5 đặt trên cảnh đã có nên vị trí chắc chắn. Vùng 6–12 mới đặt trên bản đồ; khi dựng em sẽ chỉnh từng điểm theo địa hình thật (độ dốc, rừng) và báo lại chỗ nào phải dời.</p>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Vùng</th><th>Địa điểm</th><th>Vị trí</th><th>Ai</th><th>Có gì ở đó</th></tr></thead>
+    <tbody>
+      <tr><td rowspan="3">1 · Đồi Mầm</td><td>Cây Tâm <span class="st"><b>đã có</b></span></td><td class="n">3, −9</td><td></td><td>Ra quả khi bé thành thạo; mở thẻ bài tự nguyện</td></tr>
+      <tr><td>Cột chỉ đường</td><td class="n">8, 6</td><td></td><td>Mũi tên tới từng vùng, sáng lên khi vùng có việc</td></tr>
+      <tr><td>Tảng đá tập bắn lá</td><td class="n">−14, −4</td><td></td><td>Ba bia rơm để tập bắn và ném viên nắng</td></tr>
+      <tr><td rowspan="4">2 · Đồng Hoa</td><td>Bãi hoa dại</td><td class="n">95, −70</td><td></td><td>Hái hoa bốn màu; Bóng Lặng đầu tiên ngủ ở đây</td></tr>
+      <tr><td>Vườn bướm</td><td class="n">120, −150</td><td></td><td>Bắt bướm bằng vợt, sổ các loài bướm</td></tr>
+      <tr><td>Bãi cừu</td><td class="n">165, −85</td><td>Chú Chó Cỏ (buổi sáng)</td><td>Đàn cừu gặm cỏ; trò lùa cừu bắt đầu từ đây</td></tr>
+      <tr><td>Bù Nhìn Ngủ Gật</td><td class="n">230, −110</td><td>Trùm của vùng</td><td>Đánh thức thì Đồng Hoa và cổng làng thức dậy</td></tr>
+      <tr><td rowspan="3">4 · Hồ Gương</td><td>Cầu câu phía nam</td><td class="n">215, −255</td><td></td><td>Chỗ câu cá chính; cá khác nhau theo sáng, chiều, mưa</td></tr>
+      <tr><td>Bãi lau</td><td class="n">172, −318</td><td>Nhà Vịt</td><td>Tổ vịt, tìm vịt con lạc; cá hiếm trốn ở đây</td></tr>
+      <tr><td>Hòn đảo nhỏ giữa hồ</td><td class="n">215, −305</td><td></td><td>Chỉ tới được bằng thuyền; có rương cổ</td></tr>
+      <tr><td rowspan="4">5 · Đồi Cối Xay</td><td>Cối xay <span class="st"><b>đã có</b></span></td><td class="n">470, −150</td><td>Bà Cối (cối xay biết nói)</td><td>Quay tay cho cánh quạt chạy, đong bột vào bao; giữ Sổ học</td></tr>
+      <tr><td>Tiệm bánh</td><td class="n">452, −128</td><td>Chú Gấu</td><td>Nặn, nướng, cắt bánh chia cho khách; nhận giao bánh</td></tr>
+      <tr><td>Ruộng lúa mì</td><td class="n">500, −120</td><td></td><td>Gặt lúa mang về cối xay</td></tr>
+      <tr><td>Chong Chóng Khổng Lồ</td><td class="n">440, −185</td><td>Trùm của vùng</td><td>Đánh thức thì cối xay quay lại, tiệm bánh mở</td></tr>
+      <tr><td rowspan="4">6 · Rừng Thông</td><td>Cổng rừng</td><td class="n">150, 185</td><td></td><td>Hết đường mòn hiện có; bảng cảnh báo Bóng Lặng biết núp</td></tr>
+      <tr><td>Nhà cây</td><td class="n">230, 290</td><td>Họ hàng cô Sóc</td><td>Trốn tìm 5 chú sóc; đổi hạt dẻ lấy bản đồ nấm</td></tr>
+      <tr><td>Vòng nấm khổng lồ</td><td class="n">290, 360</td><td></td><td>Nhảy bật trên nấm để lên cao, hái nấm</td></tr>
+      <tr><td>Cây Cổ Thụ Mộng Du</td><td class="n">330, 430</td><td>Trùm của vùng</td><td>Đánh thức thì rừng sáng lên, có đom đóm ban ngày</td></tr>
+      <tr><td rowspan="3">7 · Vách Gió</td><td>Bệ xuất phát</td><td class="n">−400, −320</td><td>Anh Đại Bàng</td><td>Bắt đầu đua lượn; ba đường dễ, vừa, khó</td></tr>
+      <tr><td>Tổ chim trên mỏm</td><td class="n">−470, −380</td><td></td><td>Điểm cao nhất, nhìn thấy cả thung lũng; nhặt lông vũ</td></tr>
+      <tr><td>Bãi đáp</td><td class="n">−250, −200</td><td></td><td>Đích đua; bảng kỷ lục của chính bé</td></tr>
+      <tr><td rowspan="4">8 · Suối Đá và Thác</td><td>Thác nước</td><td class="n">−120, −720</td><td></td><td>Hang sau thác có rương cổ</td></tr>
+      <tr><td>Bến bè</td><td class="n">−70, −630</td><td>Cháu bác Rùa</td><td>Thả bè xuôi suối, lái tránh đá, về tới Hồ Gương</td></tr>
+      <tr><td>Mỏ đá pha lê</td><td class="n">−160, −600</td><td>Chị Chuột Chũi</td><td>Gõ đá lấy pha lê, đổi lấy đèn và đồ trang trí</td></tr>
+      <tr><td>Chỗ dựng cầu</td><td class="n">60, −470</td><td>Bác Hải Ly (khi được nhờ)</td><td>Chọn ván dựng cầu qua suối, mở lối tắt từ Đồng Hoa</td></tr>
+      <tr><td rowspan="4">9 · Nông trại và Chợ phiên</td><td>Nhà bà Nhím</td><td class="n">620, −430</td><td>Bà Nhím, Bé Nhím</td><td>Nhận hạt giống, học chăm cây</td></tr>
+      <tr><td>Ruộng của Mầm</td><td class="n">610, −400</td><td></td><td>Luống rau riêng, lớn theo số chuyến bé đã đi</td></tr>
+      <tr><td>Sân chợ phiên</td><td class="n">670, −440</td><td>Bốn chủ sạp đổi theo ngày</td><td>Đổi đồ lấy đồ ("3 cá đổi 1 mũ"), có món chỉ chợ mới có</td></tr>
+      <tr><td>Chuồng gà</td><td class="n">650, −395</td><td></td><td>Nhặt trứng, đuổi cáo con nghịch</td></tr>
+      <tr><td rowspan="3">10 · Bãi Đom Đóm</td><td>Bãi cắm trại</td><td class="n">−480, 360</td><td>Cậu Cáo Trắng</td><td>Đốt lửa trại, nướng kẹo, ngủ lại để sang sáng</td></tr>
+      <tr><td>Đồng đom đóm</td><td class="n">−520, 320</td><td></td><td>Bắt đom đóm bỏ lọ làm đèn cho nhà (chỉ ban đêm)</td></tr>
+      <tr><td>Đài ngắm sao</td><td class="n">−440, 410</td><td></td><td>Nối sao thành hình, mở kiểu trang trí trần nhà</td></tr>
+      <tr><td rowspan="3">11 · Đèo Tuyết</td><td>Trạm sưởi</td><td class="n">860, −130</td><td>Bác Dê Núi</td><td>Mượn khăn ấm, ván trượt</td></tr>
+      <tr><td>Dốc trượt</td><td class="n">900, −120</td><td></td><td>Trượt ván xuống dốc, nhặt hạt trên đường</td></tr>
+      <tr><td>Người Tuyết Lười</td><td class="n">940, −100</td><td>Trùm cuối thung lũng</td><td>Đánh thức thì mở đường sang vùng đất sau này</td></tr>
+      <tr><td rowspan="2">12 · Bến Khí Cầu</td><td>Bến khí cầu</td><td class="n">−120, 150</td><td>Ông Hạc</td><td>Bay lên Đảo Mây và về; mở khi bé đã đánh thức làng</td></tr>
+      <tr><td>Đảo Mây <span class="st"><b>đã có cảnh</b></span></td><td class="n">trên trời</td><td>Các Linh thời tiết</td><td>Đảo nhỏ để ngắm, nhặt hạt hiếm, đổi thời tiết cho thung lũng</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p style="margin-top:12px">Thứ tự vùng thức dậy em đề nghị: Đồi Mầm → Đồng Hoa và Làng → Hồ Gương và Đồi Cối Xay → Rừng Thông → Vách Gió → Suối Đá và Thác → Nông trại và Chợ phiên → Bãi Đom Đóm → Đèo Tuyết. Bến Khí Cầu mở ngay sau khi làng thức.</p>
+</section>
+
+<section>
+  <h2>Một buổi chơi 12 phút của bé lớp 2</h2>
+  <ul class="timeline">
+    <li><span class="t">0:00</span><span>Thức dậy trong nhà mình ở làng, đội mũ rơm, ra cửa. Vịt con chạy theo.</span></li>
+    <li><span class="t">0:40</span><span>Bác Rùa ở bến thuyền nhờ: "Mang giúp bác 3 con cá ra tiệm bánh trên Đồi Cối Xay." Ra Hồ Gương câu cá, canh phao chìm rồi giật. Được 4 con, một con to kỷ lục. <span class="chip play">Chơi thuần</span></span></li>
+    <li><span class="t">3:00</span><span>Trên đường tới cối xay, nhặt 6 Hạt Nắng và hai bông hoa, lội tắt qua mép hồ.</span></li>
+    <li><span class="t">4:00</span><span>Giao cá. Chú Gấu thợ bánh trả công 8 hạt, bé kéo thêm một con cá vào khay để đổi lấy ổ bánh. <span class="chip hid">Toán ẩn</span></span></li>
+    <li><span class="t">5:00</span><span>Mũi tên báo có Bóng Lặng ngủ ở bìa rừng. Bé mở một thẻ bài để nạp Túi Nắng: 37 + 8, đúng, được 3 viên. <span class="chip ask">Thẻ bài 1</span></span></li>
+    <li><span class="t">5:30</span><span>Trận đánh thức 4 Bóng Lặng: bắn lá liên tục, né vòng đỏ, ném 3 viên nắng vào chỗ đông. Không có thẻ bài nào giữa trận. Bóng Lặng tan thành hoa, rơi ra cánh hoa và gỗ.</span></li>
+    <li><span class="t">7:30</span><span>Ghé Vách Gió lượn một vòng đua, hơn kỷ lục của chính mình 2 giây. <span class="chip play">Chơi thuần</span></span></li>
+    <li><span class="t">9:00</span><span>Về làng. Tiệm mộc bác Hải Ly: đổi gỗ và 20 hạt lấy cái ghế. Bé tự đếm xu trả đúng 20 nên được tặng thêm chậu hoa. <span class="chip hid">Toán ẩn</span></span></li>
+    <li><span class="t">10:30</span><span>Đặt ghế và chậu hoa trong nhà, đổi màu má hồng ở gương. Cây Tâm ngoài đồi vừa ra thêm một quả vì bé thành thạo phép cộng có nhớ.</span></li>
+  </ul>
+  <p>Cả buổi không có thẻ bài nào bắt buộc. Bé tự mở 1 thẻ, và có 2 lần làm toán bằng tay mà không thấy câu hỏi nào. Nếu bé thích, mỗi buổi có thể mở thêm vài thẻ ở Cây Tâm hoặc trước trận sau.</p>
+</section>
+
+<section>
+  <h2>Toàn bộ hoạt động</h2>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Hoạt động</th><th>Bé làm gì</th><th>Toán</th><th>Hiện trạng</th></tr></thead>
+    <tbody>
+      <tr><td>Chạy, nhảy, lượn</td><td>Đi khắp thung lũng, lượn từ đồi xuống</td><td><span class="chip play">Chơi thuần</span></td><td class="st"><b>Đã có</b></td></tr>
+      <tr><td>Nhặt Hạt Nắng</td><td>Chạm là nhặt; mỗi sáng trong game mọc lại một phần</td><td><span class="chip play">Chơi thuần</span></td><td class="st"><b>Đã có</b>, chưa mọc lại</td></tr>
+      <tr><td>Hái lượm</td><td>Hoa, nấm, gỗ rơi, đá pha lê bỏ vào túi đồ</td><td><span class="chip play">Chơi thuần</span></td><td class="st">Chưa có</td></tr>
+      <tr><td>Đánh thức Bóng Lặng</td><td>Bắn lá, né vòng báo trước, ném viên nắng</td><td><span class="chip play">Chơi thuần</span></td><td class="st"><b>Đã sửa nhịp</b> (đợt 1)</td></tr>
+      <tr><td>Nạp Túi Nắng</td><td>Giải một câu đố vui trước hoặc giữa trận, tùy bé</td><td><span class="chip ask">Đố vui</span></td><td class="st"><b>Đã có</b> (đợt 1)</td></tr>
+      <tr><td>Trùm của vùng</td><td>Trận dài 3 pha, mỗi pha một kiểu né</td><td><span class="chip play">Chơi thuần</span></td><td class="st">Chưa có</td></tr>
+      <tr><td>Câu cá</td><td>Thả câu, canh phao, giật đúng lúc; sổ các loài cá</td><td><span class="chip play">Chơi thuần</span></td><td class="st">Chưa có</td></tr>
+      <tr><td>Lùa cừu</td><td>Chạy vòng sau đàn cừu để dồn về chuồng</td><td><span class="chip play">Chơi thuần</span></td><td class="st">Có cừu, đứng yên</td></tr>
+      <tr><td>Bắt bướm, đom đóm</td><td>Vung vợt; đom đóm chỉ có ban đêm</td><td><span class="chip play">Chơi thuần</span></td><td class="st">Có bướm để ngắm</td></tr>
+      <tr><td>Đua lượn</td><td>Lượn qua chuỗi vòng gió, đua với bóng mờ của lần trước</td><td><span class="chip play">Chơi thuần</span></td><td class="st">Chưa có</td></tr>
+      <tr><td>Thả bè, chèo thuyền</td><td>Lái bè tránh đá xuôi suối; chèo quanh hồ</td><td><span class="chip play">Chơi thuần</span></td><td class="st">Chưa có</td></tr>
+      <tr><td>Trốn tìm, nhảy nấm</td><td>Tìm 5 chú sóc trốn trong rừng</td><td><span class="chip play">Chơi thuần</span></td><td class="st">Chưa có</td></tr>
+      <tr><td>Làm đẹp cho Mầm</td><td>Màu lông, má, mắt, kiểu chồi, mũ, khăn, ba lô</td><td><span class="chip play">Chơi thuần</span></td><td class="st"><b>Đã có</b> 7 món</td></tr>
+      <tr><td>Trang trí nhà</td><td>Đặt, xoay, đổi chỗ đồ đạc; trồng hoa trước sân</td><td><span class="chip play">Chơi thuần</span></td><td class="st">Chưa có</td></tr>
+      <tr><td>Bạn nhỏ đi theo</td><td>Vịt con, cừu con, sóc; cho ăn thì đi theo Mầm</td><td><span class="chip play">Chơi thuần</span></td><td class="st">Chưa có</td></tr>
+      <tr><td>Giúp việc dân làng</td><td>Mang đồ, tìm đồ, dẫn đường; mỗi lần một việc ngắn</td><td><span class="chip play">Chơi thuần</span></td><td class="st">Chưa có</td></tr>
+      <tr><td>Mua ở tiệm</td><td>Bấm là mua. Tự đếm xu trả đúng thì được quà nhỏ</td><td><span class="chip hid">Toán ẩn</span></td><td class="st"><b>Đã có</b> bấm là mua</td></tr>
+      <tr><td>Đổi đồ ở chợ phiên</td><td>"3 cá đổi 1 mũ": kéo đủ đồ vào khay</td><td><span class="chip hid">Toán ẩn</span></td><td class="st">Chưa có</td></tr>
+      <tr><td>Tiệm bánh</td><td>Đong bột theo công thức, cắt bánh chia đều cho khách</td><td><span class="chip hid">Toán ẩn</span></td><td class="st">Chưa có</td></tr>
+      <tr><td>Trồng vườn</td><td>Gieo theo hàng và cột, đếm ngày tưới</td><td><span class="chip hid">Toán ẩn</span></td><td class="st">Chưa có</td></tr>
+      <tr><td>Dựng cầu, hàng rào</td><td>Chọn tấm ván dài vừa khe suối</td><td><span class="chip hid">Toán ẩn</span></td><td class="st">Chưa có</td></tr>
+      <tr><td>Rương cổ, Cây Tâm</td><td>Bài khó hơn một chút, không vội, thưởng lớn, không chặn đường</td><td><span class="chip ask">Thẻ bài</span></td><td class="st">Có Cây Tâm</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="note" style="margin-top:12px">Xay bột ở cối xay đã đổi từ 3 thẻ bài thành một câu đố cân bột (đợt 1). Trò quay tay cho cánh quạt chạy sẽ làm sau.</p>
+</section>
+
+<section>
+  <h2>Đánh Bóng Lặng kiểu mới</h2>
+  <div class="scroll">
+  <table>
+    <thead><tr><th></th><th>Hiện nay</th><th>Đề xuất</th></tr></thead>
+    <tbody>
+      <tr><td>Chiêu Lá</td><td>Bấm từng phát, 1 điểm</td><td>Giữ nút để bắn liên tục, tự ngắm con gần nhất, 1 điểm</td></tr>
+      <tr><td>Bóng Lặng thường</td><td class="n">8–16 điểm</td><td class="n">4 điểm (khoảng 2 giây bắn lá)</td></tr>
+      <tr><td>Bóng Lặng lớn</td><td>Chưa có</td><td class="n">12 điểm, mỗi trại một con</td></tr>
+      <tr><td>Một bài đúng</td><td class="n">1 phát 4 điểm</td><td class="n">Túi Nắng 3 viên × 8 điểm, lan 4 m</td></tr>
+      <tr><td>Một bài sai</td><td class="n">1 phát 1,5 điểm</td><td>Túi Nắng 1 viên, kèm gợi ý; không mất gì</td></tr>
+      <tr><td>Bài trong một trại</td><td class="n">6–15</td><td class="n">0–1, bé tự chọn</td></tr>
+      <tr><td>Thẻ bài giữa trận</td><td>Mỗi lần ra chiêu</td><td>Không. Nạp trước trận, hoặc lúc nào bé muốn</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p style="margin-top:12px">Trận đấu khó dần bằng cách di chuyển chứ không bằng số bài: Bóng Lặng lăn (phải né ngang), nhảy (phải lùi), bay (phải nhảy lên bắn), núp (phải đi vòng). Trùm có 3 pha, bắn lá vẫn thắng được, Túi Nắng làm trận ngắn hơn. Luật thương hại giữ nguyên: ngã thì tỉnh lại tại chỗ, địch chậm dần.</p>
+  <p>Bóng Lặng tan ra sẽ rơi vật liệu (cánh hoa, gỗ, đom đóm) để việc đánh nối vào việc dựng nhà và đổi đồ.</p>
+</section>
+
+<section>
+  <h2>Kiếm và tiêu</h2>
+  <div class="three">
+    <div class="box"><h3>Một loại tiền</h3><p>Hạt Nắng. Kiếm từ nhặt, giúp việc, bán cá và nông sản, đánh thức Bóng Lặng.</p></div>
+    <div class="box"><h3>Năm loại vật liệu</h3><p>Gỗ, đá pha lê, hoa, cá, bột. Dùng để làm đồ đạc và đổi ở chợ phiên.</p></div>
+    <div class="box"><h3>Chỗ tiêu</h3><p>Trang phục, đồ đạc, mảnh đất và nhà (ba cỡ), hạt giống, thức ăn cho bạn nhỏ.</p></div>
+  </div>
+  <ul style="margin-top:12px">
+    <li>Bé chơi một mình trên máy, nên mua bán và trao đổi là với dân làng trong game. Không có chợ giữa người chơi, vì việc đó cần máy chủ và thu dữ liệu.</li>
+    <li>Không có phần thưởng đăng nhập hằng ngày, không có chuỗi ngày, không có đồng hồ đếm ngược. Cây trồng lớn theo số chuyến bé đã đi, không theo giờ thật.</li>
+    <li>Giá cả sẽ được tính bằng test: một buổi 12 phút kiếm được chừng 25–40 hạt, món rẻ nhất mua được ngay buổi đầu, ngôi nhà đầu tiên sau khoảng 3 buổi. Đây là mục tiêu thiết kế, chưa đo.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Nhà riêng và làm đẹp</h2>
+  <ul>
+    <li><strong>Mua nhà.</strong> Trưởng làng bán một mảnh đất ở mép làng nhìn ra hồ. Nhà có ba cỡ: lều vải, nhà gỗ, nhà mái cam. Nâng cỡ bằng hạt và vật liệu.</li>
+    <li><strong>Trang trí.</strong> Bên trong nhà là một căn phòng riêng (cảnh nhỏ, nhẹ máy). Đồ đạc đặt trên lưới ô vuông, kéo để dời, chạm để xoay. Không có điểm số hay chấm đẹp xấu.</li>
+    <li><strong>Sân trước.</strong> Bồn hoa, hàng rào, hộp thư nhận quà của dân làng sau mỗi việc giúp.</li>
+    <li><strong>Gương.</strong> Đổi màu lông, má hồng, kiểu mắt, kiểu chồi, mũ, khăn, ba lô. Tiệm làm đẹp trong làng bán thêm kiểu mới.</li>
+    <li><strong>Kệ kỷ niệm.</strong> Con cá to nhất, cúp đua lượn, quả của Cây Tâm tự hiện lên kệ.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Bé học được gì, bố mẹ thấy gì</h2>
+  <ul>
+    <li>Thẻ bài ít đi nhưng vẫn chọn theo sức và ôn lại bài sai như hiện nay. 4 thẻ một buổi, mỗi ngày một buổi, là khoảng 120 bài một tháng, đều là bài bé tự muốn làm.</li>
+    <li>Toán ẩn luyện đúng những thứ thẻ bài khó dạy: đếm tiền, đong đo, chia đều, hàng và cột, so sánh độ dài.</li>
+    <li>Cây Tâm vẫn là nơi hiện tiến bộ thật: thành thạo một kỹ năng thì ra quả, đủ quả thì một vùng mới thức dậy sớm hơn.</li>
+    <li>Sổ học giữ nguyên cho bố mẹ: kỹ năng đã vững, bài đã sai kèm lời giải. Em đề nghị thêm một mục: bố mẹ tự đặt "mỗi buổi mời bé làm N bài" nếu muốn nhiều hơn mặc định. Game chỉ mời, không chặn.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Thứ tự làm</h2>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Đợt</th><th>Làm gì</th><th>Bé thấy gì mới</th></tr></thead>
+    <tbody>
+      <tr><td class="n">1</td><td><b>Đã xong 13/11:</b> nhịp đánh, Túi Nắng, bốn loại đố vui tương tác, cối xay thành câu đố cân bột</td><td>Đánh nhanh, sướng tay, hết cảnh 3 bài một con</td></tr>
+      <tr><td class="n">2</td><td>Túi đồ, hái lượm, vật liệu rơi ra; Hạt Nắng mọc lại</td><td>Đi đâu cũng có thứ để nhặt</td></tr>
+      <tr><td class="n">3</td><td>Dân làng, việc giúp ngắn, vùng ngủ và thức</td><td>Làng có người, có việc, có màu trở lại</td></tr>
+      <tr><td class="n">4</td><td>Câu cá, lùa cừu, bắt bướm</td><td>Ba trò chơi thuần đầu tiên</td></tr>
+      <tr><td class="n">5</td><td>Nhà riêng, trang trí, gương làm đẹp</td><td>Có chỗ của mình</td></tr>
+      <tr><td class="n">6</td><td>Tiệm có đếm xu, chợ phiên, tiệm bánh</td><td>Mua bán và đổi đồ</td></tr>
+      <tr><td class="n">7</td><td>Rừng Thông, Vách Gió, đua lượn</td><td>Hai vùng mới</td></tr>
+      <tr><td class="n">8</td><td>Suối và Thác, Bãi Đom Đóm, Đèo Tuyết, các trùm, Bến Khí Cầu</td><td>Trọn thung lũng</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p style="margin-top:12px">Mỗi đợt xong là chơi được ngay trên điện thoại và có test cho phần luật. Em chưa ước lượng thời gian từng đợt; đợt 1 nhỏ nhất, đợt 5 và đợt 8 lớn nhất.</p>
+  <p class="note">Rủi ro em thấy trước: tốc độ khung hình khi thêm dân làng và vật nhặt được (mới đo 60 khung hình trước khi có hồ và quầy hàng); mọi hình đều dựng bằng code nên mỗi nhân vật, đồ đạc mới đều tốn công; nhà và túi đồ làm dữ liệu lưu phức tạp hơn nhiều so với hiện nay.</p>
+</section>
+
+<section>
+  <h2>Năm việc cần anh quyết</h2>
+  <ol class="ask-list">
+    <li><strong>Mức toán.</strong> 3–6 thẻ bài tự nguyện mỗi buổi, không việc gì bắt buộc giải. Em đề nghị chọn mức này. Nếu anh muốn bé làm nhiều hơn thì dùng mục "mời N bài" của bố mẹ.</li>
+    <li><strong>Thế giới mở.</strong> Đi đâu cũng được ngay, vùng ngủ thức dần theo việc đánh thức Bóng Lặng. Cách khác là khóa hẳn từng vùng; em không đề nghị vì bé dễ thấy bị chặn.</li>
+    <li><strong>Nhà là phòng riêng.</strong> Vào cửa thì chuyển sang căn phòng, nhẹ máy và dễ trang trí. Cách khác là trang trí thẳng ngoài trời trong làng, đẹp hơn nhưng nặng máy và khó làm.</li>
+    <li><strong>Đảo Mây.</strong> Giữ làm điểm đến phụ đi bằng khí cầu, không phát triển thành thế giới thứ hai.</li>
+    <li><strong>Bắt đầu từ đợt 1.</strong> Sửa nhịp đánh trước vì đó là chỗ gây nản anh vừa nêu, rồi mới thêm trò mới.</li>
+  </ol>
+</section>
+
+</main>
+</body>
+</html>

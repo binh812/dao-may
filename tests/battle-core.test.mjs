@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { BATTLE, allAwake, castSkill, createBattle, createEnemy, leafAttack, nearestEnemy, stepBattle, telegraphTime } from '../src/game/battle-core.js';
+import { BATTLE, allAwake, chargePouch, createBattle, createEnemy, leafAttack, nearestEnemy, revivePouch, stepBattle, telegraphTime, throwOrb } from '../src/game/battle-core.js';
 
 const FRAME = 1 / 60;
 const at = (x, z) => ({ x, z });
@@ -9,7 +9,7 @@ function run(b, player, seconds, onFrame) {
 }
 
 test('leaf attack hits the nearest sleeping enemy and respects its cooldown', () => {
-  const b = createBattle([createEnemy('far', 5, 0), createEnemy('near', 2, 0)]);
+  const b = createBattle([createEnemy('far', 5, 0, 1000), createEnemy('near', 2, 0, 1000)]);
   const first = leafAttack(b, at(0, 0));
   assert.equal(first.target.id, 'near');
   assert.equal(first.target.wake, BATTLE.leafDamage);
@@ -24,44 +24,70 @@ test('leaf attack out of range does nothing', () => {
   assert.equal(b.enemies[0].wake, 0);
 });
 
-test('correct answers build combo tiers; a wrong one resets and still lands a weak hit', () => {
-  const b = createBattle([createEnemy('e', 3, 0, 1000)]);
-  const hits = [true, true, true, true].map((ok) => castSkill(b, at(0, 0), ok));
-  assert.deepEqual(hits.map((h) => h.tier), [1, 2, 3, 3]);
-  assert.deepEqual(hits.map((h) => h.damage), [4, 6, 8, 8]);
-  const miss = castSkill(b, at(0, 0), false);
-  assert.equal(miss.damage, BATTLE.weakSkillDamage);
-  assert.equal(miss.tier, 0);
-  assert.equal(b.combo, 0);
-  assert.equal(castSkill(b, at(0, 0), true).tier, 1, 'combo bat dau lai tu bac 1');
+test('holding the leaf button wakes an ordinary Shadow in about two seconds with no question at all', () => {
+  const b = createBattle([createEnemy('e', 3, 0)]);
+  let seconds = 0;
+  while (!b.enemies[0].awake && seconds < 10) { leafAttack(b, at(0, 0)); stepBattle(b, at(50, 50), FRAME); seconds += FRAME; }   // buoc tran voi Mam o xa de dich khong tan cong
+  assert.equal(b.enemies[0].awake, true);
+  assert.ok(seconds <= 2.2, `mat ${seconds.toFixed(2)} giay`);
 });
 
-test('wrong answers never cost hearts, even with the fight running between them', () => {
-  // dich nam ngoai tam duoi theo (khong tan cong) nhung trong tam chieu: moi thay doi cua tim chi co the den tu cau tra loi
-  const b = createBattle([createEnemy('e', BATTLE.aggroRange + 0.5, 0, 1000)]);
-  assert.ok(BATTLE.aggroRange + 0.5 <= BATTLE.skillRange);
-  for (let i = 0; i < 30; i++) { assert.notEqual(castSkill(b, at(0, 0), false), null); run(b, at(0, 0), 1); }
-  assert.equal(b.hearts, BATTLE.hearts);
-  assert.equal(b.faints, 0);
-  assert.equal(b.enemies[0].wake, 30 * BATTLE.weakSkillDamage);
+test('one puzzle fills the pouch: first-try 3 orbs, later 2, shown solution still 1; never above the cap', () => {
+  const b = createBattle([]);
+  assert.equal(b.pouch, 0);
+  assert.equal(chargePouch(b, 'shown'), 1);
+  assert.equal(chargePouch(b, 'later'), 2);
+  assert.equal(b.pouch, 3);
+  assert.equal(chargePouch(b, 'first'), 0, 'tui day roi');
+  assert.equal(b.pouch, BATTLE.pouchMax);
+  assert.equal(chargePouch(createBattle([]), 'first'), BATTLE.pouchMax);
+  assert.ok(Object.values(BATTLE.charge).every((n) => n >= 1), 'giai kieu nao cung phai duoc it nhat mot vien');
+  assert.throws(() => chargePouch(b, 'wrong'), RangeError);
+  assert.throws(() => chargePouch(b, undefined), RangeError);
 });
 
-test('casting with no enemy in range changes nothing, including the combo', () => {
-  const b = createBattle([createEnemy('e', BATTLE.skillRange + 3, 0, 1000)]);
-  b.combo = 2;
-  assert.equal(castSkill(b, at(0, 0), true), null);
-  assert.equal(castSkill(b, at(0, 0), false), null);
-  assert.equal(b.combo, 2);
-  assert.equal(b.enemies[0].wake, 0);
+test('one orb wakes an ordinary Shadow outright and splashes onto its neighbours, not onto far ones', () => {
+  const b = createBattle([createEnemy('a', 3, 0), createEnemy('b', 3 + BATTLE.orbSplash - 0.5, 0), createEnemy('far', 3 + BATTLE.orbSplash + 2, 0), createEnemy('big', 3, 2, BATTLE.bigWake, true)], 0, 3);
+  const thrown = throwOrb(b, at(0, 0));
+  assert.equal(thrown.target.id, 'a');
+  assert.deepEqual(thrown.hits.map((h) => [h.enemy.id, h.woke]), [['a', true], ['b', true], ['big', false]]);
+  assert.equal(b.pouch, 2);
+  assert.equal(b.enemies[2].wake, 0, 'con o xa khong bi lan');
+  assert.equal(b.enemies[3].wake, BATTLE.orbDamage);
+  assert.ok(BATTLE.orbDamage >= BATTLE.wake && BATTLE.orbDamage * 2 >= BATTLE.bigWake, 'mot tui nang phai du cho ca Bong Lang lon');
+});
+
+test('throwing with an empty pouch or with nobody in range costs nothing', () => {
+  const empty = createBattle([createEnemy('e', 3, 0)]);
+  assert.equal(throwOrb(empty, at(0, 0)), null);
+  assert.equal(empty.enemies[0].wake, 0);
+  const far = createBattle([createEnemy('e', BATTLE.orbRange + 3, 0)], 0, 2);
+  assert.equal(throwOrb(far, at(0, 0)), null);
+  assert.equal(far.pouch, 2, 'khong mat vien nao');
+});
+
+test('the pouch carries into the next journey and junk values become an empty pouch', () => {
+  assert.equal(createBattle([], 0, 2).pouch, 2);
+  for (const junk of [-1, 1.5, 99, NaN, '2', null, undefined, {}]) assert.equal(revivePouch(junk), 0);
+  assert.equal(createBattle([], 0, 99).pouch, 0);
+});
+
+test('a whole camp can be woken with leaves alone: puzzles are never required', () => {
+  const b = createBattle([createEnemy('a', 3, 0), createEnemy('b', -3, 0), createEnemy('c', 0, 3), createEnemy('big', 0, -3, BATTLE.bigWake, true)]);
+  let seconds = 0;
+  while (!allAwake(b) && seconds < 60) { leafAttack(b, at(0, 0)); stepBattle(b, at(0, 0), FRAME); seconds += FRAME; }
+  assert.equal(allAwake(b), true);
+  assert.ok(seconds < 15, `mat ${seconds.toFixed(1)} giay`);
+  assert.equal(b.pouch, 0);
 });
 
 test('enemy wakes exactly once and is then ignored', () => {
-  const b = createBattle([createEnemy('e', 2, 0, 4)]);
-  const hit = castSkill(b, at(0, 0), true);
-  assert.equal(hit.woke, true);
+  const b = createBattle([createEnemy('e', 2, 0, 4)], 0, 3);
+  const thrown = throwOrb(b, at(0, 0));
+  assert.equal(thrown.hits[0].woke, true);
   assert.equal(allAwake(b), true);
   assert.equal(nearestEnemy(b, at(0, 0), 99), null);
-  assert.equal(castSkill(b, at(0, 0), true), null);
+  assert.equal(throwOrb(b, at(0, 0)), null);
   assert.equal(leafAttack(b, at(0, 0)), null);
 });
 
@@ -94,7 +120,7 @@ test('losing all hearts revives on the spot with full hearts and slows later att
   const b = createBattle([createEnemy('e', 3, 0, 1000)]);
   const before = telegraphTime(b);
   let fainted = 0;
-  run(b, at(0, 0), 40, (bb) => { if (bb.events.fainted) { fainted++; assert.equal(bb.hearts, BATTLE.hearts, 'tinh lai phai day tim'); assert.equal(bb.combo, 0); } });
+  run(b, at(0, 0), 40, (bb) => { if (bb.events.fainted) { fainted++; assert.equal(bb.hearts, BATTLE.hearts, 'tinh lai phai day tim'); } });
   assert.ok(fainted >= 1, 'chua nga lan nao');
   assert.equal(b.faints, fainted);
   assert.equal(createBattle([], b.faints).faints, fainted, 'luat thuong hai theo sang chuyen sau');
