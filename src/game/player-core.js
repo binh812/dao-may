@@ -107,7 +107,8 @@ function subStep(s, input, dt, world) {
 
   if (Math.hypot(s.vx, s.vz) > 0.3) s.yaw = Math.atan2(s.vx, s.vz);
   if (s.grounded && Math.hypot(s.x, s.z) < world.safeRadius) { s.safeX = s.x; s.safeZ = s.z; }
-  if (s.y < TUNING.respawnY) respawn(s, world);
+  // muc roi mac dinh hop voi dao bay; the gioi co thung lung sau tu dat world.respawnY (hoac -Infinity neu khong the roi)
+  if (s.y < (world.respawnY ?? TUNING.respawnY)) respawn(s, world);
 }
 
 /** Tien trang thai them dt giay. Sua tai cho va tra lai chinh state. */

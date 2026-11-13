@@ -1,7 +1,6 @@
 // Cay Tam: lon len theo so ky nang be da thanh thao (GDD 5.4). Chi la hinh anh; so lieu den tu learn/adaptive.js.
 import * as THREE from 'three';
 
-const SPOT = { x: -1.6, z: 5.2 };
 const GROW_EVERY = 3, MAX_STAGE = 4;                 // cu 3 ky nang thi cay lon them mot bac
 const FRUIT_COLOR = 0xffe27a, FRUIT_GLOW = 2.6;      // qua sang hon 1 de bloom bat duoc
 
@@ -12,9 +11,9 @@ function fruitOffset(i, crownRadius) {
   return new THREE.Vector3(Math.cos(angle) * r, height * crownRadius * 1.6, Math.sin(angle) * r);
 }
 
-export function createHeartTree(scene, makeToon, groundAt) {
-  const group = new THREE.Group(), y = groundAt(SPOT.x, SPOT.z);
-  group.position.set(SPOT.x, Number.isFinite(y) ? y : 0, SPOT.z); scene.add(group);
+export function createHeartTree(scene, makeToon, groundAt, spot) {
+  const group = new THREE.Group(), y = groundAt(spot.x, spot.z);
+  group.position.set(spot.x, Number.isFinite(y) ? y : 0, spot.z); scene.add(group);
   const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.2, 1, 10), makeToon({ vertexColors: false, color: 0x8b5a3a }));
   const crown = new THREE.Mesh(new THREE.IcosahedronGeometry(1, 3), makeToon({ vertexColors: false, color: 0x7fd6b0 }));
   trunk.castShadow = crown.castShadow = true;
@@ -24,7 +23,7 @@ export function createHeartTree(scene, makeToon, groundAt) {
   let shown = -1, pulse = 0;
 
   return {
-    spot: SPOT,
+    spot,
     /** Ve lai cay cho so ky nang da thanh thao. */
     setMastered(count) {
       if (count === shown) return;

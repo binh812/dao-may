@@ -113,6 +113,19 @@ test('falling off respawns on safe ground', () => {
   assert.ok(s.x < 5, `x=${s.x}`);
 });
 
+test('a world can lower or remove the fall depth', () => {
+  // long thung lung nam o -40 m: voi muc roi mac dinh thi nguoi choi bi keo ve lien tuc; the gioi tu dat muc roi thi di binh thuong
+  const deep = flat({ heightAt: () => -40, respawnY: -Infinity }), s = createPlayer(0, 0, deep);
+  let respawns = 0;
+  run(s, deep, 2, { moveX: 1, moveZ: 0, jump: false }, (st) => { if (st.events.respawned) respawns++; });
+  assert.equal(respawns, 0);
+  assert.ok(s.x > 8, `x=${s.x}`);
+  const stuck = flat({ heightAt: () => -40 }), t = createPlayer(0, 0, stuck);
+  let stuckRespawns = 0;
+  run(t, stuck, 1, { moveX: 1, moveZ: 0, jump: false }, (st) => { if (st.events.respawned) stuckRespawns++; });
+  assert.ok(stuckRespawns > 0, 'muc roi mac dinh phai con tac dung khi the gioi khong dat rieng');
+});
+
 test('big dt does not tunnel', () => {
   // Vach mong 0,5 m: mot buoc lon duy nhat se nhay qua no neu khong chia buoc con.
   const world = flat({ heightAt: (x) => (x > 2 && x < 2.5 ? 3 : 0) }), s = createPlayer(1.4, 0, world);

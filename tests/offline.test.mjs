@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { collectAssets, manifestText } from '../scripts/make-asset-manifest.mjs';
+import { cacheName, collectAssets, manifestText, swCacheName } from '../scripts/make-asset-manifest.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const read = (p) => readFileSync(join(root, p), 'utf8');
@@ -12,6 +12,11 @@ const walk = (dir) => readdirSync(dir).flatMap((n) => { const p = join(dir, n); 
 
 test('asset-manifest.json on disk matches the files that exist', () => {
   assert.equal(read('asset-manifest.json').replaceAll('\r\n', '\n'), manifestText(root), 'chay lai: node scripts/make-asset-manifest.mjs');
+});
+
+test('the service worker cache name follows the asset list', () => {
+  // neu khong khop: may da cai game tu truoc se khong luu san cac file moi (vd. the gioi moi) va hong khi mat mang
+  assert.equal(swCacheName(root), cacheName(root), 'chay lai: node scripts/make-asset-manifest.mjs');
 });
 
 test('every listed asset exists and the essentials are listed', () => {

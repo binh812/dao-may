@@ -99,6 +99,5 @@ let grass;
   field.receiveShadow = true; world.add(field);
 }
 
-const motesScale = { value: 1 };
 
-export { grass, motesScale };
+export { grass };

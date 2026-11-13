@@ -2,25 +2,24 @@
 // Khong chua luat choi; luat nam o player-core.js (co test).
 import * as THREE from 'three';
 import { camera, controls, U } from '../core/stage.js';
-import { R, height } from '../world/layout.js';
-import { colliders, groundAt } from '../world/colliders.js';
-import { chr, eyes, sprout, squash } from '../actors/actors.js';
+import { realm } from '../world/realm.js';
+import { chr, eyes, sprout, squash } from '../actors/mam.js';
 import { TUNING, createPlayer, stepPlayer } from './player-core.js';
 import { cameraRelative, steerYaw } from './input-core.js';
 import { createTouchControls } from './touch-controls.js';
 
-const SPAWN = { x: -3.2, z: 2.4 };
 const CAMERA = { distance: 8.5, portraitDistance: 10.5, pitch: 0.42, minPitch: 0.12, maxPitch: 1.1, lookHeight: 1.1, clearance: 0.6, follow: 9, yawPerPixel: 0.006, pitchPerPixel: 0.004, steerAfter: 1.5, steerRate: 0.8 };
 const HINT_SECONDS = 6;
+const WALL_HEIGHT = 1e5; // the gioi tra do cao tu muc nay tro len cho vung khong duoc vao
 
 const angleDelta = (from, to) => Math.atan2(Math.sin(to - from), Math.cos(to - from));
 
 export function createPlay() {
   controls.enabled = false; controls.autoRotate = false;
-  const world = { heightAt: groundAt, colliders, safeRadius: R - 1.5 };
-  const player = createPlayer(SPAWN.x, SPAWN.z, world);
+  const world = { heightAt: (x, z) => realm.groundAt(x, z), colliders: realm.colliders, safeRadius: realm.safeRadius, respawnY: realm.respawnY };
+  const player = createPlayer(realm.spawn.x, realm.spawn.z, world);
   const input = createTouchControls(document.body);
-  const cam = { yaw: -0.75, pitch: CAMERA.pitch, idle: 99, snapped: false };
+  const cam = { yaw: realm.cameraYaw, pitch: realm.cameraPitch ?? CAMERA.pitch, idle: 99, snapped: false };
   player.yaw = cam.yaw + Math.PI; chr.rotation.y = player.yaw; // luc dau quay lung ve may quay
   const anim = { bob: 0, land: 0, lean: 0, leafAngle: 0, leafSpeed: 0, blink: 2 };
   const target = new THREE.Vector3(), desired = new THREE.Vector3(), lookAt = new THREE.Vector3();
@@ -36,10 +35,11 @@ export function createPlay() {
   function updateCamera(dt, stick) {
     const portrait = innerHeight > innerWidth, dist = portrait ? CAMERA.portraitDistance : CAMERA.distance;
     if (cam.idle > CAMERA.steerAfter) cam.yaw += steerYaw(stick, dt, CAMERA.steerRate);
-    target.set(player.x, player.y + CAMERA.lookHeight, player.z);
+    target.set(player.x, player.y + (realm.cameraLookHeight ?? CAMERA.lookHeight), player.z);
     const cp = Math.cos(cam.pitch);
     desired.set(target.x + Math.sin(cam.yaw) * cp * dist, target.y + Math.sin(cam.pitch) * dist, target.z + Math.cos(cam.yaw) * cp * dist);
-    if (Math.hypot(desired.x, desired.z) < R) desired.y = Math.max(desired.y, height(desired.x, desired.z) + CAMERA.clearance);
+    const under = realm.groundAt(desired.x, desired.z); // ngoai mep (-Infinity) hoac tuong chan (rat lon) thi bo qua
+    if (Number.isFinite(under) && under < WALL_HEIGHT) desired.y = Math.max(desired.y, under + CAMERA.clearance);
     const k = cam.snapped ? 1 - Math.exp(-dt * CAMERA.follow) : 1;
     camera.position.lerp(desired, k); lookAt.lerp(target, k); cam.snapped = true;
     camera.lookAt(lookAt);

@@ -40,4 +40,7 @@ const flatAmbient = new THREE.AmbientLight(0xffffff, 1.3); flatAmbient.visible =
 const lanternLight = new THREE.PointLight(0xffa850, 3, 9, 1.6);
 const hemi = new THREE.HemisphereLight(new THREE.Color(0.52, 0.76, 1.0), new THREE.Color(0.34, 0.58, 0.56), 1.45); scene.add(hemi);
 
-export { SKY, SUN_DIR, U, camera, controls, flatAmbient, hemi, lanternLight, renderer, scene, sun };
+// kich thuoc hat theo chieu cao man hinh (app.js cap nhat khi doi kich thuoc)
+const motesScale = { value: 1 };
+
+export { SKY, SUN_DIR, U, motesScale, camera, controls, flatAmbient, hemi, lanternLight, renderer, scene, sun };

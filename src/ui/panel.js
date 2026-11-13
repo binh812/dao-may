@@ -1,10 +1,11 @@
 import { controls, flatAmbient, hemi, scene, sun } from '../core/stage.js';
 import { T, WEATHER, weatherState } from '../fx/weather.js';
-import { bloomPass, combinePass, dofPass } from '../render/post.js';
+import { bloomPass, combinePass, dofPass, paintPass } from '../render/post.js';
 import { Q, TIERS, qs, tierName } from '../core/quality.js';
-import { grass } from '../world/meadow.js';
+import { realm } from '../world/realm.js';
 
 // ---------------------------------------------------------------- UI / toggles
+const WORLD_LABELS = [['island', 'Đảo Mây'], ['valley', 'Thung lũng']];
 const LABEL = { vol: 'Tia nắng + sương', shadow: 'Bóng đổ', ao: 'AO', bloom: 'Bloom', dof: 'Xa gần', grass: 'Cỏ', env: 'Ánh sáng trời', spin: 'Tự xoay' };
 function applyToggles() {
   sun.castShadow = T.shadow;
@@ -12,13 +13,15 @@ function applyToggles() {
   bloomPass.enabled = T.bloom;
   combinePass.uniforms.uVolOn.value = T.vol && Q.volSteps > 0 ? 1 : 0;
   dofPass.uniforms.uMaxBlur.value = T.dof && Q.dofTaps > 0 ? 1 : 0;
-  grass.visible = T.grass;
+  realm.setGrassVisible(T.grass);
   scene.environmentIntensity = T.env ? 0.4 : 0; hemi.visible = T.env; flatAmbient.visible = !T.env;
   controls.autoRotate = T.spin;
   document.querySelectorAll('#toggles button').forEach(b => b.classList.toggle('on', T[b.dataset.k]));
 }
 {
-  const tg = document.getElementById('toggles'), tiers = document.getElementById('tiers');
+  const tg = document.getElementById('toggles'), tiers = document.getElementById('tiers'), worlds = document.getElementById('worlds');
+  for (const [id, label] of WORLD_LABELS) { const b = document.createElement('button'); b.textContent = label; b.classList.toggle('on', id === realm.name); b.onclick = () => { qs.set('world', id); location.search = qs.toString(); }; worlds.append(b); }
+  if (realm.paint && Q.paintRadius > 0) { const b = document.createElement('button'); b.textContent = 'Nét cọ'; b.classList.add('on'); b.onclick = () => { paintPass.enabled = !paintPass.enabled; b.classList.toggle('on', paintPass.enabled); }; worlds.append(b); }
   for (const k of Object.keys(T)) { const b = document.createElement('button'); b.textContent = LABEL[k]; b.dataset.k = k; b.onclick = () => { T[k] = !T[k]; applyToggles(); }; tg.append(b); }
   for (const k of Object.keys(TIERS)) { const b = document.createElement('button'); b.textContent = TIERS[k].label; b.classList.toggle('on', k === tierName); b.onclick = () => { qs.set('q', k); location.search = qs.toString(); }; tiers.append(b); }
   const wr = document.getElementById('weather');

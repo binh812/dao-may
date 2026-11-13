@@ -12,7 +12,7 @@ code, không asset ngoài. Trả lời anh Ben bằng tiếng Việt có dấu. 
 - Chơi không mạng: `sw.js` lưu sẵn mọi file trong `asset-manifest.json`. Thêm/xóa file trong `src/`, `vendor/`, `icons/` thì chạy
   `node scripts/make-asset-manifest.mjs` (test `tests/offline.test.mjs` đỏ nếu quên). Kiểm thật: `node scripts/offline-check.mjs`
   (mở một lần, tắt máy chủ, mở lại). Service worker chỉ hoạt động trên HTTPS hoặc localhost, không hoạt động qua `http://192.168...`.
-- Tham số URL: `grade=1|2|3` (tạo hồ sơ tạm, bỏ qua màn chọn lớp), `ask=1` (mở sẵn một thẻ bài tập để chụp ảnh), `mode=view` (ngắm cảnh, Mầm tự nhảy; mặc định là chế độ chơi), `q=low|medium|high`, `w=sun|wind|mist|rain|storm|snow|night`, `cam=x,y,z`, `ui=0`, `spin=0`, `dyn=0`, `flash=0.6`.
+- Tham số URL: `world=island|valley` (chọn thế giới; mặc định `island`), `grade=1|2|3` (tạo hồ sơ tạm, bỏ qua màn chọn lớp), `ask=1` (mở sẵn một thẻ bài tập để chụp ảnh), `mode=view` (ngắm cảnh, Mầm tự nhảy; mặc định là chế độ chơi), `q=low|medium|high`, `w=sun|wind|mist|rain|storm|snow|night`, `cam=x,y,z`, `ui=0`, `spin=0`, `dyn=0`, `flash=0.6`.
 - Kiểm hình ảnh: chụp bằng Edge headless theo skill `threejs-stylized-scene` (bước 4), tự đọc ảnh trước khi báo xong.
 
 ## Cấu trúc (`src/`, ES module thuần, không build)
@@ -26,10 +26,18 @@ code, không asset ngoài. Trả lời anh Ben bằng tiếng Việt có dấu. 
   `adaptive.js` (hồ sơ, xếp lớp, chọn bài theo sức, bài đã sai), `parent-gate.js` (cổng phụ huynh).
 - `game/battle-core.js` luật đối đầu (thuần, có test); `game/session.js` nối trận đấu, học tập, giao diện, âm thanh;
   `game/enemy-views.js`, `game/heart-tree.js`, `game/sfx.js` là phần nhìn và nghe. `ui/hud.js`, `ui/question-card.js`, `ui/notebook.js`.
-- `actors/` nhân vật và sinh vật; `fx/` hạt (mưa, tuyết, lá) và `weather.js` (preset + nội suy); `render/post.js` hậu kỳ, AO,
-  ánh sáng thể tích; `ui/panel.js` bảng điều khiển; `main.js` đổi kích thước + vòng lặp.
-- **Thứ tự `import` trong `main.js` là thứ tự dựng cảnh**: mọi module dùng chung một bộ sinh số ngẫu nhiên có seed, đổi thứ tự
-  là đổi cả cảnh. Module chỉ được import từ module đứng trước nó.
+- `actors/` nhân vật (`mam.js`, dùng chung) và sinh vật của đảo; `fx/` hạt (mưa, tuyết, lá) và `weather.js` (preset + nội suy);
+  `render/post.js` hậu kỳ, AO, ánh sáng thể tích, lớp lọc nét cọ (Kuwahara, chỉ bật khi thế giới đặt `paint`); `ui/panel.js`.
+- **Nhiều thế giới:** `main.js` chọn thế giới theo `?world=`, nạp `worlds/<tên>.js`, đăng ký qua `world/realm.js`, rồi mới nạp
+  `app.js` (đổi kích thước + vòng lặp dùng chung). Phần game (`play`, `session`, `app`, `panel`, `weather`, `post`) chỉ đọc
+  `realm` (mặt đất, vật cản, chỗ sinh, bầu trời...), không import module của riêng thế giới nào. Thêm thế giới = thêm một file
+  trong `worlds/` + một dòng trong `main.js`.
+  - `worlds/island.js` — đảo bay; các module dựng cảnh nằm ở `world/`.
+  - `worlds/valley.js` — thung lũng rộng 2,4 km kiểu tranh vẽ; module ở `valley/`: `terrain.js` (hàm độ cao, lưới 10 m, bản đồ
+    độ cao cho shader), `grass.js` (cỏ và hoa chỉ sống trong ô 72 m quanh người chơi, quấn theo vị trí), `scenery.js` (rừng
+    thông instanced, cây, làng, cối xay, núi xa), `sky.js` (mây tích).
+- **Thứ tự `import` trong `worlds/island.js` là thứ tự dựng cảnh**: các module của đảo dùng chung một bộ sinh số ngẫu nhiên có
+  seed, đổi thứ tự là đổi cả cảnh. Module dùng chung không được gọi `rnd()` của `core/util.js` (hạt mưa có bộ sinh riêng).
 - `archive/` — các bản một-file cũ để đối chiếu, không sửa.
 
 ## Cách làm việc
