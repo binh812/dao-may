@@ -27,6 +27,7 @@ const groundAt = (x, z) => realm.groundAt(x, z);
 const WAVE = { firstCount: 3, maxCount: 5, firstWake: 8, wakeStep: 2, maxWake: 16 };
 const MAX_START_WAVE = 99;
 const MILL_SPIN_BOOST = 5, SPLASH_EVERY = 0.34, SPLASH_MIN_SPEED = 1.5;   // coi xay quay nhanh sau me bot; nhip tieng nuoc khi loi
+const SHOP_HINT_DELAY_MS = 3600;
 const GUIDE_FROM = 25; // xa hon khoang nay (m) thi hien mui ten chi huong
 const PRAISE = ['', 'Tuyệt!', 'Chiêu bậc 2!', 'Chiêu bậc 3, mạnh nhất!'];
 
@@ -173,13 +174,13 @@ export function createSession(play) {
   function actionLabel() {
     if (!state.profile || busy()) return null;
     if (near(stall)) return 'Vào quầy hàng';
-    if (near(millSpot)) return canStart(mill, state.wave) ? 'Xay bột' : 'Bột đã xay xong ✓';
+    if (near(millSpot) && !state.cleared) return canStart(mill, state.wave) ? 'Xay bột' : 'Bột đã xay xong ✓';
     return null;
   }
   function useAction() {
     if (!state.profile || busy()) return;
     if (near(stall)) shopPanel.open();
-    else if (near(millSpot)) { if (canStart(mill, state.wave)) startMill(); else hud.toast('Mẻ bột chuyến này xong rồi. Chuyến sau cối xay lại có mẻ mới nhé!', 2600); }
+    else if (near(millSpot) && !state.cleared) { if (canStart(mill, state.wave)) startMill(); else hud.toast('Mẻ bột chuyến này xong rồi. Chuyến sau cối xay lại có mẻ mới nhé!', 2600); }
   }
 
   /** Cham diem mot bai da tra loi: cap nhat ho so, bai sai, luu. Tra ve true neu be vua thanh thao ky nang. */
@@ -195,7 +196,7 @@ export function createSession(play) {
   function startMill() {
     if (!startJob(mill, state.wave)) return;
     state.asking = true;
-    askMill();
+    try { askMill(); } catch (error) { stopMill(error); }   // the bai khong mo duoc thi khong de game dung hinh mai
   }
   function stopMill(error) {
     console.error('Khong xay duoc me bot:', error);
@@ -213,8 +214,17 @@ export function createSession(play) {
       state.asking = false; realm.millBoost = MILL_SPIN_BOOST;
       try { localStorage.setItem(BONUS_KEY, JSON.stringify(mill.bonus)); } catch (error) { console.warn('Khong luu duoc Hat Nang thuong:', error); }
       refreshSeeds(); refreshHud(); sfx.cleared();
-      hud.toast(`Cối xay quay tít! Bé đúng ${result.correct}/${MILL_JOB.questions} bài và được ${result.reward} Hạt Nắng.`, 3400);
+      const praise = result.correct > 0 ? `Bé đúng ${result.correct}/${MILL_JOB.questions} bài và được` : 'Cảm ơn bé đã giúp xay bột! Bé được';
+      hud.toast(`Cối xay quay tít! ${praise} ${result.reward} Hạt Nắng.`, 3400);
+      hintShop();
     }).catch(stopMill);
+  }
+
+  /** Nhac mot lan khi be lan dau du hat cho mon re nhat. Tra loi sau loi khen dang hien de khong de mat no. */
+  function hintShop() {
+    if (!stall || shopHinted || balance(wardrobe, collected()) < cheapestPrice()) return;
+    shopHinted = true;
+    setTimeout(() => hud.toast('Bé đủ Hạt Nắng để đổi đồ rồi! Ghé quầy cô Thỏ Bông ở cổng làng nhé.', 3600), SHOP_HINT_DELAY_MS);
   }
 
   function collectSeeds() {
@@ -224,7 +234,7 @@ export function createSession(play) {
     try { localStorage.setItem(SEED_KEY, JSON.stringify([...takenIds(seeds), ...seedSave.parked])); } catch (error) { console.warn('Khong luu duoc Hat Nang:', error); }
     if (seeds.count === seeds.total) hud.toast('Bé đã nhặt hết Hạt Nắng của thung lũng! Giỏi quá!', 3200);
     else if (isMilestone(seeds)) hud.toast(`${seeds.count} Hạt Nắng rồi! Còn ${seeds.total - seeds.count} hạt đang chờ bé.`, 2600);
-    else if (stall && !shopHinted && balance(wardrobe, collected()) >= cheapestPrice()) { shopHinted = true; hud.toast('Bé đủ Hạt Nắng để đổi đồ rồi! Ghé quầy cô Thỏ Bông ở cổng làng nhé.', 3600); }
+    else hintShop();
   }
 
   function useLeaf() {

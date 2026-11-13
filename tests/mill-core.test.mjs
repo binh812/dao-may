@@ -62,4 +62,6 @@ test('saved bonus is sanitised and bad wave numbers are rejected', () => {
   assert.equal(createMill('x').bonus, 0);
   assert.throws(() => startJob(createMill(), 0), RangeError);
   assert.throws(() => startJob(createMill(), 1.5), RangeError);
+  assert.throws(() => startJob(createMill(), -2), RangeError);
+  assert.throws(() => startJob(createMill(), NaN), RangeError);
 });

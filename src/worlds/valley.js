@@ -62,7 +62,7 @@ export default {
   shop: SHOP,
   mill: { x: MILL.x, z: MILL.z, reach: MILL_REACH },   // xay bot: giai bai lay Hat Nang (moi chuyen mot me)
   millBoost: 0,                        // phan choi dat len khi xay xong me bot
-  wading: false,                       // Mam dang loi trong ho (phan choi dung de phat tieng nuoc)                          // quay doi Hat Nang lay trang phuc
+  wading: false,                       // Mam dang loi trong ho (phan choi dung de phat tieng nuoc)
   collectibles: seedSpots(groundAt, scenery.colliders),   // Hat Nang rai doc duong, quanh ho va coi xay
   cameraYaw: Number(qs.get('yaw')) || -0.92, cameraPitch: 0.04, cameraLookHeight: 3.0, fogScale: 0.18, paint: true,
   sky: sky.mesh,
