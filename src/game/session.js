@@ -15,9 +15,13 @@ import { createHeartTree } from './heart-tree.js';
 import { createSfx } from './sfx.js';
 import { createCollection, isMilestone, stepCollection, takenIds } from './collect-core.js';
 import { createSeedViews } from './seed-views.js';
+import { CATALOG, SLOTS, balance, buy, catalogTotal, cheapestPrice, createWardrobe, serializeWardrobe, shelf, toggleWear } from './shop-core.js';
+import { createShopPanel } from '../ui/shop.js';
+import { applyOutfit } from '../actors/outfit.js';
 
 const SAVE_KEY = 'daomay.profile.v1', MUTE_KEY = 'daomay.muted';
-const SEED_KEY = `daomay.seeds.${realm.name}.v1`;   // Hat Nang da nhat, luu rieng cho tung the gioi
+const SEED_PREFIX = 'daomay.seeds.', WARDROBE_KEY = 'daomay.wardrobe.v1';   // tu do cua Mam dung chung cho moi the gioi
+const SEED_KEY = `${SEED_PREFIX}${realm.name}.v1`;   // Hat Nang da nhat, luu rieng cho tung the gioi
 const groundAt = (x, z) => realm.groundAt(x, z);
 const WAVE = { firstCount: 3, maxCount: 5, firstWake: 8, wakeStep: 2, maxWake: 16 };
 const MAX_START_WAVE = 99;
@@ -55,6 +59,18 @@ function loadSeeds() {
   return { collection: createCollection(realm.collectibles, saved), parked: saved.filter((id) => !known.has(id)) };
 }
 
+/** Tu do da luu; khong doc duoc thi coi nhu chua co mon nao (so du tinh lai tu so hat da nhat nen be khong mat hat). */
+function loadWardrobe() {
+  try { return createWardrobe(JSON.parse(localStorage.getItem(WARDROBE_KEY) ?? 'null')); }
+  catch (error) { console.warn('Khong doc duoc tu do cua Mam:', error); return createWardrobe(); }
+}
+/** Xoa moi tien do: ho so hoc, Hat Nang cua moi the gioi, tu do. */
+function eraseProgress() {
+  const seedKeys = [];
+  for (let i = 0; i < localStorage.length; i++) { const key = localStorage.key(i); if (key?.startsWith(SEED_PREFIX)) seedKeys.push(key); }
+  for (const key of [SAVE_KEY, WARDROBE_KEY, ...seedKeys]) localStorage.removeItem(key);
+}
+
 function spawnEnemies(wave, player, rng) {
   const spots = realm.spotsForWave ? realm.spotsForWave(wave) : realm.spawnSpots; // the gioi rong: moi chuyen o mot noi
   const valid = spots.filter(([x, z]) => Number.isFinite(groundAt(x, z)) && realm.colliders.every((c) => Math.hypot(x - c.x, z - c.z) > c.r + 1));
@@ -70,19 +86,35 @@ export function createSession(play) {
   const player = play.player, rng = Math.random;
   const views = createEnemyViews(scene, toon, groundAt), card = createQuestionCard();
   const other = realm.name === 'valley' ? { id: 'island', label: 'Đảo Mây' } : { id: 'valley', label: 'Thung lũng' };
-  const hud = createHud({ onLeaf: useLeaf, onSkill: useSkill, worldLabel: other.label, onSwitchWorld: () => { const q = new URLSearchParams(location.search); q.set('world', other.id); location.search = q.toString(); } });
+  const hud = createHud({ onLeaf: useLeaf, onSkill: useSkill, onShop: openShop, worldLabel: other.label, onSwitchWorld: () => { const q = new URLSearchParams(location.search); q.set('world', other.id); location.search = q.toString(); } });
   const sfx = createSfx(), tree = createHeartTree(scene, toon, groundAt, realm.treeSpot);
   try { sfx.setMuted(localStorage.getItem(MUTE_KEY) === '1'); } catch (error) { console.warn('Khong doc duoc cai dat am thanh:', error); }
   const notebook = createNotebook({
     getProfile: () => state.profile,
     changeGrade: (grade) => { changeGrade(state.profile, grade); saveProfile(state.profile, hud); refreshHud(); },
-    resetProgress: () => { try { localStorage.removeItem(SAVE_KEY); localStorage.removeItem(SEED_KEY); } catch (error) { console.warn('Khong xoa duoc ho so:', error); } location.reload(); },
+    resetProgress: () => { try { eraseProgress(); } catch (error) { console.warn('Khong xoa duoc ho so:', error); } location.reload(); },
     isMuted: () => sfx.isMuted(),
     setMuted: (value) => { sfx.setMuted(value); try { localStorage.setItem(MUTE_KEY, value ? '1' : '0'); } catch (error) { console.warn('Khong luu duoc cai dat am thanh:', error); } },
   });
   const guideForward = new THREE.Vector3();
   const seedSave = loadSeeds(), seeds = seedSave?.collection ?? null, seedViews = seeds ? createSeedViews(scene, seeds) : null;
   if (seeds) hud.setSeeds(seeds.count, seeds.total);
+  const wardrobe = loadWardrobe();
+  applyOutfit(wardrobe.worn);
+  // ?wear=id,id mac thu cac mon (chi de chup anh kiem tra; khong luu, khong tinh la so huu)
+  const askedWear = (new URLSearchParams(location.search).get('wear') ?? '').split(',');
+  if (askedWear[0]) applyOutfit(Object.fromEntries(SLOTS.map((slot) => [slot.id, CATALOG.find((item) => item.slot === slot.id && askedWear.includes(item.id))?.id ?? null])));
+  // Quay hang chi co o the gioi dat `realm.shop` va co Hat Nang. Hat da nhat ma lan nay khong hien (parked) van la cua be.
+  const stall = seeds && realm.shop ? realm.shop : null, collected = () => seeds.count + seedSave.parked.length;
+  // khong nem loi: be van choi va doi duoc phan lon mon; nguoi lam game thay loi nay trong console khi thu
+  if (stall && catalogTotal() > seeds.total) console.error(`Quay hang can ${catalogTotal()} Hat Nang nhung the gioi chi co ${seeds.total}: be se khong doi duoc het`);
+  const shopPanel = stall ? createShopPanel({
+    getView: () => ({ balance: balance(wardrobe, collected()), slots: SLOTS, items: shelf(wardrobe, collected()) }),
+    onBuy: (id) => { if (!buy(wardrobe, id, collected()).ok) return; const saved = wardrobeChanged(); sfx.buy(); if (saved) hud.toast('Mầm có đồ mới rồi! Xinh quá!', 2200); },
+    onWear: (id) => { if (toggleWear(wardrobe, id)) wardrobeChanged(); },
+  }) : null;
+  let shopHinted = wardrobe.owned.size > 0;   // da tung doi do thi be biet quay hang roi
+  const busy = () => notebook.isOpen() || state.asking || Boolean(shopPanel?.isOpen());
   // ?wave=N bat dau tu chuyen thu N (de thu va chup anh kiem tra cac diem xa)
   const askedWave = Math.floor(Number(new URLSearchParams(location.search).get('wave')));
   const firstWave = Number.isFinite(askedWave) && askedWave >= 1 ? Math.min(askedWave, MAX_START_WAVE) : 1;
@@ -122,6 +154,13 @@ export function createSession(play) {
     hud.setGuide(angle, dist);
   }
 
+  function wardrobeChanged() {
+    applyOutfit(wardrobe.worn);
+    try { localStorage.setItem(WARDROBE_KEY, JSON.stringify(serializeWardrobe(wardrobe))); return true; }
+    catch (error) { console.warn('Khong luu duoc tu do:', error); hud.toast('Máy không lưu được đồ mới lần này.', 2600); return false; }
+  }
+  function openShop() { if (shopPanel && state.profile && !busy()) shopPanel.open(); }
+
   function collectSeeds() {
     stepCollection(seeds, player);
     if (seeds.events.picked.length === 0) return;
@@ -129,10 +168,11 @@ export function createSession(play) {
     try { localStorage.setItem(SEED_KEY, JSON.stringify([...takenIds(seeds), ...seedSave.parked])); } catch (error) { console.warn('Khong luu duoc Hat Nang:', error); }
     if (seeds.count === seeds.total) hud.toast('Bé đã nhặt hết Hạt Nắng của thung lũng! Giỏi quá!', 3200);
     else if (isMilestone(seeds)) hud.toast(`${seeds.count} Hạt Nắng rồi! Còn ${seeds.total - seeds.count} hạt đang chờ bé.`, 2600);
+    else if (stall && !shopHinted && balance(wardrobe, collected()) >= cheapestPrice()) { shopHinted = true; hud.toast('Bé đủ Hạt Nắng để đổi đồ rồi! Ghé quầy cô Thỏ Bông ở cổng làng nhé.', 3600); }
   }
 
   function useLeaf() {
-    if (!state.battle || state.asking || state.cleared) return;
+    if (!state.battle || busy() || state.cleared) return;
     const hit = leafAttack(state.battle, player);
     if (!hit) return;
     views.leaf(player, hit.target); sfx.leaf();
@@ -140,7 +180,7 @@ export function createSession(play) {
   }
 
   function useSkill() {
-    if (!state.battle || state.asking || state.cleared) return;
+    if (!state.battle || busy() || state.cleared) return;
     if (!nearestEnemy(state.battle, player, BATTLE.skillRange)) { hud.toast('Lại gần một Bóng Lặng rồi hãy ra chiêu nhé!'); return; }
     let skillId, question;
     try { skillId = pickSkill(state.profile, rng); question = makeQuestion(skillId, rng); }
@@ -174,18 +214,19 @@ export function createSession(play) {
 
   return {
     /** He so thoi gian cho nhan vat va tran dau: dung khi chua chon lop, cham lai khi dang giai bai. */
-    timeScale: () => (!state.profile || notebook.isOpen() || state.asking ? 0 : 1),
+    timeScale: () => (!state.profile || busy() ? 0 : 1),
     update(dt) {
       state.time += dt;
       tree.update(dt, state.time);
       if (seeds) {
-        if (state.profile && !notebook.isOpen() && !state.asking) collectSeeds();
+        if (state.profile && !busy()) collectSeeds();
         seedViews.update(state.time);
       }
+      if (stall) hud.setShopNear(Boolean(state.profile) && !busy() && Math.hypot(player.x - stall.x, player.z - stall.z) < stall.reach);
       const b = state.battle; if (!b) return;
       if (player.events.jumped) sfx.jump();
       if (player.events.landed) sfx.land();
-      if (!state.cleared && !notebook.isOpen() && !state.asking) {
+      if (!state.cleared && !busy()) {
         stepBattle(b, player, dt);
         if (b.events.hit) { refreshHud(); sfx.hit(); hud.toast(b.events.fainted ? 'Mầm ngủ gật một chút. Dậy nào, không sao cả!' : 'Ối! Chạy ra khỏi vòng đỏ nhé.', 1600); }
         for (const s of b.events.struck) views.strike(s.x, s.z);
@@ -197,6 +238,8 @@ export function createSession(play) {
     },
     /** Dung cho anh chup kiem tra: mo mot bai mau ngay. */
     debugAsk() { if (state.profile) useSkill(); },
+    /** Dung cho anh chup kiem tra: mo bang doi do ngay. */
+    debugShop() { if (shopPanel && state.profile) shopPanel.open(); },
     runSpeed: TUNING.runSpeed,
   };
 }

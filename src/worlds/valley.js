@@ -7,7 +7,7 @@ import '../core/stage.js';
 import '../world/materials.js';
 import { SUN_DIR, U, camera, controls, scene, sun } from '../core/stage.js';
 import { chr } from '../actors/mam.js';
-import { CAMP_SPOTS, EDGE, createTerrain, groundAt } from '../valley/terrain.js';
+import { CAMP_SPOTS, EDGE, SHOP, createTerrain, groundAt } from '../valley/terrain.js';
 import { createSky } from '../valley/sky.js';
 import { createGrass } from '../valley/grass.js';
 import { createScenery } from '../valley/scenery.js';
@@ -57,8 +57,9 @@ export default {
   waveHint: (wave) => campFor(wave).hint,
   sprintScale: 1.9,                    // the gioi rong: giu can het co thi Mam chay nhanh gan gap doi
   treeSpot: { x: 3.5, z: -9 },
+  shop: SHOP,                          // quay doi Hat Nang lay trang phuc
   collectibles: seedSpots(groundAt, scenery.colliders),   // Hat Nang rai doc duong, quanh ho va coi xay
-  cameraYaw: -0.92, cameraPitch: 0.04, cameraLookHeight: 3.0, fogScale: 0.18, paint: true,
+  cameraYaw: Number(qs.get('yaw')) || -0.92, cameraPitch: 0.04, cameraLookHeight: 3.0, fogScale: 0.18, paint: true,
   sky: sky.mesh,
   setGrassVisible(visible) { grass.group.visible = visible; },
   update(dt, time, ctx) {

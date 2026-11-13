@@ -10,6 +10,8 @@ export const EDGE = 1050;                      // ban kinh vung duoc di
 export const WALL = 1e6;                       // do cao tra ve cho vung khong duoc vao (nguoi choi bi chan lai)
 export const VILLAGE = { x: 360, z: -280, r: 85 };
 export const MILL = { x: 470, z: -150 };
+// Quay hang o cong lang: ben phai duong tu doi co vao lang, mat quay nhin ra duong (yaw). reach = khoang cach de vao quay.
+export const SHOP = { x: 325.3, z: -230.2, yaw: -2.328, reach: 7.5, clear: 7.5 };
 export const LAKE = { x: 215, z: -305, r: 46, depth: 3.4, below: 0.55, wade: 0.28 };   // ho: tam, ban kinh, do sau long ho, mat nuoc thap hon bo, do sau Mam loi duoc
 // Noi Bong Lang ngu o tung chuyen di [x, z]; canh vat phai chua trong quanh cac diem nay (CAMP_CLEAR)
 export const CAMP_SPOTS = [[0, 0], [95, -70], [205, -150], [292, -208], [440, -185], [150, 185]];
