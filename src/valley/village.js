@@ -1,7 +1,7 @@
 // Lang mai cam cua thung lung: nha tuong voi trang san sat nhau quanh nha tho co thap, vai nha trai le giua ruong.
 import * as THREE from 'three';
 import { TRS, rnd } from '../core/util.js';
-import { MILL, VILLAGE, heightAt, pathDistance } from './terrain.js';
+import { MILL, VILLAGE, heightAt, nearCamp, pathDistance } from './terrain.js';
 
 const HOUSES = 36, FARMS = 7;
 const HOUSE_RING = [14, VILLAGE.r * 0.66];      // nha nam trong vanh nay quanh tam lang
@@ -52,7 +52,7 @@ export function createVillage(B) {
   }
   for (let placed = 0, guard = 0; placed < FARMS && guard < FARMS * 40; guard++) {
     const a = rnd() * Math.PI * 2, r = VILLAGE.r * 1.5 + rnd() * 260, x = VILLAGE.x + Math.cos(a) * r, z = VILLAGE.z + Math.sin(a) * r;
-    if (!fits(x, z, 8) || Math.hypot(x - MILL.x, z - MILL.z) < 30 || Math.hypot(x, z) < 60) continue;
+    if (!fits(x, z, 8) || nearCamp(x, z) || Math.hypot(x - MILL.x, z - MILL.z) < 30 || Math.hypot(x, z) < 60) continue;
     blocks.push(house(B, x, z, 7 + rnd() * 2, 10 + rnd() * 4, 4.5, rnd() * Math.PI, pick(ROOFS)));
     placed++;
   }

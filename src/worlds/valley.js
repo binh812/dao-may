@@ -7,24 +7,25 @@ import '../core/stage.js';
 import '../world/materials.js';
 import { SUN_DIR, U, camera, controls, scene, sun } from '../core/stage.js';
 import { chr } from '../actors/mam.js';
-import { EDGE, createTerrain, groundAt } from '../valley/terrain.js';
+import { CAMP_SPOTS, EDGE, createTerrain, groundAt } from '../valley/terrain.js';
 import { createSky } from '../valley/sky.js';
 import { createGrass } from '../valley/grass.js';
 import { createScenery } from '../valley/scenery.js';
 
-const FAR_PLANE = 9000, SHADOW_HALF = 26, SHADOW_DISTANCE = 70;
+const FAR_PLANE = 10500, SHADOW_HALF = 26, SHADOW_DISTANCE = 70;
 // Tham so thu `at=x,z`: sinh ra o cho khac de chup anh kiem tra (vd. at=300,-215 la mep lang)
 const askedSpot = (qs.get('at') ?? '').split(',').map(Number);
 const SPAWN = askedSpot.length === 2 && askedSpot.every(Number.isFinite) && Math.hypot(...askedSpot) < EDGE - 20 ? { x: askedSpot[0], z: askedSpot[1] } : { x: 0, z: 0 };
 // Moi chuyen di, Bong Lang ngu o mot noi xa dan: doi co -> bia dong -> duong xuong thung -> mep lang -> coi xay -> bia rung.
-const CAMPS = [
-  { x: 0, z: 0, hint: 'Các Bóng Lặng đang ngủ quanh đây. Lại gần và đánh thức chúng!' },
-  { x: 95, z: -70, hint: 'Chuyến 2: có Bóng Lặng ngủ ở bìa đồng cỏ. Đi theo mũi tên nhé!' },
-  { x: 205, z: -150, hint: 'Chuyến 3: Bóng Lặng đang ngủ trên đường xuống thung lũng.' },
-  { x: 292, z: -208, hint: 'Chuyến 4: ngôi làng mái cam đang ngủ gật. Tới đánh thức nào!' },
-  { x: 440, z: -185, hint: 'Chuyến 5: cối xay gió ngừng quay rồi. Bóng Lặng ở quanh đó.' },
-  { x: 150, z: 185, hint: 'Chuyến 6: Bóng Lặng trốn ở bìa rừng thông.' },
+const CAMP_HINTS = [
+  { hint: 'Các Bóng Lặng đang ngủ quanh đây. Lại gần và đánh thức chúng!' },
+  { hint: 'Chuyến 2: có Bóng Lặng ngủ ở bìa đồng cỏ. Đi theo mũi tên nhé!' },
+  { hint: 'Chuyến 3: Bóng Lặng đang ngủ trên đường xuống thung lũng.' },
+  { hint: 'Chuyến 4: ngôi làng mái cam đang ngủ gật. Tới đánh thức nào!' },
+  { hint: 'Chuyến 5: cối xay gió ngừng quay rồi. Bóng Lặng ở quanh đó.' },
+  { hint: 'Chuyến 6: Bóng Lặng trốn ở bìa rừng thông.' },
 ];
+const CAMPS = CAMP_SPOTS.map(([x, z], i) => ({ x, z, hint: CAMP_HINTS[i].hint }));
 const CAMP_RING = [[10, 4], [-9, 8], [5, -12], [-13, -6], [15, -8], [-4, 14], [12, 12]];
 const campFor = (wave) => CAMPS[(wave - 1) % CAMPS.length];
 const MASSIF_HIDDEN_OVERCAST = 0.6;

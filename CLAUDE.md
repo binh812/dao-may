@@ -75,8 +75,7 @@ Danh sách trong `.pb-dev.json` → `protected`. Chỉ đổi khi anh Ben duyệ
 - Vật liệu toon tạo qua `toon()` trong `materials.js`; phần vá riêng đặt ở `material.userData.patch`, đừng gán `onBeforeCompile` (mất lớp tuyết) (12/11/2026).
 - `patch`, `sample`, `filter`, `input`, `output`... là từ bị cấm trong GLSL ES 3: đừng đặt tên biến như vậy (13/11/2026).
 - Màu viết tay trong shader là sRGB (như nhìn trên màn hình) thì phải `pow(màu, vec3(2.2))` trước khi dùng; quên thì nhạt bệch (13/11/2026).
-- Kịch bản vá viết bằng heredoc làm mất dấu ``: chuỗi `'
-'` thành xuống dòng thật và hỏng cú pháp. Dòng có `` thì sửa bằng công cụ Edit (13/11/2026).
+- Kịch bản vá viết bằng heredoc làm mất dấu gạch chéo ngược: chuỗi xuống dòng viết trong nháy đơn thành xuống dòng thật và hỏng cú pháp. Dòng có gạch chéo ngược thì sửa bằng công cụ Edit (13/11/2026).
 - Biến toàn cục có thể đổi giá trị phải là thuộc tính của object (`weatherState.name`), vì binding import chỉ đọc (12/11/2026).
 
 ## Nhắc lại luật chính

@@ -10,6 +10,7 @@ const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPrefer
 // Dua loi len hop loi cua trang de scripts/smoke.mjs bat duoc.
 renderer.debug.onShaderError = (gl, program, vertexShader, fragmentShader) => {
   const log = [gl.getProgramInfoLog(program), gl.getShaderInfoLog(vertexShader), gl.getShaderInfoLog(fragmentShader)].filter(Boolean).join(' | ').slice(0, 400);
+  console.error('Shader lỗi:', gl.getProgramInfoLog(program), gl.getShaderInfoLog(vertexShader), gl.getShaderInfoLog(fragmentShader));
   window.dispatchEvent(new ErrorEvent('error', { message: 'Shader lỗi: ' + log }));
 };
 renderer.shadowMap.enabled = true;

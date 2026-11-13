@@ -10,6 +10,11 @@ export const EDGE = 1050;                      // ban kinh vung duoc di
 export const WALL = 1e6;                       // do cao tra ve cho vung khong duoc vao (nguoi choi bi chan lai)
 export const VILLAGE = { x: 360, z: -280, r: 85 };
 export const MILL = { x: 470, z: -150 };
+// Noi Bong Lang ngu o tung chuyen di [x, z]; canh vat phai chua trong quanh cac diem nay (CAMP_CLEAR)
+export const CAMP_SPOTS = [[0, 0], [95, -70], [205, -150], [292, -208], [440, -185], [150, 185]];
+export const CAMP_CLEAR = 21;
+/** Co nam trong vung phai de trong quanh mot trai khong. */
+export function nearCamp(x, z) { return CAMP_SPOTS.some(([cx, cz]) => Math.hypot(x - cx, z - cz) < CAMP_CLEAR); }
 // Duong mon dat: tu doi co xuong lang, nhanh re sang coi xay, nhanh ra bia rung. Moi doan la [x1, z1, x2, z2].
 export const PATH_SEGMENTS = [[0, 0, 95, -70], [95, -70, 205, -150], [205, -150, 292, -208], [292, -208, 360, -280], [292, -208, 440, -185], [440, -185, 470, -150], [0, 0, 150, 185]];
 const PATH_WOBBLE = 4, PATH_WOBBLE_X = 0.045, PATH_WOBBLE_Z = 0.05;   // duong uon luon nhe thay vi thang tap
@@ -134,18 +139,19 @@ function paintGround(shader) {
         return mix(mix(pvHash(i), pvHash(i + vec2(1, 0)), f.x), mix(pvHash(i + vec2(0, 1)), pvHash(i + vec2(1, 1)), f.x), f.y); }
       ${PATH_GLSL}`)
     .replace('#include <color_fragment>', `#include <color_fragment>
-      vec2 wp = vGround.xy;
+      vec2 wp = vGround.xy; vec3 unpainted = diffuseColor.rgb;
       float dab = pvNoise(wp * 0.11) * 0.6 + pvNoise(wp * 0.34 + 7.) * 0.4;
       diffuseColor.rgb *= mix(0.88, 1.10, smoothstep(0.38, 0.62, dab));
       vec2 fuv = vec2(wp.x * ${FIELD_AXIS[0]} + wp.y * ${FIELD_AXIS[1]}, -wp.x * ${FIELD_AXIS[1]} + wp.y * ${FIELD_AXIS[0]}) / vec2(${glslFloat(FIELD_CELL[0])}, ${glslFloat(FIELD_CELL[1])});
-      fuv += (vec2(pvNoise(wp * 0.035), pvNoise(wp * 0.035 + 31.)) - 0.5) * 0.10;
+      fuv += (vec2(pvNoise(wp * 0.035), pvNoise(wp * 0.035 + 31.)) - 0.5) * 0.04;
       vec2 cell = floor(fuv), inCell = fract(fuv) - 0.5; float pick = pvHash(cell), edge = max(abs(inCell.x), abs(inCell.y));
       vec3 tint = pick < 0.22 ? vec3(0.61, 0.85, 0.29) : pick < 0.42 ? vec3(0.80, 0.86, 0.32) : pick < 0.58 ? vec3(0.90, 0.81, 0.42) : pick < 0.78 ? vec3(0.33, 0.67, 0.24) : vec3(0.44, 0.77, 0.25);
       tint *= 1. - 0.07 * step(0.5, fract(inCell.x * 16.)) * step(0.42, pick) * step(pick, 0.78);       // luong cay
       tint = mix(tint, vec3(0.16, 0.44, 0.22), smoothstep(0.462, 0.475, edge));                         // bo rao
       diffuseColor.rgb = mix(diffuseColor.rgb, pow(tint, vec3(2.2)) * mix(0.92, 1.06, smoothstep(0.38, 0.62, dab)), vGround.z * 0.92);
       float pd = pathDist(wp) + (pvNoise(wp * 0.6) - 0.5) * 1.1;
-      diffuseColor.rgb = mix(diffuseColor.rgb, pow(vec3(0.84, 0.74, 0.50), vec3(2.2)) * mix(0.9, 1.05, dab), smoothstep(1.9, 1.35, pd) * 0.92);`);
+      diffuseColor.rgb = mix(diffuseColor.rgb, pow(vec3(0.84, 0.74, 0.50), vec3(2.2)) * mix(0.9, 1.05, dab), smoothstep(1.9, 1.35, pd) * 0.92);
+      diffuseColor.rgb = mix(diffuseColor.rgb, unpainted, uSnow * smoothstep(0.30, 0.72, vSnowN));   // tuyet phu len ca ruong va duong`);
 }
 
 export function createTerrain(scene) {
