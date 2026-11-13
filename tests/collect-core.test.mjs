@@ -23,6 +23,15 @@ test('a seed just outside the pick radius is left alone, just inside is picked',
   assert.equal(c.count, 1);
 });
 
+test('distance counts both ground axes, and two seeds touched at once are both picked', () => {
+  const far = createCollection([{ id: 'a', x: 0, y: 1, z: 5 }]);
+  stepCollection(far, { x: 0, y: 1, z: 0 });
+  assert.equal(far.count, 0, 'cach 5 m theo truc z thi chua cham');
+  const pair = createCollection([{ id: 'a', x: 0.4, y: 1, z: 0 }, { id: 'b', x: -0.4, y: 1, z: 0.3 }]);
+  stepCollection(pair, { x: 0, y: 1, z: 0 });
+  assert.deepEqual(pair.events.picked.map((i) => i.id), ['a', 'b']);
+});
+
 test('gliding high above a seed does not pick it', () => {
   const c = createCollection(row(1));
   stepCollection(c, { x: 0, y: 1 + COLLECT.reach + 0.5, z: 0 });

@@ -42,6 +42,7 @@ function dryHeight(x, z) {
 }
 const LAKE_SHORE = dryHeight(LAKE.x, LAKE.z);
 export const LAKE_LEVEL = LAKE_SHORE - LAKE.below;         // cao do mat nuoc
+const LAKE_SHELF = 1.3, LAKE_BLEND = 2.0;                  // them phang toi lakeShape = LAKE_SHELF, hoa vao dia hinh toi LAKE_BLEND
 
 /** Vi tri so voi bo ho: < 1 la trong long ho, 1 la mep, > 1 la ngoai (bo ho luon song nhe, khong tron deu). */
 export function lakeShape(x, z) {
@@ -54,9 +55,10 @@ export function nearLake(x, z, margin = 1.3) { return lakeShape(x, z) < margin; 
 /** Do cao giai tich tai (x, z); dung de dat vat the. Mat dat nguoi choi dung la groundAt (khop voi luoi). */
 export function heightAt(x, z) {
   const shape = lakeShape(x, z);
-  if (shape > 1.6) return dryHeight(x, z);
-  // quanh ho dat duoc san ve cao do bo, roi khoet long ho
-  return lerp(dryHeight(x, z), LAKE_SHORE, smooth(1.55, 1.0, shape)) - LAKE.depth * smooth(1.0, 0.45, shape);
+  if (shape > LAKE_BLEND) return dryHeight(x, z);
+  // Quanh ho co mot them dat phang ngang cao do bo, rong hon mot o luoi (10 m): nho vay moi dinh luoi ngoai mep nuoc deu cao hon
+  // mat ho, bo ho khong co vach vo hinh va mat nuoc khong lo lung. Ngoai them thi hoa dan vao dia hinh tu nhien.
+  return lerp(dryHeight(x, z), LAKE_SHORE, smooth(LAKE_BLEND, LAKE_SHELF, shape)) - LAKE.depth * smooth(0.95, 0.45, shape);
 }
 
 /** Khoang cach (m) tu (x, z) toi duong mon gan nhat. Shader dung cung cong thuc (PATH_GLSL). */

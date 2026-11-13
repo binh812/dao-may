@@ -50,7 +50,9 @@ function loadSeeds() {
   let saved = [];
   try { const raw = JSON.parse(localStorage.getItem(SEED_KEY) ?? '[]'); if (Array.isArray(raw)) saved = raw.filter((id) => typeof id === 'string'); }
   catch (error) { console.warn('Khong doc duoc Hat Nang da nhat:', error); }
-  return createCollection(realm.collectibles, saved);
+  // id da luu ma lan nay khong co (cho dat bi vat can chiem o muc do hoa nay) van duoc giu lai khi ghi, de lan sau khong mat
+  const known = new Set(realm.collectibles.map((item) => item.id));
+  return { collection: createCollection(realm.collectibles, saved), parked: saved.filter((id) => !known.has(id)) };
 }
 
 function spawnEnemies(wave, player, rng) {
@@ -79,7 +81,7 @@ export function createSession(play) {
     setMuted: (value) => { sfx.setMuted(value); try { localStorage.setItem(MUTE_KEY, value ? '1' : '0'); } catch (error) { console.warn('Khong luu duoc cai dat am thanh:', error); } },
   });
   const guideForward = new THREE.Vector3();
-  const seeds = loadSeeds(), seedViews = seeds ? createSeedViews(scene, seeds) : null;
+  const seedSave = loadSeeds(), seeds = seedSave?.collection ?? null, seedViews = seeds ? createSeedViews(scene, seeds) : null;
   if (seeds) hud.setSeeds(seeds.count, seeds.total);
   // ?wave=N bat dau tu chuyen thu N (de thu va chup anh kiem tra cac diem xa)
   const askedWave = Math.floor(Number(new URLSearchParams(location.search).get('wave')));
@@ -124,7 +126,7 @@ export function createSession(play) {
     stepCollection(seeds, player);
     if (seeds.events.picked.length === 0) return;
     sfx.seed(); hud.setSeeds(seeds.count, seeds.total);
-    try { localStorage.setItem(SEED_KEY, JSON.stringify(takenIds(seeds))); } catch (error) { console.warn('Khong luu duoc Hat Nang:', error); }
+    try { localStorage.setItem(SEED_KEY, JSON.stringify([...takenIds(seeds), ...seedSave.parked])); } catch (error) { console.warn('Khong luu duoc Hat Nang:', error); }
     if (seeds.count === seeds.total) hud.toast('Bé đã nhặt hết Hạt Nắng của thung lũng! Giỏi quá!', 3200);
     else if (isMilestone(seeds)) hud.toast(`${seeds.count} Hạt Nắng rồi! Còn ${seeds.total - seeds.count} hạt đang chờ bé.`, 2600);
   }

@@ -22,9 +22,11 @@ export const COMMON = /* glsl */`
   vec2 wrapped(){ return (fract(aSeed.xz - uCenter / uTile + 0.5) - 0.5) * uTile + uCenter; }
   ${PATH_GLSL}
   // co thap dan o mep o va khong moc tren duong mon
-  // khong moc duoi mat ho (uLake = tam x, tam z, ban kinh vung xet, cao do mat nuoc)
+  // khong moc duoi mat ho (uLake = tam x, tam z, ban kinh ho, cao do mat nuoc)
   float edgeFade(vec2 base){
-    float wet = step(length(base - uLake.xy), uLake.z) * step(groundH(base), uLake.w + 0.06);
+    vec2 fromLake = base - uLake.xy; float bearing = atan(fromLake.y, fromLake.x);
+    float shape = length(fromLake) / (uLake.z * (1. + 0.16 * sin(bearing * 3. + 1.) + 0.08 * sin(bearing * 5. + 2.)));   // cung cong thuc voi lakeShape() trong terrain.js
+    float wet = step(shape, 1.12) * step(groundH(base), uLake.w + 0.06);
     return (1. - smoothstep(uTile * 0.34, uTile * 0.49, length(base - uCenter))) * smoothstep(1.3, 2.8, pathDist(base)) * (1. - wet);
   }
 `;
@@ -36,7 +38,7 @@ export const FRAG_TAIL = /* glsl */`
 
 export function sharedUniforms(center) {
   return { ...THREE.UniformsUtils.clone(THREE.UniformsLib.fog), uWindT: U.windT, uWind: U.wind, uDim: U.dim, uPlayer: U.player, uCenter: { value: center },
-    uTile: { value: TILE }, uSize: { value: SIZE }, uCells: { value: CELLS }, uHeight: { value: heightTexture }, uLake: { value: new THREE.Vector4(LAKE.x, LAKE.z, LAKE.r * 1.5, LAKE_LEVEL) } };
+    uTile: { value: TILE }, uSize: { value: SIZE }, uCells: { value: CELLS }, uHeight: { value: heightTexture }, uLake: { value: new THREE.Vector4(LAKE.x, LAKE.z, LAKE.r, LAKE_LEVEL) } };
 }
 export function instanced(base, count) {
   const g = new THREE.InstancedBufferGeometry(); g.index = base.index; g.setAttribute('position', base.attributes.position);
