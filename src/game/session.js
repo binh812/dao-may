@@ -17,14 +17,17 @@ import { createCollection, isMilestone, stepCollection, takenIds } from './colle
 import { createSeedViews } from './seed-views.js';
 import { CATALOG, SLOTS, balance, buy, catalogTotal, cheapestPrice, createWardrobe, serializeWardrobe, shelf, toggleWear } from './shop-core.js';
 import { createShopPanel } from '../ui/shop.js';
+import { MILL_JOB, answer, canStart, cancelJob, createMill, startJob } from './mill-core.js';
 import { applyOutfit } from '../actors/outfit.js';
 
 const SAVE_KEY = 'daomay.profile.v1', MUTE_KEY = 'daomay.muted';
-const SEED_PREFIX = 'daomay.seeds.', WARDROBE_KEY = 'daomay.wardrobe.v1';   // tu do cua Mam dung chung cho moi the gioi
+const SEED_PREFIX = 'daomay.seeds.', WARDROBE_KEY = 'daomay.wardrobe.v1', BONUS_KEY = 'daomay.bonus.v1';   // tu do cua Mam dung chung cho moi the gioi
 const SEED_KEY = `${SEED_PREFIX}${realm.name}.v1`;   // Hat Nang da nhat, luu rieng cho tung the gioi
 const groundAt = (x, z) => realm.groundAt(x, z);
 const WAVE = { firstCount: 3, maxCount: 5, firstWake: 8, wakeStep: 2, maxWake: 16 };
 const MAX_START_WAVE = 99;
+const MILL_SPIN_BOOST = 5, SPLASH_EVERY = 0.34, SPLASH_MIN_SPEED = 1.5;   // coi xay quay nhanh sau me bot; nhip tieng nuoc khi loi
+const SHOP_HINT_DELAY_MS = 3600;
 const GUIDE_FROM = 25; // xa hon khoang nay (m) thi hien mui ten chi huong
 const PRAISE = ['', 'Tuyệt!', 'Chiêu bậc 2!', 'Chiêu bậc 3, mạnh nhất!'];
 
@@ -64,11 +67,16 @@ function loadWardrobe() {
   try { return createWardrobe(JSON.parse(localStorage.getItem(WARDROBE_KEY) ?? 'null')); }
   catch (error) { console.warn('Khong doc duoc tu do cua Mam:', error); return createWardrobe(); }
 }
+/** Hat Nang thuong (xay bot) da luu; khong doc duoc thi coi nhu 0. */
+function loadMill() {
+  try { return createMill(JSON.parse(localStorage.getItem(BONUS_KEY) ?? '0')); }
+  catch (error) { console.warn('Khong doc duoc Hat Nang thuong:', error); return createMill(); }
+}
 /** Xoa moi tien do: ho so hoc, Hat Nang cua moi the gioi, tu do. */
 function eraseProgress() {
   const seedKeys = [];
   for (let i = 0; i < localStorage.length; i++) { const key = localStorage.key(i); if (key?.startsWith(SEED_PREFIX)) seedKeys.push(key); }
-  for (const key of [SAVE_KEY, WARDROBE_KEY, ...seedKeys]) localStorage.removeItem(key);
+  for (const key of [SAVE_KEY, WARDROBE_KEY, BONUS_KEY, ...seedKeys]) localStorage.removeItem(key);
 }
 
 function spawnEnemies(wave, player, rng) {
@@ -86,7 +94,7 @@ export function createSession(play) {
   const player = play.player, rng = Math.random;
   const views = createEnemyViews(scene, toon, groundAt), card = createQuestionCard();
   const other = realm.name === 'valley' ? { id: 'island', label: 'Đảo Mây' } : { id: 'valley', label: 'Thung lũng' };
-  const hud = createHud({ onLeaf: useLeaf, onSkill: useSkill, onShop: openShop, worldLabel: other.label, onSwitchWorld: () => { const q = new URLSearchParams(location.search); q.set('world', other.id); location.search = q.toString(); } });
+  const hud = createHud({ onLeaf: useLeaf, onSkill: useSkill, onAction: useAction, worldLabel: other.label, onSwitchWorld: () => { const q = new URLSearchParams(location.search); q.set('world', other.id); location.search = q.toString(); } });
   const sfx = createSfx(), tree = createHeartTree(scene, toon, groundAt, realm.treeSpot);
   try { sfx.setMuted(localStorage.getItem(MUTE_KEY) === '1'); } catch (error) { console.warn('Khong doc duoc cai dat am thanh:', error); }
   const notebook = createNotebook({
@@ -98,21 +106,23 @@ export function createSession(play) {
   });
   const guideForward = new THREE.Vector3();
   const seedSave = loadSeeds(), seeds = seedSave?.collection ?? null, seedViews = seeds ? createSeedViews(scene, seeds) : null;
-  if (seeds) hud.setSeeds(seeds.count, seeds.total);
-  const wardrobe = loadWardrobe();
+  const wardrobe = loadWardrobe(), mill = loadMill(), millSpot = realm.mill ?? null;
   applyOutfit(wardrobe.worn);
   // ?wear=id,id mac thu cac mon (chi de chup anh kiem tra; khong luu, khong tinh la so huu)
   const askedWear = (new URLSearchParams(location.search).get('wear') ?? '').split(',');
   if (askedWear[0]) applyOutfit(Object.fromEntries(SLOTS.map((slot) => [slot.id, CATALOG.find((item) => item.slot === slot.id && askedWear.includes(item.id))?.id ?? null])));
   // Quay hang chi co o the gioi dat `realm.shop` va co Hat Nang. Hat da nhat ma lan nay khong hien (parked) van la cua be.
-  const stall = seeds && realm.shop ? realm.shop : null, collected = () => seeds.count + seedSave.parked.length;
+  const stall = seeds && realm.shop ? realm.shop : null, collected = () => (seeds ? seeds.count + seedSave.parked.length : 0) + mill.bonus;
+  const refreshSeeds = () => { if (seeds) hud.setSeeds(seeds.count, seeds.total, balance(wardrobe, collected())); };
+  refreshSeeds();
   // khong nem loi: be van choi va doi duoc phan lon mon; nguoi lam game thay loi nay trong console khi thu
   if (stall && catalogTotal() > seeds.total) console.error(`Quay hang can ${catalogTotal()} Hat Nang nhung the gioi chi co ${seeds.total}: be se khong doi duoc het`);
   const shopPanel = stall ? createShopPanel({
     getView: () => ({ balance: balance(wardrobe, collected()), slots: SLOTS, items: shelf(wardrobe, collected()) }),
-    onBuy: (id) => { if (!buy(wardrobe, id, collected()).ok) return; const saved = wardrobeChanged(); sfx.buy(); if (saved) hud.toast('Mầm có đồ mới rồi! Xinh quá!', 2200); },
+    onBuy: (id) => { if (!buy(wardrobe, id, collected()).ok) return; const saved = wardrobeChanged(); refreshSeeds(); sfx.buy(); if (saved) hud.toast('Mầm có đồ mới rồi! Xinh quá!', 2200); },
     onWear: (id) => { if (toggleWear(wardrobe, id)) wardrobeChanged(); },
   }) : null;
+  let splashWait = 0;
   let shopHinted = wardrobe.owned.size > 0;   // da tung doi do thi be biet quay hang roi
   const busy = () => notebook.isOpen() || state.asking || Boolean(shopPanel?.isOpen());
   // ?wave=N bat dau tu chuyen thu N (de thu va chup anh kiem tra cac diem xa)
@@ -159,16 +169,72 @@ export function createSession(play) {
     try { localStorage.setItem(WARDROBE_KEY, JSON.stringify(serializeWardrobe(wardrobe))); return true; }
     catch (error) { console.warn('Khong luu duoc tu do:', error); hud.toast('Máy không lưu được đồ mới lần này.', 2600); return false; }
   }
-  function openShop() { if (shopPanel && state.profile && !busy()) shopPanel.open(); }
+  const near = (spot) => Boolean(spot) && Math.hypot(player.x - spot.x, player.z - spot.z) < spot.reach;
+  /** Viec lam duoc o cho Mam dang dung: nhan tren nut, hoac null. */
+  function actionLabel() {
+    if (!state.profile || busy()) return null;
+    if (near(stall)) return 'Vào quầy hàng';
+    if (near(millSpot) && !state.cleared) return canStart(mill, state.wave) ? 'Xay bột' : 'Bột đã xay xong ✓';
+    return null;
+  }
+  function useAction() {
+    if (!state.profile || busy()) return;
+    if (near(stall)) shopPanel.open();
+    else if (near(millSpot) && !state.cleared) { if (canStart(mill, state.wave)) startMill(); else hud.toast('Mẻ bột chuyến này xong rồi. Chuyến sau cối xay lại có mẻ mới nhé!', 2600); }
+  }
+
+  /** Cham diem mot bai da tra loi: cap nhat ho so, bai sai, luu. Tra ve true neu be vua thanh thao ky nang. */
+  function grade(skillId, question, correct) {
+    state.answered += 1; if (correct) state.correct += 1;
+    const { masteredNow } = recordAnswer(state.profile, skillId, correct);
+    if (!correct) recordMistake(state.profile, question);
+    saveProfile(state.profile, hud);
+    return masteredNow;
+  }
+
+  /** Xay mot me bot: giai lien tiep cac bai; xong me thi nhan Hat Nang va coi xay quay nhanh. Luat o mill-core.js. */
+  function startMill() {
+    if (!startJob(mill, state.wave)) return;
+    state.asking = true;
+    try { askMill(); } catch (error) { stopMill(error); }   // the bai khong mo duoc thi khong de game dung hinh mai
+  }
+  function stopMill(error) {
+    console.error('Khong xay duoc me bot:', error);
+    cancelJob(mill); state.asking = false; hud.toast('Có trục trặc nhỏ, bé thử lại nhé.');
+  }
+  function askMill() {
+    let skillId, question;
+    try { skillId = pickSkill(state.profile, rng); question = makeQuestion(skillId, rng); }
+    catch (error) { stopMill(error); return; }
+    card.ask(question, `Xay bột · bài ${mill.job.answered + 1}/${MILL_JOB.questions}`).then(({ correct }) => {
+      const masteredNow = grade(skillId, question, correct);
+      if (masteredNow) sfx.mastered(); else if (correct) sfx.correct(1); else sfx.wrong();
+      const result = answer(mill, correct);
+      if (!result.done) { askMill(); return; }
+      state.asking = false; realm.millBoost = MILL_SPIN_BOOST;
+      try { localStorage.setItem(BONUS_KEY, JSON.stringify(mill.bonus)); } catch (error) { console.warn('Khong luu duoc Hat Nang thuong:', error); }
+      refreshSeeds(); refreshHud(); sfx.cleared();
+      const praise = result.correct > 0 ? `Bé đúng ${result.correct}/${MILL_JOB.questions} bài và được` : 'Cảm ơn bé đã giúp xay bột! Bé được';
+      hud.toast(`Cối xay quay tít! ${praise} ${result.reward} Hạt Nắng.`, 3400);
+      hintShop();
+    }).catch(stopMill);
+  }
+
+  /** Nhac mot lan khi be lan dau du hat cho mon re nhat. Tra loi sau loi khen dang hien de khong de mat no. */
+  function hintShop() {
+    if (!stall || shopHinted || balance(wardrobe, collected()) < cheapestPrice()) return;
+    shopHinted = true;
+    setTimeout(() => hud.toast('Bé đủ Hạt Nắng để đổi đồ rồi! Ghé quầy cô Thỏ Bông ở cổng làng nhé.', 3600), SHOP_HINT_DELAY_MS);
+  }
 
   function collectSeeds() {
     stepCollection(seeds, player);
     if (seeds.events.picked.length === 0) return;
-    sfx.seed(); hud.setSeeds(seeds.count, seeds.total);
+    sfx.seed(); refreshSeeds();
     try { localStorage.setItem(SEED_KEY, JSON.stringify([...takenIds(seeds), ...seedSave.parked])); } catch (error) { console.warn('Khong luu duoc Hat Nang:', error); }
     if (seeds.count === seeds.total) hud.toast('Bé đã nhặt hết Hạt Nắng của thung lũng! Giỏi quá!', 3200);
     else if (isMilestone(seeds)) hud.toast(`${seeds.count} Hạt Nắng rồi! Còn ${seeds.total - seeds.count} hạt đang chờ bé.`, 2600);
-    else if (stall && !shopHinted && balance(wardrobe, collected()) >= cheapestPrice()) { shopHinted = true; hud.toast('Bé đủ Hạt Nắng để đổi đồ rồi! Ghé quầy cô Thỏ Bông ở cổng làng nhé.', 3600); }
+    else hintShop();
   }
 
   function useLeaf() {
@@ -187,10 +253,7 @@ export function createSession(play) {
     catch (error) { console.error('Khong tao duoc bai tap:', error); hud.toast('Chưa ra được bài lúc này, bé thử lại nhé.'); return; }
     state.asking = true; // tu day den khi dong the, Mam va Bong Lang dung yen (xem timeScale)
     card.ask(question, 'Nạp chiêu Tia Nắng').then(({ correct }) => {
-      state.answered += 1; if (correct) state.correct += 1;
-      const { masteredNow } = recordAnswer(state.profile, skillId, correct);
-      if (!correct) recordMistake(state.profile, question);
-      saveProfile(state.profile, hud);
+      const masteredNow = grade(skillId, question, correct);
       const hit = castSkill(state.battle, player, correct);
       if (hit) views.beam(hit.target, hit.tier);
       if (masteredNow) sfx.mastered(); else if (correct) sfx.correct(hit ? hit.tier : 1); else sfx.wrong();
@@ -222,7 +285,9 @@ export function createSession(play) {
         if (state.profile && !busy()) collectSeeds();
         seedViews.update(state.time);
       }
-      if (stall) hud.setShopNear(Boolean(state.profile) && !busy() && Math.hypot(player.x - stall.x, player.z - stall.z) < stall.reach);
+      hud.setAction(actionLabel());
+      // tieng nuoc khi Mam loi (the gioi bao qua realm.wading)
+      if (realm.wading && player.grounded && Math.hypot(player.vx, player.vz) > SPLASH_MIN_SPEED && !busy()) { splashWait -= dt; if (splashWait <= 0) { splashWait = SPLASH_EVERY; sfx.splash(); } } else splashWait = 0;
       const b = state.battle; if (!b) return;
       if (player.events.jumped) sfx.jump();
       if (player.events.landed) sfx.land();
@@ -240,6 +305,8 @@ export function createSession(play) {
     debugAsk() { if (state.profile) useSkill(); },
     /** Dung cho anh chup kiem tra: mo bang doi do ngay. */
     debugShop() { if (shopPanel && state.profile) shopPanel.open(); },
+    /** Dung cho anh chup kiem tra: bat dau me bot ngay. */
+    debugMill() { if (millSpot && state.profile && !busy()) startMill(); },
     runSpeed: TUNING.runSpeed,
   };
 }

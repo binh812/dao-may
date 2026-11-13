@@ -9,6 +9,7 @@ import { LAKE, LAKE_LEVEL, lakeShape, surfaceAt } from './terrain.js';
 const WATER_CELLS = 72, WATER_SPAN = LAKE.r * 2.7;       // luoi mat nuoc: so o va be rong (m)
 const SHORE_LIMIT = 1.12;                                 // mat nuoc chi ton tai trong hinh ho (lakeShape) nho hon muc nay
 const LILY_PADS = 46, LILY_DEPTH = 0.45;                 // la sung chi moc cho nuoc sau hon muc nay
+const RIPPLES = 8, RIPPLE_EVERY = 0.3, RIPPLE_LIFE = 1.3, RIPPLE_GROW = [0.4, 2.4];   // vong song khi Mam loi
 const DUCKS = 6, DUCK_ORBIT = [0.32, 0.6], DUCK_SPEED = 0.16;
 
 function waterSurface() {
@@ -87,14 +88,39 @@ function ducks(scene) {
   return flock;
 }
 
-/** Dung ho; tra ve vat can (khong co) va ham cap nhat. */
+/** Vong song loang ra tu cho Mam loi: mot nhom vong dung lai xoay vong. */
+function ripples(scene) {
+  const ring = new THREE.RingGeometry(0.74, 1, 28).rotateX(-Math.PI / 2);
+  const pool = Array.from({ length: RIPPLES }, () => {
+    const mesh = new THREE.Mesh(ring, new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0, depthWrite: false }));
+    mesh.visible = false; mesh.userData.age = 0; scene.add(mesh);
+    return mesh;
+  });
+  let next = 0, wait = 0;
+  return (dt, wader) => {
+    if (wader) {
+      wait -= dt;
+      if (wait <= 0) { wait = RIPPLE_EVERY; const mesh = pool[next++ % RIPPLES]; mesh.userData.age = 0; mesh.visible = true; mesh.position.set(wader.x, LAKE_LEVEL + 0.03, wader.z); }
+    } else wait = 0;
+    for (const mesh of pool) {
+      if (!mesh.visible) continue;
+      mesh.userData.age += dt;
+      const k = mesh.userData.age / RIPPLE_LIFE;
+      if (k >= 1) { mesh.visible = false; continue; }
+      mesh.scale.setScalar(RIPPLE_GROW[0] + (RIPPLE_GROW[1] - RIPPLE_GROW[0]) * k); mesh.material.opacity = (1 - k) * 0.85 * U.dim.value;
+    }
+  };
+}
+
+/** Dung ho; tra ve vat can (khong co) va ham cap nhat (wader = nguoi dang loi va di chuyen, hoac null). */
 export function createLake(scene, B) {
   scene.add(waterSurface());
   lilyPads(B);
-  const flock = ducks(scene);
+  const flock = ducks(scene), stepRipples = ripples(scene);
   return {
     colliders: [],
-    update(time) {
+    update(time, dt = 0, wader = null) {
+      stepRipples(dt, wader);
       for (const { duck, orbit, phase, turn } of flock) {
         const angle = phase + time * DUCK_SPEED * turn * (LAKE.r * DUCK_ORBIT[0] / orbit);
         duck.position.set(LAKE.x + Math.cos(angle) * orbit, LAKE_LEVEL + 0.1 + Math.sin(time * 2.2 + phase * 5) * 0.025, LAKE.z + Math.sin(angle) * orbit);

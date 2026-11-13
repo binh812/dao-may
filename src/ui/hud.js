@@ -9,7 +9,7 @@ function node(tag, css, text = '') {
   return el;
 }
 
-export function createHud({ onLeaf, onSkill, onShop, worldLabel, onSwitchWorld }) {
+export function createHud({ onLeaf, onSkill, onAction, worldLabel, onSwitchWorld }) {
   const hearts = node('div', PILL + 'left:max(96px,env(safe-area-inset-left));top:max(10px,env(safe-area-inset-top));letter-spacing:2px;');
   const progress = node('div', PILL + 'right:max(12px,env(safe-area-inset-right));top:max(10px,env(safe-area-inset-top));font-weight:600;font-size:13px;');
   const combo = node('div', PILL + 'right:max(118px,env(safe-area-inset-right));bottom:max(232px,env(safe-area-inset-bottom));background:rgba(255,170,40,.9);opacity:0;transition:opacity .3s;');
@@ -22,14 +22,14 @@ export function createHud({ onLeaf, onSkill, onShop, worldLabel, onSwitchWorld }
   const guide = node('div', PILL + 'left:max(14px,env(safe-area-inset-left));bottom:max(18px,env(safe-area-inset-bottom));display:none;font-size:14px;');
   const arrow = node('span', 'display:inline-block;margin-right:8px;font-size:18px;', '▲'), guideText = node('span', '');
   guide.append(arrow, guideText);
-  const shop = node('div', PILL + 'left:50%;transform:translateX(-50%);bottom:max(40px,env(safe-area-inset-bottom));display:none;pointer-events:auto;cursor:pointer;padding:14px 22px;background:rgba(255,180,77,.96);color:#3a2408;font-size:17px;box-shadow:0 4px 14px rgba(40,20,60,.3);', 'Vào quầy hàng');
-  shop.addEventListener('pointerdown', (e) => { e.preventDefault(); onShop(); });
-  const all = [hearts, progress, combo, leaf, skill, toastBox, switcher, guide, seeds, shop];
+  const action = node('div', PILL + 'left:50%;transform:translateX(-50%);bottom:max(40px,env(safe-area-inset-bottom));display:none;pointer-events:auto;cursor:pointer;padding:14px 22px;background:rgba(255,180,77,.96);color:#3a2408;font-size:17px;box-shadow:0 4px 14px rgba(40,20,60,.3);');
+  action.addEventListener('pointerdown', (e) => { e.preventDefault(); onAction(); });
+  const all = [hearts, progress, combo, leaf, skill, toastBox, switcher, guide, seeds, action];
   hearts.style.display = progress.style.display = 'none'; // chua co tran thi chua hien
   document.body.append(...all);
   leaf.addEventListener('pointerdown', (e) => { e.preventDefault(); onLeaf(); });
   skill.addEventListener('pointerdown', (e) => { e.preventDefault(); onSkill(); });
-  const onKey = (e) => { if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) return; if (e.code === 'KeyJ') onLeaf(); if (e.code === 'KeyK') onSkill(); if (e.code === 'KeyE' && shop.style.display !== 'none') onShop(); };
+  const onKey = (e) => { if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) return; if (e.code === 'KeyJ') onLeaf(); if (e.code === 'KeyK') onSkill(); if (e.code === 'KeyE' && action.style.display !== 'none') onAction(); };
   addEventListener('keydown', onKey);
 
   let toastTimer = 0, bannerEl = null;
@@ -37,10 +37,10 @@ export function createHud({ onLeaf, onSkill, onShop, worldLabel, onSwitchWorld }
     setHearts(now, max) { hearts.textContent = '♥'.repeat(now) + '♡'.repeat(Math.max(0, max - now)); hearts.style.display = 'block'; },
     setCombo(tier) { combo.textContent = tier > 1 ? `Combo ×${tier}` : ''; combo.style.opacity = tier > 1 ? '1' : '0'; },
     setProgress(text) { progress.textContent = text; progress.style.display = text ? 'block' : 'none'; },
-    /** So Hat Nang da nhat tren tong so. */
-    setSeeds(count, total) { seeds.textContent = `✦ ${count}/${total}`; seeds.style.display = 'block'; },
-    /** Hien nut vao quay hang khi Mam dung gan quay. */
-    setShopNear(near) { shop.style.display = near ? 'block' : 'none'; },
+    /** So Hat Nang dang co de doi do, kem so da nhat tren tong so cua the gioi. */
+    setSeeds(count, total, spendable) { seeds.textContent = `✦ ${spendable} · nhặt ${count}/${total}`; seeds.style.display = 'block'; },
+    /** Nut viec lam tai cho (vao quay hang, xay bot...) hien khi Mam dung gan; null de an. */
+    setAction(label) { action.style.display = label ? 'block' : 'none'; if (label && action.textContent !== label) action.textContent = label; },
     setSkillReady(ready) { skill.style.opacity = ready ? '1' : '.45'; },
     /** Mui ten chi huong: angle (rad, 0 = thang truoc mat, duong = ben phai) va khoang cach (m); null de an. */
     setGuide(angle, meters) {
