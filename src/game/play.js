@@ -19,7 +19,7 @@ export function createPlay() {
   const world = { heightAt: (x, z) => realm.groundAt(x, z), colliders: realm.colliders, safeRadius: realm.safeRadius };
   const player = createPlayer(realm.spawn.x, realm.spawn.z, world);
   const input = createTouchControls(document.body);
-  const cam = { yaw: realm.cameraYaw, pitch: CAMERA.pitch, idle: 99, snapped: false };
+  const cam = { yaw: realm.cameraYaw, pitch: realm.cameraPitch ?? CAMERA.pitch, idle: 99, snapped: false };
   player.yaw = cam.yaw + Math.PI; chr.rotation.y = player.yaw; // luc dau quay lung ve may quay
   const anim = { bob: 0, land: 0, lean: 0, leafAngle: 0, leafSpeed: 0, blink: 2 };
   const target = new THREE.Vector3(), desired = new THREE.Vector3(), lookAt = new THREE.Vector3();
@@ -35,7 +35,7 @@ export function createPlay() {
   function updateCamera(dt, stick) {
     const portrait = innerHeight > innerWidth, dist = portrait ? CAMERA.portraitDistance : CAMERA.distance;
     if (cam.idle > CAMERA.steerAfter) cam.yaw += steerYaw(stick, dt, CAMERA.steerRate);
-    target.set(player.x, player.y + CAMERA.lookHeight, player.z);
+    target.set(player.x, player.y + (realm.cameraLookHeight ?? CAMERA.lookHeight), player.z);
     const cp = Math.cos(cam.pitch);
     desired.set(target.x + Math.sin(cam.yaw) * cp * dist, target.y + Math.sin(cam.pitch) * dist, target.z + Math.cos(cam.yaw) * cp * dist);
     const under = realm.groundAt(desired.x, desired.z); // ngoai mep (-Infinity) hoac tuong chan (rat lon) thi bo qua

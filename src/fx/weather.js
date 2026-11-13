@@ -7,7 +7,7 @@ import { volMat } from '../render/post.js';
 import { realm } from '../world/realm.js';
 
 // ---------------------------------------------------------------- weather
-const T = { vol: Q.volSteps > 0, shadow: true, ao: Q.aoTaps > 0, bloom: true, dof: Q.dofTaps > 0, grass: true, env: true, spin: true };
+const T = { vol: Q.volSteps > 0, shadow: true, ao: Q.aoTaps > 0, bloom: true, dof: Q.dofTaps > 0 && !realm.paint, grass: true, env: true, spin: true };
 const WBASE = { fog: 0.004, mist: 0.15, vol: 0.8, sunI: 1.75, hemiI: 1.45, overcast: 0, rain: 0, wind: 1, night: 0, snow: 0, flash: 0 };
 const WEATHER = {
   sun:   { ...WBASE, label: 'Nắng' },

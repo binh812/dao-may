@@ -40,3 +40,11 @@ Mẫu: `- [ ] <tiêu đề> — Khi <tình huống> thì app phải <kết quả
 - Hai mục "Đóng gói three.js" ở trên coi như xong.
 - [ ] Cài lên điện thoại để chơi khi không có Wi-Fi — Khi mở game từ biểu tượng trên màn hình chính lúc bật chế độ máy bay thì game phải chạy. Cần một địa chỉ HTTPS (GitHub Pages hoặc Pangolin); anh Ben quyết nơi đặt. Kiểm chứng: anh Ben thử trên điện thoại.
 - [ ] Mở cổng tường lửa Windows cho cổng 8123 nếu điện thoại không vào được địa chỉ mạng nội bộ — anh Ben tự làm.
+
+## Thế giới thứ hai: Thung lũng (13/11/2026)
+- Xong: tách thế giới khỏi phần game dùng chung (`world/realm.js`); thêm `?world=valley` (thung lũng 2,4 km kiểu tranh vẽ), nút "Sang Thung lũng / Sang Đảo Mây" trong trận và hàng chọn thế giới ở bảng điều khiển.
+- Kiểm chứng: 60 test xanh; cổng đầy đủ xanh; kiểm khởi động thung lũng ở 3 mức, mưa, đêm, chế độ ngắm, thẻ bài tập; ảnh chụp ngang và dọc đã tự xem.
+- [ ] Đo FPS thung lũng trên điện thoại — Khi chơi ở mức Vừa thì phải ≥ 30 fps. Lớp nét cọ (36 mẫu mỗi điểm ảnh ở mức Vừa) và 10 nghìn cây thông là hai thứ nặng nhất; tắt thử bằng nút "Nét cọ". Kiểm chứng: anh Ben đọc số FPS.
+- [ ] Thung lũng chưa có nội dung riêng: Bóng Lặng chỉ xuất hiện quanh chỗ sinh; làng, cối xay, rừng chưa có gì để làm. Chưa có sông, hồ, đường mòn, người dân.
+- [ ] Núi xa còn là nón đều; mây chưa trôi; Cây Tâm còn là khối cầu trơn (cả hai thế giới).
+- [ ] Chạy 1 km mất hơn 3 phút — cần chạy nhanh hoặc lượn xa cho thế giới rộng.

@@ -51,7 +51,8 @@ function spawnEnemies(wave, player, rng) {
 export function createSession(play) {
   const player = play.player, rng = Math.random;
   const views = createEnemyViews(scene, toon, groundAt), card = createQuestionCard();
-  const hud = createHud({ onLeaf: useLeaf, onSkill: useSkill });
+  const other = realm.name === 'valley' ? { id: 'island', label: 'Đảo Mây' } : { id: 'valley', label: 'Thung lũng' };
+  const hud = createHud({ onLeaf: useLeaf, onSkill: useSkill, worldLabel: other.label, onSwitchWorld: () => { const q = new URLSearchParams(location.search); q.set('world', other.id); location.search = q.toString(); } });
   const sfx = createSfx(), tree = createHeartTree(scene, toon, groundAt, realm.treeSpot);
   try { sfx.setMuted(localStorage.getItem(MUTE_KEY) === '1'); } catch (error) { console.warn('Khong doc duoc cai dat am thanh:', error); }
   const notebook = createNotebook({
@@ -68,7 +69,7 @@ export function createSession(play) {
     state.battle = createBattle(spawnEnemies(state.wave, player, rng), state.battle ? state.battle.faints : 0);
     views.reset(state.battle);
     refreshHud();
-    hud.toast(state.wave === 1 ? 'Các Bóng Lặng đang ngủ quanh đảo. Lại gần và đánh thức chúng!' : `Chuyến ${state.wave}: Bóng Lặng ngủ say hơn rồi đấy!`, 3200);
+    hud.toast(state.wave === 1 ? 'Các Bóng Lặng đang ngủ quanh đây. Lại gần và đánh thức chúng!' : `Chuyến ${state.wave}: Bóng Lặng ngủ say hơn rồi đấy!`, 3200);
   }
   function refreshHud() {
     const b = state.battle, awake = b.enemies.filter((e) => e.awake).length;
@@ -81,7 +82,7 @@ export function createSession(play) {
     if (!allAwake(state.battle)) return;
     state.cleared = true; sfx.cleared();
     const solved = state.answered ? `Bé đã giải đúng ${state.correct}/${state.answered} bài trong chuyến này.` : 'Lần tới thử chiêu Tia Nắng nhé: giải đúng thì chiêu mạnh hơn nhiều!';
-    hud.banner('Đảo đã thức giấc!', [solved, `Kỹ năng đã thành thạo: ${masteredCount(state.profile)}.`], 'Chuyến mới', startWave);
+    hud.banner(realm.name === 'valley' ? 'Thung lũng đã thức giấc!' : 'Đảo đã thức giấc!', [solved, `Kỹ năng đã thành thạo: ${masteredCount(state.profile)}.`], 'Chuyến mới', startWave);
   }
 
   function useLeaf() {

@@ -9,14 +9,16 @@ function node(tag, css, text = '') {
   return el;
 }
 
-export function createHud({ onLeaf, onSkill }) {
+export function createHud({ onLeaf, onSkill, worldLabel, onSwitchWorld }) {
   const hearts = node('div', PILL + 'left:max(96px,env(safe-area-inset-left));top:max(10px,env(safe-area-inset-top));letter-spacing:2px;');
   const progress = node('div', PILL + 'right:max(12px,env(safe-area-inset-right));top:max(10px,env(safe-area-inset-top));font-weight:600;font-size:13px;');
   const combo = node('div', PILL + 'right:max(118px,env(safe-area-inset-right));bottom:max(232px,env(safe-area-inset-bottom));background:rgba(255,170,40,.9);opacity:0;transition:opacity .3s;');
   const leaf = node('div', BUTTON + 'right:max(122px,env(safe-area-inset-right));bottom:max(34px,env(safe-area-inset-bottom));width:68px;height:68px;background:rgba(80,190,90,.75);', 'Lá');
   const skill = node('div', BUTTON + 'right:max(64px,env(safe-area-inset-right));bottom:max(128px,env(safe-area-inset-bottom));width:80px;height:80px;background:rgba(255,180,40,.85);font-size:15px;', 'Tia Nắng');
   const toastBox = node('div', 'position:fixed;z-index:6;left:50%;top:30%;transform:translateX(-50%);max-width:86vw;padding:10px 16px;border-radius:16px;background:rgba(28,22,34,.62);color:#fff;font:700 17px/1.35 system-ui,sans-serif;text-align:center;pointer-events:none;opacity:0;transition:opacity .35s;');
-  const all = [hearts, progress, combo, leaf, skill, toastBox];
+  const switcher = node('div', PILL + 'right:max(12px,env(safe-area-inset-right));top:calc(max(10px,env(safe-area-inset-top)) + 82px);pointer-events:auto;cursor:pointer;background:rgba(255,250,240,.9);color:#3a2a4a;font-size:13px;', `Sang ${worldLabel}`);
+  switcher.addEventListener('pointerdown', (e) => { e.preventDefault(); onSwitchWorld(); });
+  const all = [hearts, progress, combo, leaf, skill, toastBox, switcher];
   hearts.style.display = progress.style.display = 'none'; // chua co tran thi chua hien
   document.body.append(...all);
   leaf.addEventListener('pointerdown', (e) => { e.preventDefault(); onLeaf(); });

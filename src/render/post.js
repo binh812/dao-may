@@ -7,6 +7,7 @@ import { FullScreenQuad } from 'three/addons/postprocessing/Pass.js';
 import { FXAAShader } from 'three/addons/shaders/FXAAShader.js';
 import { Q } from '../core/quality.js';
 import { SUN_DIR, U, camera, renderer, sun } from '../core/stage.js';
+import { realm } from '../world/realm.js';
 
 // ---------------------------------------------------------------- post-processing
 const rtScene = new THREE.WebGLRenderTarget(4, 4, { type: THREE.HalfFloatType, samples: Q.msaa, depthTexture: new THREE.DepthTexture(4, 4) });
@@ -125,7 +126,36 @@ const dofPass = new ShaderPass(new THREE.ShaderMaterial({
 }));
 composer.addPass(dofPass);
 composer.addPass(new OutputPass());
+
+// Net co: bo loc Kuwahara chon vung it bien dong nhat quanh moi diem anh, lam hinh tron lai thanh tung mang nhu son.
+// Chi bat o the gioi co phong cach tranh ve (realm.paint) va khi muc do hoa cho phep. Bau troi duoc de nguyen.
+const PAINT_STEP = 1.35;
+const paintPass = new ShaderPass(new THREE.ShaderMaterial({
+  defines: { RADIUS: Math.max(Q.paintRadius, 1) },
+  uniforms: { tDiffuse: { value: null }, tDepth: { value: rtScene.depthTexture }, uTexel: { value: new THREE.Vector2() } },
+  vertexShader: VS,
+  fragmentShader: /* glsl */`
+    uniform sampler2D tDiffuse, tDepth; uniform vec2 uTexel; varying vec2 vUv;
+    void region(vec2 dir, inout vec3 best, inout float bestVar){
+      vec3 sum = vec3(0.), sq = vec3(0.);
+      for (int i = 0; i <= RADIUS; i++) for (int j = 0; j <= RADIUS; j++) {
+        vec3 c = texture2D(tDiffuse, vUv + vec2(float(i), float(j)) * dir * uTexel).rgb; sum += c; sq += c * c;
+      }
+      float n = float((RADIUS + 1) * (RADIUS + 1)); vec3 mean = sum / n; float variance = dot(sq / n - mean * mean, vec3(1.));
+      if (variance < bestVar) { bestVar = variance; best = mean; }
+    }
+    void main(){
+      vec4 src = texture2D(tDiffuse, vUv);
+      if (texture2D(tDepth, vUv).x >= 0.99999) { gl_FragColor = src; return; }
+      vec3 best = src.rgb; float bestVar = 1e9;
+      region(vec2(1., 1.), best, bestVar); region(vec2(-1., 1.), best, bestVar); region(vec2(1., -1.), best, bestVar); region(vec2(-1., -1.), best, bestVar);
+      gl_FragColor = vec4(best, src.a);
+    }`,
+}));
+paintPass.enabled = Boolean(realm.paint) && Q.paintRadius > 0;
+paintPass.setSize = (width, height) => paintPass.uniforms.uTexel.value.set(PAINT_STEP / width, PAINT_STEP / height);
+composer.addPass(paintPass);
 const fxaaPass = new ShaderPass(FXAAShader);
 composer.addPass(fxaaPass);
 
-export { aoQuad, aoRT, bloomPass, combinePass, composer, dofPass, fxaaPass, rtScene, volMat, volQuad, volRT };
+export { aoQuad, aoRT, bloomPass, combinePass, composer, dofPass, fxaaPass, paintPass, rtScene, volMat, volQuad, volRT };
