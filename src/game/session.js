@@ -17,7 +17,8 @@ import { createSfx } from './sfx.js';
 const SAVE_KEY = 'daomay.profile.v1', MUTE_KEY = 'daomay.muted';
 const groundAt = (x, z) => realm.groundAt(x, z);
 const WAVE = { firstCount: 3, maxCount: 5, firstWake: 8, wakeStep: 2, maxWake: 16 };
-const GUIDE_FROM = 22; // xa hon khoang nay (m) thi hien mui ten chi huong
+const MAX_START_WAVE = 99;
+const GUIDE_FROM = 25; // xa hon khoang nay (m) thi hien mui ten chi huong
 const PRAISE = ['', 'Tuyệt!', 'Chiêu bậc 2!', 'Chiêu bậc 3, mạnh nhất!'];
 
 function loadProfile() {
@@ -67,7 +68,8 @@ export function createSession(play) {
   });
   const guideForward = new THREE.Vector3();
   // ?wave=N bat dau tu chuyen thu N (de thu va chup anh kiem tra cac diem xa)
-  const firstWave = Math.max(1, Math.floor(Number(new URLSearchParams(location.search).get('wave'))) || 1);
+  const askedWave = Math.floor(Number(new URLSearchParams(location.search).get('wave')));
+  const firstWave = Number.isFinite(askedWave) && askedWave >= 1 ? Math.min(askedWave, MAX_START_WAVE) : 1;
   const state = { profile: loadProfile(), battle: null, wave: firstWave - 1, asking: false, cleared: false, answered: 0, correct: 0, time: 0 };
 
   function startWave() {
