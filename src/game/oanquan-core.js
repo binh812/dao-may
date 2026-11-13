@@ -16,12 +16,12 @@ const isEmpty = (g, i) => g.dan[i] === 0 && !g.quan[i];
 
 export function createGame() {
   const dan = Array.from({ length: OQ.cells }, (_, i) => (isQuanCell(i) ? 0 : OQ.perCell));
-  return { dan, quan: dan.map((_, i) => isQuanCell(i)), score: { player: 0, rival: 0 }, turn: 'player', over: false };
+  return { dan, quan: dan.map((_, i) => isQuanCell(i)), score: { player: 0, rival: 0 }, gifted: 0, turn: 'player', over: false };
 }
-export const cloneGame = (g) => ({ dan: [...g.dan], quan: [...g.quan], score: { ...g.score }, turn: g.turn, over: g.over });
+export const cloneGame = (g) => ({ dan: [...g.dan], quan: [...g.quan], score: { ...g.score }, gifted: g.gifted, turn: g.turn, over: g.over });
 
-/** Tong so diem tren ban va trong tay hai ben; khong bao gio doi (de test bao toan). */
-export const totalValue = (g) => g.dan.reduce((a, b) => a + b, 0) + g.quan.filter(Boolean).length * OQ.quanValue + g.score.player + g.score.rival;
+/** Tong so diem tren ban va trong tay hai ben, tru soi duoc cho them tu hu chung; khong bao gio doi (de test bao toan). */
+export const totalValue = (g) => g.dan.reduce((a, b) => a + b, 0) + g.quan.filter(Boolean).length * OQ.quanValue + g.score.player + g.score.rival - g.gifted;
 
 /** Cac nuoc di hop le cua mot ben: moi o con soi di duoc hai chieu. */
 export function legalMoves(g, side) {
@@ -29,12 +29,16 @@ export function legalMoves(g, side) {
   return SIDES[side].filter((cell) => g.dan[cell] > 0).flatMap((cell) => [{ cell, dir: 1 }, { cell, dir: -1 }]);
 }
 
-/** Het soi o ca nam o cua minh: phai bo ra 5 vien da an de rai lai moi o mot vien (thieu thi vay, diem co the am). */
+/**
+ * Het soi o ca nam o cua minh: bo ra 5 vien da an de rai lai moi o mot vien. Luat cho tre em: thieu thi lay them tu hu soi chung
+ * (ghi vao `gifted`), khong vay va diem khong bao gio am.
+ */
 function scatterIfBare(g, side, steps) {
   if (SIDES[side].some((cell) => g.dan[cell] > 0)) return;
   for (const cell of SIDES[side]) g.dan[cell] = 1;
-  g.score[side] -= OQ.scatter;
-  steps.push({ type: 'scatter', side });
+  const paid = Math.min(OQ.scatter, Math.max(0, g.score[side]));
+  g.score[side] -= paid; g.gifted += OQ.scatter - paid;
+  steps.push({ type: 'scatter', side, paid });
 }
 
 /**
@@ -49,11 +53,11 @@ export function playMove(g, side, cell, dir) {
   const steps = [];
   let hand = g.dan[cell], pos = cell;
   g.dan[cell] = 0; steps.push({ type: 'take', cell });
-  while (steps.length < OQ.maxSteps) {
+  for (;;) {
     while (hand > 0) { pos = wrap(pos + dir); g.dan[pos] += 1; hand -= 1; steps.push({ type: 'sow', cell: pos }); }
     const next = wrap(pos + dir);
     if (!isEmpty(g, next)) {
-      if (isQuanCell(next)) break;                       // khong duoc boc o quan: het luot
+      if (isQuanCell(next) || steps.length >= OQ.maxSteps) break;   // khong duoc boc o quan: het luot (va chan rai vo tan, khong lam mat soi dang cam)
       hand = g.dan[next]; g.dan[next] = 0; pos = next; steps.push({ type: 'take', cell: next });
       continue;
     }

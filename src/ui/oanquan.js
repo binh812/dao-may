@@ -9,6 +9,7 @@ const CELL = 'position:relative;min-height:clamp(46px,15vh,62px);border-radius:1
 // Do kheo cua Nhim (xac suat chon nuoc an nhieu nhat). Mo phong 2.000 van: be di ngau nhien thang ~38% o muc 0.2, ~57% o muc 0.
 // Be thua thi Nhim de hon, be thang thi Nhim kheo hon mot chut.
 const SKILL = { start: 0.2, step: 0.1, min: 0, max: 0.55 };
+const SCATTER_READ_MS = 2200;   // du lau de be doc vi sao co them soi
 const STEP_MS = 210, RIVAL_WAIT_MS = 650, MAX_DOTS = 10;
 const TOP_ROW = [11, 10, 9, 8, 7], RULES = 'Chọn một ô của bé rồi chọn chiều rải: mỗi ô một viên. Hết sỏi mà ô kế tiếp còn sỏi thì bốc rải tiếp. Ô kế tiếp trống thì bé ăn ô sau đó!';
 
@@ -49,6 +50,7 @@ export function createOanQuan({ onSound = () => {} } = {}) {
           node('div', '', String(count)), node('div', 'font-size:8px;line-height:9px;letter-spacing:1px;color:#8a6a3a;max-width:52px;word-break:break-all;', dots));
         el.style.outline = i === active ? '4px solid #ff9a3d' : i === picked ? '4px solid #2fa84f' : 'none';
         el.style.transform = i === active ? 'scale(1.06)' : '';
+        el.setAttribute('aria-label', `${QUAN_CELLS.includes(i) ? 'Ô quan' : SIDES.player.includes(i) ? `Ô của bé số ${i}` : 'Ô của Nhím'}: ${count} viên sỏi${shown.quan[i] ? ' và một quan' : ''}`);
         if (SIDES.player.includes(i)) { el.disabled = busy || game.turn !== 'player' || game.dan[i] === 0; el.style.opacity = el.disabled && !busy ? '.6' : '1'; }
       });
       foot.replaceChildren(...(picked !== null && !busy ? [left, right] : []));
@@ -67,9 +69,9 @@ export function createOanQuan({ onSound = () => {} } = {}) {
         if (step.type === 'take') { shown.dan[step.cell] = 0; onSound('take'); }
         else if (step.type === 'sow') { shown.dan[step.cell] += 1; onSound('sow'); }
         else if (step.type === 'capture') { shown.dan[step.cell] = 0; shown.quan[step.cell] = false; shown.score[step.side] += step.gain; onSound('capture'); note.textContent = step.side === 'player' ? `Bé ăn được ${step.gain} điểm!` : `Nhím ăn ${step.gain} điểm.`; }
-        else if (step.type === 'scatter') { note.textContent = step.side === 'player' ? 'Hàng của bé hết sỏi: bé bỏ ra 5 viên rải lại mỗi ô một viên.' : 'Hàng của Nhím hết sỏi: Nhím rải lại mỗi ô một viên.'; shown = cloneGame(game); }
+        else if (step.type === 'scatter') { note.textContent = step.side === 'player' ? `Hàng của bé hết sỏi: rải lại mỗi ô một viên (bé góp ${step.paid} viên${step.paid < OQ.scatter ? ', còn lại lấy ở hũ sỏi chung' : ''}).` : 'Hàng của Nhím hết sỏi: Nhím rải lại mỗi ô một viên.'; shown = cloneGame(game); onSound('sow'); }
         draw(step.cell ?? null);
-        timer = setTimeout(tick, step.type === 'capture' ? STEP_MS * 3 : STEP_MS);
+        timer = setTimeout(tick, step.type === 'scatter' ? SCATTER_READ_MS : step.type === 'capture' ? STEP_MS * 3 : STEP_MS);
       };
       tick();
     }

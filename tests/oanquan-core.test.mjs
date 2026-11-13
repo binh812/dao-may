@@ -51,6 +51,10 @@ test('two empty cells in a row, or a quan cell with stones ahead, end the turn w
   const steps = playMove(quanAhead, 'player', 4, 1);
   assert.deepEqual(steps.map((s) => s.type), ['take', 'sow']);
   assert.equal(quanAhead.quan[6], true);
+  // o quan da mat quan nhung con dan: van khong duoc boc, het luot
+  const danOnly = board([0, 0, 0, 0, 1, 0, 4, 3, 0, 0, 0, 0], { quan6: false });
+  assert.deepEqual(playMove(danOnly, 'player', 4, 1).map((s) => s.type), ['take', 'sow']);
+  assert.equal(danOnly.dan[6], 4);
 });
 
 test('sowing to the left works the same way, mirrored', () => {
@@ -77,13 +81,19 @@ test('the game ends when both quan cells are empty and leftover stones go to the
   assert.throws(() => playMove(k, 'rival', 7, 1), /ket thuc/);
 });
 
-test('a side with five bare cells must scatter five of its captured stones, borrowing if short', () => {
+test('a side with five bare cells scatters five stones: it pays what it has, the rest is a gift, and its score never goes negative', () => {
   const g = board([3, 1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0]);
   g.score.rival = 2;
   const steps = playMove(g, 'player', 1, 1);    // sau nuoc nay hang cua ban choi cung van trong -> phai rai lai
   assert.equal(steps.at(-1).type, 'scatter');
   assert.deepEqual(SIDES.rival.map((cell) => g.dan[cell]), [1, 1, 1, 1, 1]);
-  assert.equal(g.score.rival, 2 - OQ.scatter);
+  assert.equal(g.score.rival, 0, 'gop het 2 vien dang co, khong am');
+  assert.equal(g.gifted, OQ.scatter - 2);
+  assert.equal(steps.at(-1).paid, 2);
+  const rich = board([3, 1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0]); rich.score.rival = 9;
+  playMove(rich, 'player', 1, 1);
+  assert.equal(rich.score.rival, 9 - OQ.scatter);
+  assert.equal(rich.gifted, 0);
   assert.equal(g.turn, 'rival');
   assert.ok(legalMoves(g, 'rival').length > 0, 'rai lai xong thi phai co nuoc di');
 });
@@ -111,11 +121,12 @@ test('random games never lose a stone, always alternate turns and always finish'
       assert.ok(steps.length < OQ.maxSteps, `seed ${seed}: rai mai khong dung`);
       assert.equal(totalValue(g), 70, `seed ${seed}: mat soi`);
       assert.ok(g.dan.every((n) => n >= 0));
+      assert.ok(g.score.player >= 0 && g.score.rival >= 0, `seed ${seed}: diem am`);
       if (!g.over) assert.notEqual(g.turn, side);
       turns++;
     }
     assert.equal(g.over, true, `seed ${seed}: ${turns} luot chua xong`);
-    assert.equal(g.score.player + g.score.rival, 70);
+    assert.equal(g.score.player + g.score.rival, 70 + g.gifted);
     assert.ok(['player', 'rival', 'draw'].includes(winner(g)));
   }
 });
@@ -130,5 +141,6 @@ test('the greedy rival takes the biggest capture on offer and choosing never cha
   const chosen = cloneGame(g); playMove(chosen, 'rival', move.cell, move.dir);
   assert.equal(chosen.score.rival, Math.max(...gains));
   assert.ok(Math.max(...gains) > Math.min(...gains), 'tinh huong phai co nuoc hon kem thi phep thu moi co nghia');
-  assert.equal(chooseMove(board([0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], { turn: 'rival' }), 'rival'), null);
+  const finished = createGame(); finished.over = true;
+  assert.equal(chooseMove(finished, 'rival'), null, 'van da xong thi khong con nuoc');
 });

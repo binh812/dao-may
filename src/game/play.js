@@ -45,7 +45,8 @@ export function createPlay() {
     camera.position.lerp(desired, k); lookAt.lerp(target, k); cam.snapped = true;
     camera.lookAt(lookAt);
     // rung may quay (trung don, nem nang): lech ngau nhien roi tat nhanh
-    if (shake.power > 0.002) { camera.position.x += (Math.random() - 0.5) * shake.power; camera.position.y += (Math.random() - 0.5) * shake.power; shake.power *= Math.exp(-dt * SHAKE_FADE); } else shake.power = 0;
+    if (dt <= 0) shake.power = 0;   // game dang dung (mo the bai): khong rung, neu khong may quay se troi dan
+    else if (shake.power > 0.002) { camera.position.x += (Math.random() - 0.5) * shake.power; camera.position.y += (Math.random() - 0.5) * shake.power; shake.power *= Math.exp(-dt * SHAKE_FADE); } else shake.power = 0;
   }
 
   function updateActor(dt, speed) {

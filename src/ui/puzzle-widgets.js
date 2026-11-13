@@ -139,7 +139,10 @@ function sort(p, act) {
   const GRAIN = 'min-width:46px;height:44px;padding:0 6px;border-radius:22px 22px 18px 18px;font-weight:800;font-size:17px;';
   const grains = p.grains.map((value, i) => button(GRAIN, String(value), () => act((s) => ({ side: s.side.map((v, k) => (k !== i ? v : v === null ? active : null)) }))));
   const baskets = p.baskets.map((name, basket) => {
-    const box = node('div', TAP + 'min-height:96px;'); box.onclick = () => { active = basket; act((s) => s); };
+    const box = node('div', TAP + 'min-height:96px;');
+    const choose = () => act((s) => { active = basket; return s; });   // doi thung ben trong act de khong doi khi the dang khoa
+    box.onclick = choose; box.tabIndex = 0; box.setAttribute('role', 'button'); box.setAttribute('aria-label', `Chọn thúng: ${name}`);
+    box.onkeydown = (event) => { if (event.target === box && (event.code === 'Enter' || event.code === 'Space')) { event.preventDefault(); choose(); } };
     box.style.cssText += 'padding:6px;border-radius:10px 10px 26px 26px;background:#e7c98f;display:flex;flex-direction:column;gap:5px;align-items:center;';
     const label = node('div', 'font:800 14px/1.2 system-ui,sans-serif;'), inside = node('div', 'display:flex;flex-wrap:wrap;gap:4px;justify-content:center;');
     label.textContent = name; box.append(label, inside); row.append(box);
