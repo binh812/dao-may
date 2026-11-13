@@ -106,10 +106,11 @@ export function createSession(play) {
   if (askedWear[0]) applyOutfit(Object.fromEntries(SLOTS.map((slot) => [slot.id, CATALOG.find((item) => item.slot === slot.id && askedWear.includes(item.id))?.id ?? null])));
   // Quay hang chi co o the gioi dat `realm.shop` va co Hat Nang. Hat da nhat ma lan nay khong hien (parked) van la cua be.
   const stall = seeds && realm.shop ? realm.shop : null, collected = () => seeds.count + seedSave.parked.length;
-  if (stall && catalogTotal() > seeds.total) throw new Error(`Quay hang can ${catalogTotal()} Hat Nang nhung the gioi chi co ${seeds.total}: be se khong bao gio doi duoc het`);
+  // khong nem loi: be van choi va doi duoc phan lon mon; nguoi lam game thay loi nay trong console khi thu
+  if (stall && catalogTotal() > seeds.total) console.error(`Quay hang can ${catalogTotal()} Hat Nang nhung the gioi chi co ${seeds.total}: be se khong doi duoc het`);
   const shopPanel = stall ? createShopPanel({
     getView: () => ({ balance: balance(wardrobe, collected()), slots: SLOTS, items: shelf(wardrobe, collected()) }),
-    onBuy: (id) => { if (!buy(wardrobe, id, collected()).ok) return; wardrobeChanged(); sfx.buy(); hud.toast('Mầm có đồ mới rồi! Xinh quá!', 2200); },
+    onBuy: (id) => { if (!buy(wardrobe, id, collected()).ok) return; const saved = wardrobeChanged(); sfx.buy(); if (saved) hud.toast('Mầm có đồ mới rồi! Xinh quá!', 2200); },
     onWear: (id) => { if (toggleWear(wardrobe, id)) wardrobeChanged(); },
   }) : null;
   let shopHinted = wardrobe.owned.size > 0;   // da tung doi do thi be biet quay hang roi
@@ -155,8 +156,8 @@ export function createSession(play) {
 
   function wardrobeChanged() {
     applyOutfit(wardrobe.worn);
-    try { localStorage.setItem(WARDROBE_KEY, JSON.stringify(serializeWardrobe(wardrobe))); }
-    catch (error) { console.warn('Khong luu duoc tu do:', error); hud.toast('Máy không lưu được đồ mới lần này.', 2600); }
+    try { localStorage.setItem(WARDROBE_KEY, JSON.stringify(serializeWardrobe(wardrobe))); return true; }
+    catch (error) { console.warn('Khong luu duoc tu do:', error); hud.toast('Máy không lưu được đồ mới lần này.', 2600); return false; }
   }
   function openShop() { if (shopPanel && state.profile && !busy()) shopPanel.open(); }
 

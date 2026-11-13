@@ -67,7 +67,7 @@ Danh sách trong `.pb-dev.json` → `protected`. Chỉ đổi khi anh Ben duyệ
 | Bài tập phải đúng: đáp án tính lại độc lập, 4 lựa chọn khác nhau, gợi ý không lộ đáp án, lời giải kết bằng "Đáp số" | `tests/learn.test.mjs` (400 bài mỗi kỹ năng) | M2, 12/11/2026 |
 | Sai không mất tim; một đòn ≤ 40% tim; ngã thì tỉnh lại và địch chậm dần | `tests/battle-core.test.mjs` | quy tắc kids-games |
 | Hạt Nắng: chạm mới nhặt, không nhặt hai lần, nhớ qua các lần chơi | `tests/collect-core.test.mjs` | 13/11/2026 |
-| Đổi đồ: đủ hạt mới đổi, không trừ hai lần, món đã đổi không mất, số dư không âm; tổng giá cả quầy ≤ số hạt của thế giới | `tests/shop-core.test.mjs`; `session.js` ném lỗi lúc mở nếu quầy đắt hơn số hạt (smoke đỏ) | 13/11/2026 |
+| Đổi đồ: đủ hạt mới đổi, không trừ hai lần, món đã đổi không mất, số dư không âm; tổng giá cả quầy ≤ số hạt của thế giới | `tests/shop-core.test.mjs` (luật đổi); riêng "tổng giá ≤ số hạt" chưa có cổng tự động: `session.js` chỉ ghi `console.error` lúc mở, đổi giá hay chỗ đặt hạt thì đếm lại tay | 13/11/2026 |
 | Trang phải mở được không lỗi runtime | `scripts/smoke.mjs` | shader treo lúc biên dịch, 12/11/2026 |
 | Shader không biên dịch được phải làm cổng đỏ | `renderer.debug.onShaderError` trong `core/stage.js` đưa lỗi lên hộp lỗi của trang, `smoke.mjs` đọc hộp đó | hoa thung lũng vắng mặt vì biến tên `patch`, 13/11/2026 |
 

@@ -9,7 +9,7 @@ const FUR = 0xfff3e2, EAR_INNER = 0xffb9c8, EYE = 0x2a2030, APRON = 0x57b356;
 const AWNING_STRIPES = 7, AWNING_WIDTH = 4.6, AWNING_DEPTH = 3.6, AWNING_TILT = 0.2;
 export const STALL_RADIUS = 2.9;   // vong vat can quanh quay
 
-/** Dung quay hang; tra ve vat can. Khong dung so ngau nhien de khong lam doi phan con lai cua canh. */
+/** Dung quay hang; tra ve vat can. */
 export function createStall(B) {
   const base = TRS(SHOP.x, heightAt(SHOP.x, SHOP.z), SHOP.z, 0, SHOP.yaw, 0);
   const add = (geometry, color, x, y, z, rx = 0, ry = 0, rz = 0, sx = 1, sy = sx, sz = sx) => B.add('clay', geometry, base.clone().multiply(TRS(x, y, z, rx, ry, rz, sx, sy, sz)), color);
@@ -25,8 +25,8 @@ export function createStall(B) {
     add(new THREE.BoxGeometry(width, 0.1, AWNING_DEPTH), STRIPES[k % 2], (k - (AWNING_STRIPES - 1) / 2) * width, 3.15, 0.15, AWNING_TILT);
   }
   // cot bien hieu: vien Hat Nang lon
-  add(new THREE.CylinderGeometry(0.1, 0.12, 6.5, 8), WOOD, 2.9, 3.0, 1.5);
-  add(new THREE.OctahedronGeometry(0.62, 0), SEED, 2.9, 6.9, 1.5, 0, 0.6, 0, 1, 1.35, 1);
+  add(new THREE.CylinderGeometry(0.1, 0.12, 6.5, 8), WOOD, 2.45, 3.0, 1.4);
+  add(new THREE.OctahedronGeometry(0.62, 0), SEED, 2.45, 6.9, 1.4, 0, 0.6, 0, 1, 1.35, 1);
   // hang bay tren quay: mu rom, cuon khan, cham len, chau hoa
   add(new THREE.CylinderGeometry(0.36, 0.38, 0.04, 14), 0xf2d27a, -1.35, 1.15, 0.75);
   add(new THREE.SphereGeometry(0.2, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2), 0xf2d27a, -1.35, 1.15, 0.75);

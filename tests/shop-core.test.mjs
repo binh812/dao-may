@@ -1,6 +1,7 @@
 // Luat doi do: du hat moi doi duoc, khong tru hai lan, mon da doi khong mat, so du khong am, du lieu hong khong lam hong tu do.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { CATALOG, SLOTS, balance, buy, catalogTotal, cheapestPrice, createWardrobe, serializeWardrobe, shelf, spent, toggleWear } from '../src/game/shop-core.js';
 
 const item = (id) => CATALOG.find((i) => i.id === id);
@@ -102,4 +103,20 @@ test('the shelf tells the screen what each item needs', () => {
   assert.equal(byId['khan-xanh'].status, 'short');
   assert.equal(byId['khan-xanh'].missing, 4);
   assert.equal(shelf(w, 30).find((i) => i.id === 'vong-hoa').status, 'can-buy');
+  const exact = shelf(createWardrobe(), 10).find((i) => i.id === 'vong-hoa');
+  assert.equal(exact.status, 'can-buy', 'vua du hat thi doi duoc');
+  for (const i of shelf(w, 30)) if (i.status !== 'short') assert.equal(i.missing, 0, `${i.id} khong thieu hat`);
+});
+
+test('saving a wardrobe copies it: later changes do not leak into the saved copy', () => {
+  const w = createWardrobe();
+  buy(w, 'mu-rom', 30);
+  const saved = serializeWardrobe(w);
+  toggleWear(w, 'mu-rom'); buy(w, 'khan-do', 30);
+  assert.deepEqual(saved, { owned: ['mu-rom'], worn: { hat: 'mu-rom', scarf: null, sprout: null } });
+});
+
+test('every catalogue item has a look on the character (outfit.js) so nothing bought is invisible', () => {
+  const source = readFileSync(new URL('../src/actors/outfit.js', import.meta.url), 'utf8');
+  for (const i of CATALOG) assert.ok(source.includes(`'${i.id}'`), `outfit.js chua co hinh cho mon ${i.id}`);
 });
