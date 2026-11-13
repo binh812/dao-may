@@ -5,12 +5,12 @@ import * as THREE from 'three';
 import { U, scene } from '../core/stage.js';
 import { Q } from '../core/quality.js';
 import { rnd } from '../core/util.js';
-import { CELLS, SIZE, heightTexture } from './terrain.js';
+import { CELLS, PATH_GLSL, SIZE, heightTexture } from './terrain.js';
 
 const TILE = 72;                       // canh o co (m)
-const FLOWER_SHARE = 0.07;             // so hoa so voi so la co
+const FLOWER_SHARE = 0.09;             // so hoa so voi so la co
 
-const COMMON = /* glsl */`
+export const COMMON = /* glsl */`
   uniform float uWindT, uWind, uTile, uSize, uCells; uniform vec2 uCenter; uniform sampler2D uHeight; uniform vec3 uPlayer;
   attribute vec3 aSeed;
   // noi suy theo dung hai tam giac cua moi o luoi (duong cheo b-c), giong groundAt trong terrain.js
@@ -20,19 +20,21 @@ const COMMON = /* glsl */`
     return t.x + t.y <= 1. ? a + (b - a) * t.x + (c - a) * t.y : d + (c - d) * (1. - t.x) + (b - d) * (1. - t.y);
   }
   vec2 wrapped(){ return (fract(aSeed.xz - uCenter / uTile + 0.5) - 0.5) * uTile + uCenter; }
-  float edgeFade(vec2 base){ return 1. - smoothstep(uTile * 0.34, uTile * 0.49, length(base - uCenter)); }
+  ${PATH_GLSL}
+  // co thap dan o mep o va khong moc tren duong mon
+  float edgeFade(vec2 base){ return (1. - smoothstep(uTile * 0.34, uTile * 0.49, length(base - uCenter))) * smoothstep(1.3, 2.8, pathDist(base)); }
 `;
-const FRAG_TAIL = /* glsl */`
+export const FRAG_TAIL = /* glsl */`
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
     #include <fog_fragment>
 `;
 
-function sharedUniforms(center) {
+export function sharedUniforms(center) {
   return { ...THREE.UniformsUtils.clone(THREE.UniformsLib.fog), uWindT: U.windT, uWind: U.wind, uDim: U.dim, uPlayer: U.player, uCenter: { value: center },
     uTile: { value: TILE }, uSize: { value: SIZE }, uCells: { value: CELLS }, uHeight: { value: heightTexture } };
 }
-function instanced(base, count) {
+export function instanced(base, count) {
   const g = new THREE.InstancedBufferGeometry(); g.index = base.index; g.setAttribute('position', base.attributes.position);
   const seed = new Float32Array(count * 3); for (let i = 0; i < seed.length; i++) seed[i] = rnd();
   g.setAttribute('aSeed', new THREE.InstancedBufferAttribute(seed, 3)); g.instanceCount = count;
@@ -53,7 +55,7 @@ export function createGrass() {
       ${COMMON}
       varying float vH; varying vec3 vCol;
       void main(){
-        vec2 base = wrapped(); float fade = edgeFade(base), straw = step(0.965, fract(aSeed.y * 13.7));
+        vec2 base = wrapped(); float fade = edgeFade(base), straw = step(0.975, fract(aSeed.y * 13.7));
         float tall = (0.30 + 0.34 * fract(aSeed.y * 7.3)) * mix(1., 1.8, straw) * fade;
         float ang = aSeed.y * 6.2831, c = cos(ang), s = sin(ang);
         vec3 p = vec3(position.x * 0.085, position.y * tall, position.y * position.y * tall * 0.25);
@@ -66,7 +68,7 @@ export function createGrass() {
         vH = position.y;
         // moi la mot sac xanh rieng (tu xanh dam toi xanh non) de thay ro tung net; vai la kho mau rom
         float hue = fract(aSeed.y * 3.7);
-        vec3 green = hue < 0.5 ? mix(vec3(0.20, 0.52, 0.16), vec3(0.38, 0.72, 0.22), hue * 2.) : mix(vec3(0.38, 0.72, 0.22), vec3(0.66, 0.88, 0.34), hue * 2. - 1.);
+        vec3 green = hue < 0.5 ? mix(vec3(0.27, 0.60, 0.17), vec3(0.45, 0.78, 0.22), hue * 2.) : mix(vec3(0.45, 0.78, 0.22), vec3(0.72, 0.92, 0.36), hue * 2. - 1.);
         vCol = pow(mix(green, vec3(0.74, 0.76, 0.40), straw), vec3(2.2)); // sRGB -> tuyen tinh
         vec4 mvPosition = viewMatrix * vec4(w, 1.);
         gl_Position = projectionMatrix * mvPosition;
@@ -77,7 +79,7 @@ export function createGrass() {
       #include <fog_pars_fragment>
       uniform float uDim; varying float vH; varying vec3 vCol;
       void main(){
-        gl_FragColor = vec4(vCol * mix(0.55, 1.1, vH) * uDim, 1.);
+        gl_FragColor = vec4(vCol * mix(0.62, 1.12, vH) * uDim, 1.);
         ${FRAG_TAIL}
       }`,
   }));
@@ -93,15 +95,16 @@ export function createGrass() {
       void main(){
         vec2 base = wrapped();
         // hoa moc thanh mang: mat na theo vi tri the gioi
-        float patch = sin(base.x * 0.045) * sin(base.y * 0.05 + 1.3) + 0.6 * sin(base.x * 0.013 + base.y * 0.017 + 2.);
-        float on = smoothstep(0.05, 0.3, patch) * edgeFade(base);
-        float size = (0.10 + 0.08 * fract(aSeed.y * 5.1)) * on;
+        float meadow = sin(base.x * 0.045) * sin(base.y * 0.05 + 1.3) + 0.6 * sin(base.x * 0.013 + base.y * 0.017 + 2.);
+        float on = smoothstep(0.0, 0.3, meadow) * edgeFade(base);
+        float size = (0.085 + 0.06 * fract(aSeed.y * 5.1)) * on;
         float sway = sin(base.x * 0.11 + base.y * 0.07 + uWindT * 1.3) * 0.06 * min(uWind, 2.4);
-        vec3 w = vec3(base.x + position.x * size + sway, groundH(base) + 0.36 + 0.2 * fract(aSeed.y * 9.7), base.y + position.z * size);
+        vec3 w = vec3(base.x + sway, groundH(base) + 0.50 + 0.20 * fract(aSeed.y * 9.7), base.y);
         float k = fract(aSeed.y * 17.3);
         vCol = pow(k < 0.62 ? vec3(1.0, 0.97, 0.72) : k < 0.86 ? vec3(1.0) : k < 0.95 ? vec3(1.0, 0.72, 0.80) : vec3(1.0, 0.85, 0.25), vec3(2.2)); // sRGB -> tuyen tinh
         vUv2 = position.xz;
-        vec4 mvPosition = viewMatrix * vec4(w, 1.);
+        // bong hoa luon quay mat ve may quay (hoi det) de doc duoc tu xa nhu cham mau tren tranh
+        vec4 mvPosition = viewMatrix * vec4(w, 1.); mvPosition.xy += position.xz * size * vec2(1., 0.7);
         gl_Position = projectionMatrix * mvPosition;
         #include <fog_vertex>
       }`,
@@ -117,5 +120,5 @@ export function createGrass() {
   }));
   blades.frustumCulled = flowers.frustumCulled = false;
   group.add(blades, flowers);
-  return { group, setCenter(x, z) { center.set(x, z); } };
+  return { group, center, setCenter(x, z) { center.set(x, z); } };
 }
