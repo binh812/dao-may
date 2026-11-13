@@ -33,3 +33,10 @@ Mẫu: `- [ ] <tiêu đề> — Khi <tình huống> thì app phải <kết quả
 - [ ] Bài học làm mẫu 30–60 giây khi gặp kỹ năng mới (GDD 5.3) — chưa làm.
 - [ ] Đọc to đề bài cho lớp 1–2 bằng giọng đọc của máy (GDD 7) — chưa làm.
 - [ ] Các phần chơi khác trong GDD chưa có: đua lượn, chèo bè, mua bán, trồng trọt, trùm, các Linh và chiêu khác ngoài Tia Nắng, nhiều hồ sơ, giới hạn thời gian chơi.
+
+## Chơi không mạng (13/11/2026)
+- Xong: three.js 0.180 nằm trong `vendor/three` (16 file, 2,1 MB), không còn địa chỉ ngoài nào; `sw.js` + `asset-manifest.json` + `manifest.webmanifest` + icon.
+- Kiểm chứng: `node scripts/offline-check.mjs` đạt (113 yêu cầu khi có máy chủ; tắt máy chủ rồi mở lại vẫn chạy). Tắt service worker thì bài kiểm này đỏ.
+- Hai mục "Đóng gói three.js" ở trên coi như xong.
+- [ ] Cài lên điện thoại để chơi khi không có Wi-Fi — Khi mở game từ biểu tượng trên màn hình chính lúc bật chế độ máy bay thì game phải chạy. Cần một địa chỉ HTTPS (GitHub Pages hoặc Pangolin); anh Ben quyết nơi đặt. Kiểm chứng: anh Ben thử trên điện thoại.
+- [ ] Mở cổng tường lửa Windows cho cổng 8123 nếu điện thoại không vào được địa chỉ mạng nội bộ — anh Ben tự làm.
