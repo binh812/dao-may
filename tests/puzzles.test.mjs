@@ -110,6 +110,26 @@ test('garden: exactly one way to finish, enough empty cells, and a duplicate in 
   });
 });
 
+test('sort (Tam Cam): eight distinct grains, both baskets needed, the labels tell the rule, a misplaced grain is rejected', () => {
+  const RULES = { 'Bé hơn 10': (v) => v < 10, 'Bé hơn 5': (v) => v < 5, 'Số chẵn': (v) => v % 2 === 0, 'Bé hơn 50': (v) => v < 50, 'Trong bảng nhân 3': (v) => v % 3 === 0, 'Chia hết cho 5': (v) => v % 5 === 0 };
+  const LIMIT = { 1: 20, 2: 99, 3: 999 };
+  each('sort', (p, grade) => {
+    assert.equal(p.grains.length, 8);
+    assert.equal(new Set(p.grains).size, 8, 'hat bi trung so');
+    assert.ok(p.grains.every((v) => Number.isInteger(v) && v >= 1 && v <= LIMIT[grade]));
+    const rule = RULES[p.baskets[0]];
+    assert.ok(rule, `nhan thung la: ${p.baskets[0]}`);
+    // tinh lai doc lap tu nhan thung: hat nao thuoc thung nao
+    assert.deepEqual(p.belongs, p.grains.map((v) => (rule(v) ? 0 : 1)));
+    for (const basket of [0, 1]) assert.ok(p.belongs.filter((b) => b === basket).length >= 2, 'moi thung phai co it nhat hai hat');
+    assert.ok(p.story.includes('Tấm'));
+    const wrong = solutionState(p); wrong.side[0] = 1 - wrong.side[0];
+    assert.equal(isSolved(p, wrong), false);
+    const half = solutionState(p); half.side[3] = null;
+    assert.equal(isSolved(p, half), false);
+  });
+});
+
 test('hints guide without giving the answer away', () => {
   for (const kind of PUZZLE_KINDS) each(kind, (p) => {
     const hint = hintText(p);

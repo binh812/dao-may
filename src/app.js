@@ -34,6 +34,7 @@ const session = play ? createSession(play) : null;
 if (session && qs.has('mill')) setTimeout(() => session.debugMill(), 600); // chi de chup anh kiem tra me bot
 if (session && qs.has('shop')) setTimeout(() => session.debugShop(), 600); // chi de chup anh kiem tra bang doi do
 if (session && qs.has('puzzle')) setTimeout(() => session.debugPuzzle(qs.get('puzzle')), 600); // chi de chup anh kiem tra do vui: ?puzzle=balance|pour|pattern|garden
+if (session && qs.has('oanquan')) setTimeout(() => session.debugOanQuan(), 600); // chi de chup anh kiem tra ban o an quan
 if (session && qs.has('ask')) setTimeout(() => session.debugAsk(), 600); // chi de chup anh kiem tra the bai tap
 const clock = new THREE.Clock(), fpsEl = document.getElementById('fps'), infoEl = document.getElementById('info');
 let frames = 0, accTime = 0, slow = 0;

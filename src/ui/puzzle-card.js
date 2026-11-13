@@ -27,6 +27,8 @@ export function createPuzzleCard() {
     const later = node('button', BTN + 'min-height:44px;padding:0 14px;font-size:14px;font-weight:700;background:#eadfce;', 'Để sau');
     head.append(node('div', 'font:700 14px system-ui,sans-serif;opacity:.75;text-align:left;', `${title} · ${puzzle.title}`), later);
     const prompt = node('div', 'font:800 18px/1.3 system-ui,sans-serif;margin:2px 0 10px;', puzzle.prompt);
+    // cau do ke theo truyen co tich: mot hai cau dan truyen truoc de bai
+    if (puzzle.story) prompt.prepend(node('div', 'font:600 italic 14px/1.35 system-ui,sans-serif;color:#7a4a1a;margin-bottom:5px;', puzzle.story));
     const note = node('div', 'font:600 14px/1.35 system-ui,sans-serif;min-height:19px;margin:8px 0;color:#7a4a1a;white-space:pre-line;');
     const foot = node('div', 'display:flex;gap:8px;justify-content:center;flex-wrap:wrap;');
     const help = node('button', BTN + 'background:#eadfce;', 'Gợi ý'), check = node('button', BTN + 'background:#b9ecaa;', 'Kiểm tra');

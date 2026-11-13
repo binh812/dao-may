@@ -2,7 +2,7 @@
 // rot nuoc, dien day, xep vuon hoa) va thay ket qua ngay. Moi cau do sinh ra deu co loi giai (test kiem bang cach giai lai).
 // Giao dien nam o ui/puzzle-card.js; o day chi co du lieu, luat va loi giai.
 
-export const PUZZLE_KINDS = Object.freeze(['balance', 'pour', 'pattern', 'garden']);
+export const PUZZLE_KINDS = Object.freeze(['balance', 'pour', 'pattern', 'garden', 'sort']);
 export const SHAPES = Object.freeze(['🌸', '🍄', '⭐', '🍃', '🐞']);
 export const FLOWERS = Object.freeze(['🌷', '🌻', '🌼', '🍀']);
 const MIN_GRADE = 1, MAX_GRADE = 3;
@@ -158,9 +158,36 @@ function gardenSolved(p, state) {
   return true;
 }
 
+// ---------------------------------------------------------------- Tam Cam nhat thoc (phan loai so vao hai thung)
+const SORT_GRAINS = 8, SORT_MIN_EACH = 2;
+const SORT_RULES = {
+  1: [
+    { baskets: ['Bé hơn 10', 'Từ 10 trở lên'], lo: 1, hi: 20, first: (v) => v < 10, hint: 'Số có một chữ số thì bé hơn 10.' },
+    { baskets: ['Bé hơn 5', 'Từ 5 trở lên'], lo: 1, hi: 10, first: (v) => v < 5, hint: 'Đếm 1, 2, 3, 4: đó là các số bé hơn 5.' },
+  ],
+  2: [
+    { baskets: ['Số chẵn', 'Số lẻ'], lo: 1, hi: 50, first: (v) => v % 2 === 0, hint: 'Số chẵn có chữ số cuối là 0, 2, 4, 6 hoặc 8.' },
+    { baskets: ['Bé hơn 50', 'Từ 50 trở lên'], lo: 10, hi: 99, first: (v) => v < 50, hint: 'Nhìn chữ số hàng chục: 1, 2, 3, 4 chục thì bé hơn 50.' },
+  ],
+  3: [
+    { baskets: ['Trong bảng nhân 3', 'Không trong bảng nhân 3'], lo: 1, hi: 30, first: (v) => v % 3 === 0, hint: 'Đọc bảng nhân 3: ba, sáu, chín, mười hai... Số nào có trong đó?' },
+    { baskets: ['Chia hết cho 5', 'Không chia hết cho 5'], lo: 1, hi: 60, first: (v) => v % 5 === 0, hint: 'Số chia hết cho 5 có chữ số cuối là 0 hoặc 5.' },
+    { baskets: ['Số chẵn', 'Số lẻ'], lo: 100, hi: 999, first: (v) => v % 2 === 0, hint: 'Chỉ cần nhìn chữ số cuối: 0, 2, 4, 6, 8 là số chẵn.' },
+  ],
+};
+function makeSort(grade, rng) {
+  const rule = pick(rng, SORT_RULES[grade]), all = Array.from({ length: rule.hi - rule.lo + 1 }, (_, i) => rule.lo + i);
+  const inFirst = shuffled(rng, all.filter(rule.first)), inSecond = shuffled(rng, all.filter((v) => !rule.first(v)));
+  const fromFirst = Math.min(inFirst.length, SORT_GRAINS - SORT_MIN_EACH, int(rng, SORT_MIN_EACH, SORT_GRAINS - SORT_MIN_EACH));
+  const grains = shuffled(rng, [...inFirst.slice(0, fromFirst), ...inSecond.slice(0, SORT_GRAINS - fromFirst)]);
+  return { grains, baskets: [...rule.baskets], belongs: grains.map((v) => (rule.first(v) ? 0 : 1)), hint: rule.hint,
+    story: 'Dì ghẻ trộn thóc lẫn gạo, bắt Tấm nhặt xong mới được đi hội. Bé giúp Tấm một tay nhé!',
+    prompt: 'Chọn thúng, rồi chạm từng hạt để bỏ vào đúng thúng.' };
+}
+
 // ---------------------------------------------------------------- giao dien chung cho moi loai
-const MAKERS = { balance: makeBalance, pour: makePour, pattern: makePattern, garden: makeGarden };
-const TITLES = { balance: 'Cân thăng bằng', pour: 'Đong nước', pattern: 'Tìm quy luật', garden: 'Vườn hoa' };
+const MAKERS = { balance: makeBalance, pour: makePour, pattern: makePattern, garden: makeGarden, sort: makeSort };
+const TITLES = { balance: 'Cân thăng bằng', pour: 'Đong nước', pattern: 'Tìm quy luật', garden: 'Vườn hoa', sort: 'Tấm Cám nhặt thóc' };
 
 /** Sinh mot cau do. grade ngoai 1..3 duoc keo ve gioi han gan nhat. */
 export function makePuzzle(kind, grade, rng = Math.random) {
@@ -180,6 +207,7 @@ export function initialState(p) {
     case 'pour': return { a: 0, b: 0 };
     case 'pattern': return { fill: p.blanks.map(() => null) };
     case 'garden': return { grid: [...p.given] };
+    case 'sort': return { side: p.grains.map(() => null) };
     default: throw new RangeError(`Loai cau do khong co: ${p.kind}`);
   }
 }
@@ -190,6 +218,7 @@ export function isSolved(p, state) {
     case 'pour': return state.a === p.target || state.b === p.target;
     case 'pattern': return p.blanks.every((cell, i) => state.fill[i] === p.cells[cell]);
     case 'garden': return gardenSolved(p, state);
+    case 'sort': return p.belongs.every((basket, i) => state.side[i] === basket);
     default: throw new RangeError(`Loai cau do khong co: ${p.kind}`);
   }
 }
@@ -201,6 +230,7 @@ export function solutionState(p) {
     case 'pour': return p.path.reduce((state, move) => pourMove(p, state, move), { a: 0, b: 0 });
     case 'pattern': return { fill: p.blanks.map((cell) => p.cells[cell]) };
     case 'garden': return { grid: [...p.solution] };
+    case 'sort': return { side: [...p.belongs] };
     default: throw new RangeError(`Loai cau do khong co: ${p.kind}`);
   }
 }
@@ -212,6 +242,7 @@ export function hintText(p) {
     case 'pour': return `Đổ đầy một bình rồi rót sang bình kia: phần còn lại trong bình là bao nhiêu lít?`;
     case 'pattern': return p.hint;
     case 'garden': return 'Tìm hàng hoặc cột chỉ còn thiếu một ô: ô đó phải là loài hoa chưa có trong hàng, cột ấy.';
+    case 'sort': return p.hint;
     default: throw new RangeError(`Loai cau do khong co: ${p.kind}`);
   }
 }
@@ -224,6 +255,7 @@ export function solutionSteps(p) {
     case 'pour': return p.path.map((move) => `${POUR_WORDS[move](p)}.`);
     case 'pattern': return [p.rule, `Hai ô còn thiếu là ${p.blanks.map((cell) => p.cells[cell]).join(' và ')}.`];
     case 'garden': return ['Mỗi hàng và mỗi cột đều có đủ các loài hoa, mỗi loài một lần.'];
+    case 'sort': return p.baskets.map((name, basket) => `${name}: ${p.grains.filter((_, i) => p.belongs[i] === basket).sort((a, b) => a - b).join(', ')}.`);
     default: throw new RangeError(`Loai cau do khong co: ${p.kind}`);
   }
 }

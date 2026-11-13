@@ -12,7 +12,7 @@ code, không asset ngoài. Trả lời anh Ben bằng tiếng Việt có dấu. 
 - Chơi không mạng: `sw.js` lưu sẵn mọi file trong `asset-manifest.json`. Thêm/xóa file trong `src/`, `vendor/`, `icons/` thì chạy
   `node scripts/make-asset-manifest.mjs` (test `tests/offline.test.mjs` đỏ nếu quên). Kiểm thật: `node scripts/offline-check.mjs`
   (mở một lần, tắt máy chủ, mở lại). Service worker chỉ hoạt động trên HTTPS hoặc localhost, không hoạt động qua `http://192.168...`.
-- Tham số URL: `world=island|valley` (chọn thế giới; mặc định `island`), `grade=1|2|3` (tạo hồ sơ tạm, bỏ qua màn chọn lớp), `ask=1` (mở sẵn một lần nạp Túi Nắng: đố vui hoặc thẻ bài), `puzzle=balance|pour|pattern|garden` (mở sẵn đúng loại đố vui đó), `mode=view` (ngắm cảnh, Mầm tự nhảy; mặc định là chế độ chơi), `q=low|medium|high`, `w=sun|wind|mist|rain|storm|snow|night`, `at=x,z` (chỉ thung lũng: sinh ra ở chỗ khác để chụp ảnh, vd. `at=285,-200` là mép làng), `yaw=rad` (chỉ thung lũng: hướng máy quay lúc đầu), `shop=1` (mở sẵn bảng đổi đồ), `mill=1` (mở ngay câu đố cân bột), `wear=id,id` (mặc thử trang phục, không lưu), `wave=N`, `cam=x,y,z`, `ui=0`, `spin=0`, `dyn=0`, `flash=0.6`.
+- Tham số URL: `world=island|valley` (chọn thế giới; mặc định `island`), `grade=1|2|3` (tạo hồ sơ tạm, bỏ qua màn chọn lớp), `ask=1` (mở sẵn một lần nạp Túi Nắng: đố vui hoặc thẻ bài), `puzzle=balance|pour|pattern|garden|sort` (mở sẵn đúng loại đố vui đó), `oanquan=1` (mở sẵn bàn ô ăn quan), `mode=view` (ngắm cảnh, Mầm tự nhảy; mặc định là chế độ chơi), `q=low|medium|high`, `w=sun|wind|mist|rain|storm|snow|night`, `at=x,z` (chỉ thung lũng: sinh ra ở chỗ khác để chụp ảnh, vd. `at=285,-200` là mép làng), `yaw=rad` (chỉ thung lũng: hướng máy quay lúc đầu), `shop=1` (mở sẵn bảng đổi đồ), `mill=1` (mở ngay câu đố cân bột), `wear=id,id` (mặc thử trang phục, không lưu), `wave=N`, `cam=x,y,z`, `ui=0`, `spin=0`, `dyn=0`, `flash=0.6`.
 - Kiểm hình ảnh: chụp bằng Edge headless theo skill `threejs-stylized-scene` (bước 4), tự đọc ảnh trước khi báo xong.
 
 ## Cấu trúc (`src/`, ES module thuần, không build)
@@ -24,7 +24,8 @@ code, không asset ngoài. Trả lời anh Ben bằng tiếng Việt có dấu. 
   nhân vật và máy quay. `world/colliders.js` cấp vật cản và mặt đất cho game.
 - `learn/` — hệ học tập, toàn bộ là luật thuần có test: `questions.js` (chương trình lớp 1–3, sinh bài kèm gợi ý và lời giải),
   `adaptive.js` (hồ sơ, xếp lớp, chọn bài theo sức, bài đã sai), `parent-gate.js` (cổng phụ huynh),
-  `puzzles.js` (đố vui tương tác: cân thăng bằng, đong nước, tìm quy luật, vườn hoa; sinh đề theo lớp, luật, gợi ý, lời giải).
+  `puzzles.js` (đố vui tương tác: cân thăng bằng, đong nước, tìm quy luật, vườn hoa, Tấm Cám nhặt thóc; sinh đề theo lớp, luật, gợi ý, lời giải;
+  đố theo truyện cổ tích có thêm trường `story` là một hai câu dẫn truyện).
   Giao diện đố vui: `ui/puzzle-card.js` (khung: gợi ý, xem cách giải, để sau) và `ui/puzzle-widgets.js` (phần bé thao tác của từng loại).
   Thêm một loại đố = thêm bộ sinh + 4 nhánh trong `puzzles.js`, một widget, và test giải lại trong `tests/puzzles.test.mjs`.
 - `game/collect-core.js` luật nhặt Hạt Nắng (thuần, có test; thế giới nào đặt `realm.collectibles` thì có), `game/seed-views.js` phần nhìn.
@@ -33,6 +34,10 @@ code, không asset ngoài. Trả lời anh Ben bằng tiếng Việt có dấu. 
 - `game/mill-core.js` luật cân bột ở cối xay (thuần, có test): mỗi chuyến đi một mẻ là MỘT câu đố cân thăng bằng, xong mẻ được 1 hạt công + 1–3 hạt theo cách giải;
   hạt thưởng lưu ở `daomay.bonus.v1` và cộng vào số dư đổi đồ. Việc làm tại chỗ (quầy hàng, cối xay) dùng chung một nút của `hud.setAction`;
   thế giới khai báo chỗ bằng `realm.shop`, `realm.mill`, và báo `realm.wading` để phần chơi phát tiếng nước.
+- `game/oanquan-core.js` luật trò chơi dân gian Ô ăn quan (thuần, có test); `ui/oanquan.js` bàn chơi với bạn Nhím (Nhím dễ dần khi bé thua);
+  `game/playground-view.js` chiếu chơi ở chỗ thế giới đặt `realm.playground`. Chơi hết ván được 1–3 Hạt Nắng.
+- `game/juice.js` phản hồi của mọi hành động: số bay, chớp sáng màn hình, rung máy quay (`shake`, `play.js` đọc), bảng "Liên hoàn".
+  Máy đặt giảm chuyển động thì bỏ rung và chớp. Hiệu ứng 3D của trận đấu (nổ hoa, vòng sáng, địch nảy và chớp) ở `game/enemy-views.js`.
 - `game/battle-core.js` luật đối đầu (thuần, có test): chiêu Lá giữ nút là bắn liên tục, không cần bài; Túi Nắng nạp bằng một câu đố tự nguyện
   (3/2/1 viên theo cách giải), mỗi viên 8 điểm lan 4 m; Bóng Lặng thường 4 điểm, Bóng Lặng lớn 12 điểm (mỗi trại một con từ chuyến 2); `game/session.js` nối trận đấu, học tập, giao diện, âm thanh;
   `game/enemy-views.js`, `game/heart-tree.js`, `game/sfx.js` là phần nhìn và nghe. `ui/hud.js`, `ui/question-card.js`, `ui/notebook.js`.
@@ -77,6 +82,7 @@ Danh sách trong `.pb-dev.json` → `protected`. Chỉ đổi khi anh Ben duyệ
 | Đố vui: đề nào cũng giải được, chưa giải sẵn, vừa sức lớp, lời giải đưa ra phải đúng, vườn hoa chỉ có một cách xếp, gợi ý không lộ đáp án | `tests/puzzles.test.mjs` (300 đề mỗi loại mỗi lớp) | 13/11/2026 |
 | Hạt Nắng: chạm mới nhặt, không nhặt hai lần, nhớ qua các lần chơi | `tests/collect-core.test.mjs` | 13/11/2026 |
 | Đổi đồ: đủ hạt mới đổi, không trừ hai lần, món đã đổi không mất, số dư không âm; tổng giá cả quầy ≤ số hạt của thế giới | `tests/shop-core.test.mjs` (luật đổi); riêng "tổng giá ≤ số hạt" chưa có cổng tự động: `session.js` chỉ ghi `console.error` lúc mở, đổi giá hay chỗ đặt hạt thì đếm lại tay | 13/11/2026 |
+| Ô ăn quan: rải và ăn đúng luật, không mất viên sỏi nào (tổng luôn 70), ván nào cũng kết thúc, nước sai bị từ chối | `tests/oanquan-core.test.mjs` (300 ván ngẫu nhiên) | 13/11/2026 |
 | Cân bột: mỗi chuyến một mẻ, xem cách giải vẫn xong mẻ và vẫn có công, để sau thì làm lại được, không thưởng hai lần | `tests/mill-core.test.mjs` | 13/11/2026 |
 | Trang phải mở được không lỗi runtime | `scripts/smoke.mjs` | shader treo lúc biên dịch, 12/11/2026 |
 | Shader không biên dịch được phải làm cổng đỏ | `renderer.debug.onShaderError` trong `core/stage.js` đưa lỗi lên hộp lỗi của trang, `smoke.mjs` đọc hộp đó | hoa thung lũng vắng mặt vì biến tên `patch`, 13/11/2026 |
@@ -87,7 +93,9 @@ Danh sách trong `.pb-dev.json` → `protected`. Chỉ đổi khi anh Ben duyệ
 - Không đổi `id` kỹ năng đã phát hành (hồ sơ lưu tham chiếu theo id); kỹ năng mới thêm vào đúng vị trí thứ tự học.
 - Lời thoại và thông báo không chê bai, không đe dọa. Sai chỉ làm phần thưởng ít đi, không bao giờ mất gì.
 - Không gắn bài tập vào hành động lặp lại (mỗi phát bắn, mỗi bước đi). Bài và đố là việc bé tự bấm, luôn có nút "Để sau", không giới hạn giờ.
-- Bài không chỉ là thẻ 4 lựa chọn: ưu tiên đố vui bé thao tác trực tiếp trên hình và thấy kết quả ngay.
+- Bài không chỉ là thẻ 4 lựa chọn: ưu tiên đố vui bé thao tác trực tiếp trên hình và thấy kết quả ngay; lấy chất liệu trò chơi dân gian và
+  truyện cổ tích Việt Nam; xoay vòng nhiều kiểu để bé không nhàm. Mọi hành động phải có phản hồi rõ (hình, tiếng, số bay).
+- Trò đối kháng với máy (ô ăn quan): thua vẫn có quà, máy dễ dần khi bé thua, không có bảng xếp hạng.
 
 ## Bẫy riêng của repo
 - Lấy mẫu texture trong `if` bên trong vòng lặp shader làm trang treo hơn 1 phút ở lần mở đầu trên Windows; dùng `textureLod` và bỏ rẽ nhánh (12/11/2026).
