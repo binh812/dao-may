@@ -55,3 +55,12 @@ Mẫu: `- [ ] <tiêu đề> — Khi <tình huống> thì app phải <kết quả
 ## Hành trình trong thung lũng (13/11/2026)
 - Xong: giữ cần hết cỡ 1,2 giây thì Mầm tăng tốc dần tới 1,9 lần (chỉ ở thế giới rộng); mỗi chuyến Bóng Lặng ngủ ở một nơi xa dần (đồi cỏ, bìa đồng, đường xuống thung, mép làng, cối xay, bìa rừng); mũi tên chỉ hướng kèm khoảng cách khi Bóng Lặng ở xa hơn 22 m. Tham số thử: `wave=N`.
 - [ ] Chưa ai chơi thử phần này: tốc độ chạy nhanh có vừa không, đi 345 m tới làng có chán không.
+
+## Thung lũng bản vẽ lại (13/11/2026)
+- Anh Ben thử máy thật: tốc độ chạy ổn, mức Cao vẫn 60 fps; Đảo Mây sinh động hơn nhưng chật, Thung lũng chưa đạt mức bản mẫu Painted Valley. Hướng đi: lấy Thung lũng làm thế giới chính và làm nó phong phú lên.
+- Xong: mây tích có khối nướng sẵn (trắng nắng, xám lam hai tông, mép sắc), mây trôi theo gió; núi tuyết lởm chởm thay nón; mặt đất vẽ ô ruộng, bờ rào, luống cày, đường mòn nối các trại; làng 36 nhà có cửa sổ, ống khói, nhà thờ; cây tán lá instanced dọc bờ rào; hoa dại (trước đó chưa từng hiện vì lỗi shader); bướm, hai đàn chim, bầy cừu; Cây Tâm thành cây hoa hồng; máy quay thấp hơn để thấy nhiều trời.
+- Kiểm chứng: ảnh chụp đã tự xem (chỗ sinh, mép làng, giữa đường, khung dọc mức Vừa, đêm mức Thấp, mưa, bão); 63 test xanh; cổng đầy đủ xanh; chơi không mạng đạt.
+- [ ] Đo lại FPS trên điện thoại sau bản này (thêm ~1.000 cây tán lá, bướm, lớp vẽ mặt đất; mây thì không tốn thêm lúc chơi nhưng lúc mở game phải nướng một lần).
+- [ ] Mép mây ở mức Thấp/Vừa còn gợn bậc thang (do số bước đi tia ít).
+- [ ] Chưa có nước (sông, hồ), cầu, hàng rào gỗ, người dân; nhà chưa đổ bóng; cừu đứng yên.
+- [ ] Đảo Mây: nếu giữ thì cần mở rộng không gian (anh Ben thấy chật).

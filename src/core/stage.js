@@ -6,6 +6,13 @@ import { Q, qs } from './quality.js';
 const canvas = document.createElement('canvas');
 document.body.prepend(canvas);
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance', stencil: false });
+// Shader hong thi three.js chi ghi console roi bo qua vat the do (hoa dai cua thung lung tung vang mat vi mot ten bien bi cam).
+// Dua loi len hop loi cua trang de scripts/smoke.mjs bat duoc.
+renderer.debug.onShaderError = (gl, program, vertexShader, fragmentShader) => {
+  const log = [gl.getProgramInfoLog(program), gl.getShaderInfoLog(vertexShader), gl.getShaderInfoLog(fragmentShader)].filter(Boolean).join(' | ').slice(0, 400);
+  console.error('Shader lỗi:', gl.getProgramInfoLog(program), gl.getShaderInfoLog(vertexShader), gl.getShaderInfoLog(fragmentShader));
+  window.dispatchEvent(new ErrorEvent('error', { message: 'Shader lỗi: ' + log }));
+};
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.NeutralToneMapping;

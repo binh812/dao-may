@@ -1,44 +1,48 @@
 // The gioi "Thung lung Ve": khong gian rong ~2 km, ve theo kieu phong nen phim hoat hinh ve tay
 // (may tich dinh trang phang, dong co la dai mau phang, cac lop doi xa mo dan, rung thong sam, lang mai cam).
 // Cung luat choi, cung nhan vat va he hoc tap voi Dao May; chi khac the gioi.
-import '../core/quality.js';
+import { qs } from '../core/quality.js';
 import '../core/util.js';
 import '../core/stage.js';
 import '../world/materials.js';
 import { SUN_DIR, U, camera, controls, scene, sun } from '../core/stage.js';
 import { chr } from '../actors/mam.js';
-import { EDGE, createTerrain, groundAt } from '../valley/terrain.js';
+import { CAMP_SPOTS, EDGE, createTerrain, groundAt } from '../valley/terrain.js';
 import { createSky } from '../valley/sky.js';
 import { createGrass } from '../valley/grass.js';
 import { createScenery } from '../valley/scenery.js';
 
-const FAR_PLANE = 9000, SHADOW_HALF = 26, SHADOW_DISTANCE = 70;
-const SPAWN = { x: 0, z: 0 };
+const FAR_PLANE = 10500, SHADOW_HALF = 26, SHADOW_DISTANCE = 70;
+// Tham so thu `at=x,z`: sinh ra o cho khac de chup anh kiem tra (vd. at=300,-215 la mep lang)
+const askedSpot = (qs.get('at') ?? '').split(',').map(Number);
+const SPAWN = askedSpot.length === 2 && askedSpot.every(Number.isFinite) && Math.hypot(...askedSpot) < EDGE - 20 ? { x: askedSpot[0], z: askedSpot[1] } : { x: 0, z: 0 };
 // Moi chuyen di, Bong Lang ngu o mot noi xa dan: doi co -> bia dong -> duong xuong thung -> mep lang -> coi xay -> bia rung.
-const CAMPS = [
-  { x: 0, z: 0, hint: 'Các Bóng Lặng đang ngủ quanh đây. Lại gần và đánh thức chúng!' },
-  { x: 95, z: -70, hint: 'Chuyến 2: có Bóng Lặng ngủ ở bìa đồng cỏ. Đi theo mũi tên nhé!' },
-  { x: 205, z: -150, hint: 'Chuyến 3: Bóng Lặng đang ngủ trên đường xuống thung lũng.' },
-  { x: 292, z: -208, hint: 'Chuyến 4: ngôi làng mái cam đang ngủ gật. Tới đánh thức nào!' },
-  { x: 440, z: -185, hint: 'Chuyến 5: cối xay gió ngừng quay rồi. Bóng Lặng ở quanh đó.' },
-  { x: 150, z: 185, hint: 'Chuyến 6: Bóng Lặng trốn ở bìa rừng thông.' },
+const CAMP_HINTS = [
+  { hint: 'Các Bóng Lặng đang ngủ quanh đây. Lại gần và đánh thức chúng!' },
+  { hint: 'Chuyến 2: có Bóng Lặng ngủ ở bìa đồng cỏ. Đi theo mũi tên nhé!' },
+  { hint: 'Chuyến 3: Bóng Lặng đang ngủ trên đường xuống thung lũng.' },
+  { hint: 'Chuyến 4: ngôi làng mái cam đang ngủ gật. Tới đánh thức nào!' },
+  { hint: 'Chuyến 5: cối xay gió ngừng quay rồi. Bóng Lặng ở quanh đó.' },
+  { hint: 'Chuyến 6: Bóng Lặng trốn ở bìa rừng thông.' },
 ];
+const CAMPS = CAMP_SPOTS.map(([x, z], i) => ({ x, z, hint: CAMP_HINTS[i].hint }));
 const CAMP_RING = [[10, 4], [-9, 8], [5, -12], [-13, -6], [15, -8], [-4, 14], [12, 12]];
 const campFor = (wave) => CAMPS[(wave - 1) % CAMPS.length];
+const MASSIF_HIDDEN_OVERCAST = 0.6;
 const MIST_BELOW_PLAYER = 5; // suong dong o cho trung, thap hon cho nguoi choi dung
 
 // nang cao, hoi chech sau lung nguoi choi luc dau: dong co sang, may co khoi
 SUN_DIR.set(-0.38, 0.78, 0.5).normalize();
 camera.far = FAR_PLANE; camera.updateProjectionMatrix();
-controls.target.set(0, groundAt(0, 0) + 2, 0); controls.maxDistance = 120;
-camera.position.set(-14, groundAt(0, 0) + 9, 18);
+controls.target.set(SPAWN.x, groundAt(SPAWN.x, SPAWN.z) + 2, SPAWN.z); controls.maxDistance = 120;
+camera.position.set(SPAWN.x - 14, groundAt(SPAWN.x, SPAWN.z) + 9, SPAWN.z + 18);
 Object.assign(sun.shadow.camera, { left: -SHADOW_HALF, right: SHADOW_HALF, top: SHADOW_HALF, bottom: -SHADOW_HALF, near: 1, far: SHADOW_DISTANCE * 2 });
 sun.shadow.camera.updateProjectionMatrix();
 
 createTerrain(scene);
 const sky = createSky();
 const grass = createGrass();
-const scenery = createScenery(scene);
+const scenery = createScenery(scene, grass.center);
 chr.position.set(SPAWN.x, groundAt(SPAWN.x, SPAWN.z), SPAWN.z);
 
 export default {
@@ -51,9 +55,9 @@ export default {
   spotsForWave: (wave) => { const camp = campFor(wave); return CAMP_RING.map(([dx, dz]) => [camp.x + dx, camp.z + dz]); },
   waveHint: (wave) => campFor(wave).hint,
   sprintScale: 1.9,                    // the gioi rong: giu can het co thi Mam chay nhanh gan gap doi
-  treeSpot: { x: 5, z: -6 },
-  cameraYaw: -0.92, cameraPitch: 0.1, cameraLookHeight: 2.4, fogScale: 0.18, paint: true,
-  sky,
+  treeSpot: { x: 3.5, z: -9 },
+  cameraYaw: -0.92, cameraPitch: 0.04, cameraLookHeight: 3.0, fogScale: 0.18, paint: true,
+  sky: sky.mesh,
   setGrassVisible(visible) { grass.group.visible = visible; },
   update(dt, time, ctx) {
     const focus = ctx.player ?? controls.target;
@@ -64,5 +68,8 @@ export default {
     sun.target.position.set(focus.x, ctx.player ? ctx.player.y : controls.target.y, focus.z);
     sun.position.copy(sun.target.position).addScaledVector(SUN_DIR, SHADOW_DISTANCE);
     scenery.rotor.rotation.z += dt * 0.5 * ctx.wind;
+    sky.drift(dt, ctx.wind);
+    scenery.life.update(dt, time);
+    scenery.massifs.visible = U.overcast.value < MASSIF_HIDDEN_OVERCAST;   // troi mua: nui xa khuat sau man may (nui khong chiu suong cua canh)
   },
 };

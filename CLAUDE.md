@@ -12,7 +12,7 @@ code, không asset ngoài. Trả lời anh Ben bằng tiếng Việt có dấu. 
 - Chơi không mạng: `sw.js` lưu sẵn mọi file trong `asset-manifest.json`. Thêm/xóa file trong `src/`, `vendor/`, `icons/` thì chạy
   `node scripts/make-asset-manifest.mjs` (test `tests/offline.test.mjs` đỏ nếu quên). Kiểm thật: `node scripts/offline-check.mjs`
   (mở một lần, tắt máy chủ, mở lại). Service worker chỉ hoạt động trên HTTPS hoặc localhost, không hoạt động qua `http://192.168...`.
-- Tham số URL: `world=island|valley` (chọn thế giới; mặc định `island`), `grade=1|2|3` (tạo hồ sơ tạm, bỏ qua màn chọn lớp), `ask=1` (mở sẵn một thẻ bài tập để chụp ảnh), `mode=view` (ngắm cảnh, Mầm tự nhảy; mặc định là chế độ chơi), `q=low|medium|high`, `w=sun|wind|mist|rain|storm|snow|night`, `cam=x,y,z`, `ui=0`, `spin=0`, `dyn=0`, `flash=0.6`.
+- Tham số URL: `world=island|valley` (chọn thế giới; mặc định `island`), `grade=1|2|3` (tạo hồ sơ tạm, bỏ qua màn chọn lớp), `ask=1` (mở sẵn một thẻ bài tập để chụp ảnh), `mode=view` (ngắm cảnh, Mầm tự nhảy; mặc định là chế độ chơi), `q=low|medium|high`, `w=sun|wind|mist|rain|storm|snow|night`, `at=x,z` (chỉ thung lũng: sinh ra ở chỗ khác để chụp ảnh, vd. `at=285,-200` là mép làng), `wave=N`, `cam=x,y,z`, `ui=0`, `spin=0`, `dyn=0`, `flash=0.6`.
 - Kiểm hình ảnh: chụp bằng Edge headless theo skill `threejs-stylized-scene` (bước 4), tự đọc ảnh trước khi báo xong.
 
 ## Cấu trúc (`src/`, ES module thuần, không build)
@@ -34,8 +34,10 @@ code, không asset ngoài. Trả lời anh Ben bằng tiếng Việt có dấu. 
   trong `worlds/` + một dòng trong `main.js`.
   - `worlds/island.js` — đảo bay; các module dựng cảnh nằm ở `world/`.
   - `worlds/valley.js` — thung lũng rộng 2,4 km kiểu tranh vẽ; module ở `valley/`: `terrain.js` (hàm độ cao, lưới 10 m, bản đồ
-    độ cao cho shader), `grass.js` (cỏ và hoa chỉ sống trong ô 72 m quanh người chơi, quấn theo vị trí), `scenery.js` (rừng
-    thông instanced, cây, làng, cối xay, núi xa), `sky.js` (mây tích).
+    độ cao cho shader, lớp vẽ mặt đất: ô ruộng, bờ rào, đường mòn; `PATH_GLSL` và `pathDistance` cùng một công thức), `grass.js`
+    (cỏ và hoa chỉ sống trong ô 72 m quanh người chơi, quấn theo vị trí), `scenery.js` (rừng thông instanced, cối xay, núi tuyết xa),
+    `trees.js` (cây tán lá instanced dọc bờ rào), `village.js` (làng, nhà trại), `life.js` (bướm, đàn chim, cừu), `sky.js` (mây tích
+    nướng một lần lúc mở game: đi tia qua lớp mây 3D, ghi độ sáng/độ dày vào ảnh toàn cảnh, lúc vẽ cắt ngưỡng thành mảng màu).
 - **Thứ tự `import` trong `worlds/island.js` là thứ tự dựng cảnh**: các module của đảo dùng chung một bộ sinh số ngẫu nhiên có
   seed, đổi thứ tự là đổi cả cảnh. Module dùng chung không được gọi `rnd()` của `core/util.js` (hạt mưa có bộ sinh riêng).
 - `archive/` — các bản một-file cũ để đối chiếu, không sửa.
@@ -61,6 +63,7 @@ Danh sách trong `.pb-dev.json` → `protected`. Chỉ đổi khi anh Ben duyệ
 | Bài tập phải đúng: đáp án tính lại độc lập, 4 lựa chọn khác nhau, gợi ý không lộ đáp án, lời giải kết bằng "Đáp số" | `tests/learn.test.mjs` (400 bài mỗi kỹ năng) | M2, 12/11/2026 |
 | Sai không mất tim; một đòn ≤ 40% tim; ngã thì tỉnh lại và địch chậm dần | `tests/battle-core.test.mjs` | quy tắc kids-games |
 | Trang phải mở được không lỗi runtime | `scripts/smoke.mjs` | shader treo lúc biên dịch, 12/11/2026 |
+| Shader không biên dịch được phải làm cổng đỏ | `renderer.debug.onShaderError` trong `core/stage.js` đưa lỗi lên hộp lỗi của trang, `smoke.mjs` đọc hộp đó | hoa thung lũng vắng mặt vì biến tên `patch`, 13/11/2026 |
 
 ## Quy tắc nội dung (game cho trẻ em)
 - Không quảng cáo, không mua bằng tiền thật, không thu thập dữ liệu, không hỏi tên thật; tiến độ chỉ lưu `localStorage`.
@@ -70,6 +73,9 @@ Danh sách trong `.pb-dev.json` → `protected`. Chỉ đổi khi anh Ben duyệ
 ## Bẫy riêng của repo
 - Lấy mẫu texture trong `if` bên trong vòng lặp shader làm trang treo hơn 1 phút ở lần mở đầu trên Windows; dùng `textureLod` và bỏ rẽ nhánh (12/11/2026).
 - Vật liệu toon tạo qua `toon()` trong `materials.js`; phần vá riêng đặt ở `material.userData.patch`, đừng gán `onBeforeCompile` (mất lớp tuyết) (12/11/2026).
+- `patch`, `sample`, `filter`, `input`, `output`... là từ bị cấm trong GLSL ES 3: đừng đặt tên biến như vậy (13/11/2026).
+- Màu viết tay trong shader là sRGB (như nhìn trên màn hình) thì phải `pow(màu, vec3(2.2))` trước khi dùng; quên thì nhạt bệch (13/11/2026).
+- Kịch bản vá viết bằng heredoc làm mất dấu gạch chéo ngược: chuỗi xuống dòng viết trong nháy đơn thành xuống dòng thật và hỏng cú pháp. Dòng có gạch chéo ngược thì sửa bằng công cụ Edit (13/11/2026).
 - Biến toàn cục có thể đổi giá trị phải là thuộc tính của object (`weatherState.name`), vì binding import chỉ đọc (12/11/2026).
 
 ## Nhắc lại luật chính

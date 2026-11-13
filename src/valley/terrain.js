@@ -10,6 +10,16 @@ export const EDGE = 1050;                      // ban kinh vung duoc di
 export const WALL = 1e6;                       // do cao tra ve cho vung khong duoc vao (nguoi choi bi chan lai)
 export const VILLAGE = { x: 360, z: -280, r: 85 };
 export const MILL = { x: 470, z: -150 };
+// Noi Bong Lang ngu o tung chuyen di [x, z]; canh vat phai chua trong quanh cac diem nay (CAMP_CLEAR)
+export const CAMP_SPOTS = [[0, 0], [95, -70], [205, -150], [292, -208], [440, -185], [150, 185]];
+export const CAMP_CLEAR = 21;
+/** Co nam trong vung phai de trong quanh mot trai khong. */
+export function nearCamp(x, z) { return CAMP_SPOTS.some(([cx, cz]) => Math.hypot(x - cx, z - cz) < CAMP_CLEAR); }
+// Duong mon dat: tu doi co xuong lang, nhanh re sang coi xay, nhanh ra bia rung. Moi doan la [x1, z1, x2, z2].
+export const PATH_SEGMENTS = [[0, 0, 95, -70], [95, -70, 205, -150], [205, -150, 292, -208], [292, -208, 360, -280], [292, -208, 440, -185], [440, -185, 470, -150], [0, 0, 150, 185]];
+const PATH_WOBBLE = 4, PATH_WOBBLE_X = 0.045, PATH_WOBBLE_Z = 0.05;   // duong uon luon nhe thay vi thang tap
+// O ruong quanh lang: he truc xoay nghieng, moi o 70 x 46 m
+const FIELD_AXIS = [0.88, 0.48], FIELD_CELL = [70, 46], FIELD_NEAR = [60, 110], FIELD_FAR = [460, 330];
 const HALF = SIZE / 2, STEP = SIZE / CELLS, ROW = CELLS + 1;
 const FAR_SIZE = 11000, FAR_CELLS = 110, FAR_SINK = 14;
 
@@ -31,6 +41,36 @@ export function heightAt(x, z) {
   return lerp(h, MILL_LEVEL, smooth(40, 14, Math.hypot(x - MILL.x, z - MILL.z)));
 }
 
+/** Khoang cach (m) tu (x, z) toi duong mon gan nhat. Shader dung cung cong thuc (PATH_GLSL). */
+export function pathDistance(x, z) {
+  const px = x + Math.sin(z * PATH_WOBBLE_X) * PATH_WOBBLE, pz = z + Math.sin(x * PATH_WOBBLE_Z) * PATH_WOBBLE;
+  let best = Infinity;
+  for (const [ax, az, bx, bz] of PATH_SEGMENTS) {
+    const ux = bx - ax, uz = bz - az, t = Math.min(Math.max(((px - ax) * ux + (pz - az) * uz) / (ux * ux + uz * uz), 0), 1);
+    best = Math.min(best, Math.hypot(px - ax - ux * t, pz - az - uz * t));
+  }
+  return best;
+}
+const glslFloat = (n) => (Number.isInteger(n) ? n + '.' : String(n));
+export const PATH_GLSL = /* glsl */`
+  float pathSegment(vec2 p, vec2 a, vec2 b){ vec2 pa = p - a, ba = b - a; return length(pa - ba * clamp(dot(pa, ba) / dot(ba, ba), 0., 1.)); }
+  float pathDist(vec2 p){
+    p += vec2(sin(p.y * ${PATH_WOBBLE_X}), sin(p.x * ${PATH_WOBBLE_Z})) * ${glslFloat(PATH_WOBBLE)};
+    float d = 1e5;
+${PATH_SEGMENTS.map(([ax, az, bx, bz]) => `    d = min(d, pathSegment(p, vec2(${glslFloat(ax)}, ${glslFloat(az)}), vec2(${glslFloat(bx)}, ${glslFloat(bz)})));`).join('\n')}
+    return d;
+  }`;
+
+/** Toa do o ruong cua (x, z): u, v tinh theo so o; mep o la noi phan le gan 0 hoac 1 (bo rao). */
+export function fieldCoords(x, z) {
+  return [(x * FIELD_AXIS[0] + z * FIELD_AXIS[1]) / FIELD_CELL[0], (-x * FIELD_AXIS[1] + z * FIELD_AXIS[0]) / FIELD_CELL[1]];
+}
+/** 0..1: muc do "la ruong" tai (x, z): vanh quanh lang, khong tinh rung. */
+export function fieldAmount(x, z) {
+  const dv = Math.hypot(x - VILLAGE.x, z - VILLAGE.z);
+  return smooth(FIELD_NEAR[0], FIELD_NEAR[1], dv) * smooth(FIELD_FAR[0], FIELD_FAR[1], dv) * (1 - smooth(0.5, 0.6, forestMask(x, z)));
+}
+
 /** 0..1: cho nao la rung thong. Tranh doi co luc dau va lang. */
 export function forestMask(x, z) {
   const r = Math.hypot(x, z), dv = Math.hypot(x - VILLAGE.x, z - VILLAGE.z);
@@ -38,19 +78,10 @@ export function forestMask(x, z) {
 }
 
 const PALETTE = { deep: C(0x4ea63a), meadow: C(0x6cc23c), light: C(0x9bd94a), field: C(0xc9d84e), wheat: C(0xe2cf6a), hedge: C(0x2f8040), forest: C(0x1f6b45), far: C(0x5fae7c), rock: C(0x8f9aa0), snow: C(0xf6f9ff) };
-const FIELD_TINTS = [PALETTE.light, PALETTE.field, PALETTE.wheat, PALETTE.deep, PALETTE.meadow];
-const hash2 = (i, j) => { const s = Math.sin(i * 127.1 + j * 311.7) * 43758.5453; return s - Math.floor(s); };
 
 function groundColor(out, x, z, h) {
   const r = Math.hypot(x, z), t = fbm(x / 260 + 5, z / 260, 3) * 0.5 + 0.5;
   out.copy(PALETTE.deep).lerp(PALETTE.meadow, smooth(0.25, 0.5, t)).lerp(PALETTE.light, smooth(0.5, 0.8, t));
-  // ruong quanh lang: cac o chu nhat xoay nghieng, co bo rao sam mau
-  const dv = Math.hypot(x - VILLAGE.x, z - VILLAGE.z), fields = smooth(60, 110, dv) * smooth(460, 330, dv);
-  if (fields > 0) {
-    const u = (x * 0.88 + z * 0.48) / 70, v = (-x * 0.48 + z * 0.88) / 46, edge = Math.max(Math.abs(u - Math.floor(u) - 0.5), Math.abs(v - Math.floor(v) - 0.5));
-    out.lerp(FIELD_TINTS[Math.floor(hash2(Math.floor(u), Math.floor(v)) * FIELD_TINTS.length)], fields * 0.85);
-    out.lerp(PALETTE.hedge, fields * smooth(0.44, 0.48, edge) * 0.6);
-  }
   out.lerp(PALETTE.forest, smooth(0.5, 0.6, forestMask(x, z)));
   out.lerp(PALETTE.far, smooth(500, 1500, r) * 0.55);
   return out;
@@ -58,18 +89,18 @@ function groundColor(out, x, z, h) {
 
 function buildGrid(size, cells, sink) {
   const row = cells + 1, half = size / 2, step = size / cells, heights = new Float32Array(row * row);
-  const pos = new Float32Array(row * row * 3), col = new Float32Array(row * row * 3), idx = [], c = new THREE.Color();
+  const pos = new Float32Array(row * row * 3), col = new Float32Array(row * row * 3), field = new Float32Array(row * row), idx = [], c = new THREE.Color();
   for (let j = 0; j < row; j++) for (let i = 0; i < row; i++) {
     const k = j * row + i, x = -half + i * step, z = -half + j * step, h = heightAt(x, z);
     heights[k] = h; pos.set([x, h - sink, z], k * 3);
-    groundColor(c, x, z, h); col.set([c.r, c.g, c.b], k * 3);
+    groundColor(c, x, z, h); col.set([c.r, c.g, c.b], k * 3); field[k] = fieldAmount(x, z);
   }
   for (let j = 0; j < cells; j++) for (let i = 0; i < cells; i++) {
     const a = j * row + i, b = a + 1, cc = a + row, d = cc + 1;
     idx.push(a, cc, b, b, cc, d);                                  // duong cheo b-c: groundAt ben duoi phai dung cung cach chia
   }
   const g = new THREE.BufferGeometry();
-  g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('color', new THREE.BufferAttribute(col, 3)); g.setAttribute('aField', new THREE.BufferAttribute(field, 1));
   g.setIndex(idx); g.computeVertexNormals();
   return { geometry: g, heights };
 }
@@ -94,8 +125,37 @@ export const heightTexture = (() => {
   return t;
 })();
 
+// Lop "ve" tren mat dat gan: mang mau dam nhat nhu net co, o ruong sac canh co bo rao va luong cay, duong mon dat.
+// Mau viet theo sRGB roi doi sang tuyen tinh.
+function paintGround(shader) {
+  shader.vertexShader = shader.vertexShader
+    .replace('#include <common>', '#include <common>\nattribute float aField; varying vec3 vGround;')
+    .replace('#include <begin_vertex>', '#include <begin_vertex>\nvGround = vec3(position.xz, aField);');
+  shader.fragmentShader = shader.fragmentShader
+    .replace('#include <common>', `#include <common>
+      varying vec3 vGround;
+      float pvHash(vec2 p){ p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
+      float pvNoise(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3. - 2. * f);
+        return mix(mix(pvHash(i), pvHash(i + vec2(1, 0)), f.x), mix(pvHash(i + vec2(0, 1)), pvHash(i + vec2(1, 1)), f.x), f.y); }
+      ${PATH_GLSL}`)
+    .replace('#include <color_fragment>', `#include <color_fragment>
+      vec2 wp = vGround.xy; vec3 unpainted = diffuseColor.rgb;
+      float dab = pvNoise(wp * 0.11) * 0.6 + pvNoise(wp * 0.34 + 7.) * 0.4;
+      diffuseColor.rgb *= mix(0.88, 1.10, smoothstep(0.38, 0.62, dab));
+      vec2 fuv = vec2(wp.x * ${FIELD_AXIS[0]} + wp.y * ${FIELD_AXIS[1]}, -wp.x * ${FIELD_AXIS[1]} + wp.y * ${FIELD_AXIS[0]}) / vec2(${glslFloat(FIELD_CELL[0])}, ${glslFloat(FIELD_CELL[1])});
+      fuv += (vec2(pvNoise(wp * 0.035), pvNoise(wp * 0.035 + 31.)) - 0.5) * 0.04;
+      vec2 cell = floor(fuv), inCell = fract(fuv) - 0.5; float pick = pvHash(cell), edge = max(abs(inCell.x), abs(inCell.y));
+      vec3 tint = pick < 0.22 ? vec3(0.61, 0.85, 0.29) : pick < 0.42 ? vec3(0.80, 0.86, 0.32) : pick < 0.58 ? vec3(0.90, 0.81, 0.42) : pick < 0.78 ? vec3(0.33, 0.67, 0.24) : vec3(0.44, 0.77, 0.25);
+      tint *= 1. - 0.07 * step(0.5, fract(inCell.x * 16.)) * step(0.42, pick) * step(pick, 0.78);       // luong cay
+      tint = mix(tint, vec3(0.16, 0.44, 0.22), smoothstep(0.462, 0.475, edge));                         // bo rao
+      diffuseColor.rgb = mix(diffuseColor.rgb, pow(tint, vec3(2.2)) * mix(0.92, 1.06, smoothstep(0.38, 0.62, dab)), vGround.z * 0.92);
+      float pd = pathDist(wp) + (pvNoise(wp * 0.6) - 0.5) * 1.1;
+      diffuseColor.rgb = mix(diffuseColor.rgb, pow(vec3(0.84, 0.74, 0.50), vec3(2.2)) * mix(0.9, 1.05, dab), smoothstep(1.9, 1.35, pd) * 0.92);
+      diffuseColor.rgb = mix(diffuseColor.rgb, unpainted, uSnow * smoothstep(0.30, 0.72, vSnowN));   // tuyet phu len ca ruong va duong`);
+}
+
 export function createTerrain(scene) {
-  const material = toon();
+  const material = toon(); material.userData.patch = paintGround;
   const nearMesh = new THREE.Mesh(near.geometry, material), farMesh = new THREE.Mesh(far.geometry, toon({ flatShading: true }));
   nearMesh.receiveShadow = true; nearMesh.frustumCulled = false; farMesh.frustumCulled = false;
   scene.add(nearMesh, farMesh);

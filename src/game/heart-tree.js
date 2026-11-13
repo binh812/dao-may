@@ -1,8 +1,30 @@
 // Cay Tam: lon len theo so ky nang be da thanh thao (GDD 5.4). Chi la hinh anh; so lieu den tu learn/adaptive.js.
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { blob } from '../core/util.js';
 
 const GROW_EVERY = 3, MAX_STAGE = 4;                 // cu 3 ky nang thi cay lon them mot bac
 const FRUIT_COLOR = 0xffe27a, FRUIT_GLOW = 2.6;      // qua sang hon 1 de bloom bat duoc
+
+const CROWN_LOBES = 6, CROWN_TONES = [0xd45f8c, 0xf59cbc, 0xffe1ec];   // tan hoa hong: dam o duoi, nhat o dinh
+
+/** Tan cay ban kinh ~1: mot khoi giua va cac khoi con quanh, to mau theo do cao nhu net co cham. */
+function crownGeometry() {
+  const [deep, mid, pale] = CROWN_TONES.map((hex) => new THREE.Color(hex)), parts = [], c = new THREE.Color();
+  for (let i = 0; i <= CROWN_LOBES; i++) {
+    const angle = i / CROWN_LOBES * Math.PI * 2, off = i === 0 ? 0 : 0.56, radius = i === 0 ? 0.78 : 0.5 + 0.08 * Math.sin(i * 2.7);
+    const g = blob(radius, 2, 0.16, 2.1, i * 5.3).translate(Math.cos(angle) * off, i === 0 ? 0.22 : -0.1 + 0.12 * Math.cos(i * 1.7), Math.sin(angle) * off).toNonIndexed();
+    g.deleteAttribute('uv'); g.computeVertexNormals();
+    const p = g.attributes.position, colors = new Float32Array(p.count * 3);
+    for (let v = 0; v < p.count; v++) {
+      const h = THREE.MathUtils.smoothstep(p.getY(v) + 0.2 * Math.sin(p.getX(v) * 6 + p.getZ(v) * 5), -0.6, 0.9);
+      if (h < 0.5) c.copy(deep).lerp(mid, h * 2); else c.copy(mid).lerp(pale, h * 2 - 1);
+      colors.set([c.r, c.g, c.b], v * 3);
+    }
+    g.setAttribute('color', new THREE.BufferAttribute(colors, 3)); parts.push(g);
+  }
+  return mergeGeometries(parts, false);
+}
 
 /** Vi tri qua thu i tren tan cay (xoan oc quanh tan, on dinh giua cac lan ve). */
 function fruitOffset(i, crownRadius) {
@@ -14,8 +36,8 @@ function fruitOffset(i, crownRadius) {
 export function createHeartTree(scene, makeToon, groundAt, spot) {
   const group = new THREE.Group(), y = groundAt(spot.x, spot.z);
   group.position.set(spot.x, Number.isFinite(y) ? y : 0, spot.z); scene.add(group);
-  const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.2, 1, 10), makeToon({ vertexColors: false, color: 0x8b5a3a }));
-  const crown = new THREE.Mesh(new THREE.IcosahedronGeometry(1, 3), makeToon({ vertexColors: false, color: 0x7fd6b0 }));
+  const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.2, 1, 10), makeToon({ vertexColors: false, color: 0x7a4d36 }));
+  const crown = new THREE.Mesh(crownGeometry(), makeToon());
   trunk.castShadow = crown.castShadow = true;
   const fruitGeo = new THREE.SphereGeometry(0.11, 12, 10), fruitMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(FRUIT_COLOR).multiplyScalar(FRUIT_GLOW) });
   const fruits = new THREE.Group();
