@@ -1,7 +1,8 @@
 // Lang mai cam cua thung lung: nha tuong voi trang san sat nhau quanh nha tho co thap, vai nha trai le giua ruong.
 import * as THREE from 'three';
 import { TRS, rnd } from '../core/util.js';
-import { MILL, VILLAGE, heightAt, nearCamp, nearLake, pathDistance } from './terrain.js';
+import { MILL, SHOP, VILLAGE, heightAt, nearCamp, nearLake, pathDistance } from './terrain.js';
+import { createStall } from './stall.js';
 
 const HOUSES = 36, FARMS = 7;
 const HOUSE_RING = [14, VILLAGE.r * 0.66];      // nha nam trong vanh nay quanh tam lang
@@ -41,7 +42,8 @@ function church(B) {
 
 /** Dung lang va cac nha trai; tra ve vat can. */
 export function createVillage(B) {
-  const blocks = church(B);
+  const blocks = church(B), stall = createStall(B), reserved = { x: SHOP.x, z: SHOP.z, r: SHOP.clear };   // nha khong duoc che quay hang
+  blocks.push(reserved);
   const fits = (x, z, r) => pathDistance(x, z) > r + STREET_HALF && blocks.every((b) => Math.hypot(b.x - x, b.z - z) > b.r + r + HOUSE_GAP);
   for (let placed = 0, guard = 0; placed < HOUSES && guard < HOUSES * 60; guard++) {
     const a = rnd() * Math.PI * 2, r = HOUSE_RING[0] + Math.sqrt(rnd()) * (HOUSE_RING[1] - HOUSE_RING[0]), x = VILLAGE.x + Math.cos(a) * r, z = VILLAGE.z + Math.sin(a) * r;
@@ -56,5 +58,5 @@ export function createVillage(B) {
     blocks.push(house(B, x, z, 7 + rnd() * 2, 10 + rnd() * 4, 4.5, rnd() * Math.PI, pick(ROOFS)));
     placed++;
   }
-  return blocks;
+  return blocks.map((block) => (block === reserved ? stall : block));
 }

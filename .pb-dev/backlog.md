@@ -68,6 +68,14 @@ Mẫu: `- [ ] <tiêu đề> — Khi <tình huống> thì app phải <kết quả
 ## Hồ nước và Hạt Nắng (13/11/2026)
 - Xong: hồ cạnh làng (mặt nước ba tông, bọt bờ, gợn sóng, lá súng, 6 con vịt bơi; Mầm lội được nước nông); 56 Hạt Nắng rải dọc đường mòn, quanh hồ và cối xay, nhặt bằng cách chạm, có bộ đếm, lưu theo từng thế giới (`daomay.seeds.<thế giới>.v1`), xóa cùng "làm lại từ đầu".
 - Kiểm chứng: 69 test xanh (6 test mới cho luật nhặt); cổng đầy đủ xanh; ảnh chụp bờ hồ ngày và trong hồ ban đêm đã tự xem.
-- [ ] Hạt Nắng mới chỉ để đếm và khen; chưa đổi được gì (ý: mở trang phục cho Mầm, làm Cây Tâm nở hoa) — cần anh Ben chọn.
+- [x] Hạt Nắng đổi được trang phục ở quầy hàng (xem mục "Quầy hàng đổi Hạt Nắng").
 - [ ] Chưa có tiếng nước, vòng sóng khi Mầm lội; vịt chưa tránh Mầm.
 - [ ] Đảo Mây chưa có Hạt Nắng.
+
+## Quầy hàng đổi Hạt Nắng (13/11/2026)
+- Anh Ben chốt: đổi đồ phải làm ở một quầy hàng, không nhận trực tiếp.
+- Xong: quầy cô Thỏ Bông ở cổng làng (mái sọc đỏ trắng, cột có viên Hạt Nắng lớn); lại gần hiện nút "Vào quầy hàng" (phím E); bảng đổi 7 món (3 mũ, 2 khăn, 2 kiểu chồi, tổng 48 hạt trên 56 hạt của thung lũng); món đã đổi mặc/cởi tự do; tủ đồ lưu ở `daomay.wardrobe.v1`, dùng chung mọi thế giới; "xóa tiến độ" xóa cả tủ đồ và Hạt Nắng của mọi thế giới; lời nhắc ghé quầy khi bé lần đầu đủ hạt.
+- Kiểm chứng: 81 test xanh (11 test mới cho luật đổi đồ); cổng đầy đủ xanh; thử bấm thật trong Edge headless (đổi, thiếu hạt, cởi, lưu) đạt; ảnh quầy, bảng đổi đồ, Mầm mặc đồ đã tự xem.
+- [ ] Chưa ai chơi thử: giá các món có vừa không, nút "Vào quầy hàng" có che Mầm không.
+- [ ] Cô Thỏ Bông đứng yên; chưa có lời chào, chưa có tiếng khi mở quầy.
+- [ ] Khi Đảo Mây có Hạt Nắng: số dư phải cộng hạt của mọi thế giới (hiện chỉ tính thế giới đang chơi).

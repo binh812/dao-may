@@ -31,6 +31,7 @@ addEventListener('resize', resize); resize();
 // Mac dinh la che do choi; ?mode=view giu che do ngam canh cu (xoay tu do, Mam tu nhay theo vong).
 const play = qs.get('mode') === 'view' ? null : createPlay();
 const session = play ? createSession(play) : null;
+if (session && qs.has('shop')) setTimeout(() => session.debugShop(), 600); // chi de chup anh kiem tra bang doi do
 if (session && qs.has('ask')) setTimeout(() => session.debugAsk(), 600); // chi de chup anh kiem tra the bai tap
 const clock = new THREE.Clock(), fpsEl = document.getElementById('fps'), infoEl = document.getElementById('info');
 let frames = 0, accTime = 0, slow = 0;
