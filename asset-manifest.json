@@ -19,6 +19,7 @@
     "src/game/enemy-views.js",
     "src/game/heart-tree.js",
     "src/game/input-core.js",
+    "src/game/mill-core.js",
     "src/game/play.js",
     "src/game/player-core.js",
     "src/game/seed-views.js",

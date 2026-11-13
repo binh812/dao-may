@@ -12,7 +12,7 @@ code, không asset ngoài. Trả lời anh Ben bằng tiếng Việt có dấu. 
 - Chơi không mạng: `sw.js` lưu sẵn mọi file trong `asset-manifest.json`. Thêm/xóa file trong `src/`, `vendor/`, `icons/` thì chạy
   `node scripts/make-asset-manifest.mjs` (test `tests/offline.test.mjs` đỏ nếu quên). Kiểm thật: `node scripts/offline-check.mjs`
   (mở một lần, tắt máy chủ, mở lại). Service worker chỉ hoạt động trên HTTPS hoặc localhost, không hoạt động qua `http://192.168...`.
-- Tham số URL: `world=island|valley` (chọn thế giới; mặc định `island`), `grade=1|2|3` (tạo hồ sơ tạm, bỏ qua màn chọn lớp), `ask=1` (mở sẵn một thẻ bài tập để chụp ảnh), `mode=view` (ngắm cảnh, Mầm tự nhảy; mặc định là chế độ chơi), `q=low|medium|high`, `w=sun|wind|mist|rain|storm|snow|night`, `at=x,z` (chỉ thung lũng: sinh ra ở chỗ khác để chụp ảnh, vd. `at=285,-200` là mép làng), `yaw=rad` (chỉ thung lũng: hướng máy quay lúc đầu), `shop=1` (mở sẵn bảng đổi đồ), `wear=id,id` (mặc thử trang phục, không lưu), `wave=N`, `cam=x,y,z`, `ui=0`, `spin=0`, `dyn=0`, `flash=0.6`.
+- Tham số URL: `world=island|valley` (chọn thế giới; mặc định `island`), `grade=1|2|3` (tạo hồ sơ tạm, bỏ qua màn chọn lớp), `ask=1` (mở sẵn một thẻ bài tập để chụp ảnh), `mode=view` (ngắm cảnh, Mầm tự nhảy; mặc định là chế độ chơi), `q=low|medium|high`, `w=sun|wind|mist|rain|storm|snow|night`, `at=x,z` (chỉ thung lũng: sinh ra ở chỗ khác để chụp ảnh, vd. `at=285,-200` là mép làng), `yaw=rad` (chỉ thung lũng: hướng máy quay lúc đầu), `shop=1` (mở sẵn bảng đổi đồ), `mill=1` (bắt đầu ngay một mẻ bột), `wear=id,id` (mặc thử trang phục, không lưu), `wave=N`, `cam=x,y,z`, `ui=0`, `spin=0`, `dyn=0`, `flash=0.6`.
 - Kiểm hình ảnh: chụp bằng Edge headless theo skill `threejs-stylized-scene` (bước 4), tự đọc ảnh trước khi báo xong.
 
 ## Cấu trúc (`src/`, ES module thuần, không build)
@@ -27,6 +27,9 @@ code, không asset ngoài. Trả lời anh Ben bằng tiếng Việt có dấu. 
 - `game/collect-core.js` luật nhặt Hạt Nắng (thuần, có test; thế giới nào đặt `realm.collectibles` thì có), `game/seed-views.js` phần nhìn.
 - `game/shop-core.js` luật đổi Hạt Nắng lấy trang phục (thuần, có test): số dư = hạt đã nhặt − giá các món đã đổi; `ui/shop.js` bảng đổi đồ;
   `actors/outfit.js` các món gắn sẵn trên Mầm (id khớp `CATALOG`). Quầy hàng chỉ có ở thế giới đặt `realm.shop`; tủ đồ dùng chung mọi thế giới.
+- `game/mill-core.js` luật xay bột ở cối xay (thuần, có test): mỗi chuyến đi một mẻ 3 bài, xong mẻ được 1 hạt công + 1 hạt mỗi bài đúng;
+  hạt thưởng lưu ở `daomay.bonus.v1` và cộng vào số dư đổi đồ. Việc làm tại chỗ (quầy hàng, cối xay) dùng chung một nút của `hud.setAction`;
+  thế giới khai báo chỗ bằng `realm.shop`, `realm.mill`, và báo `realm.wading` để phần chơi phát tiếng nước.
 - `game/battle-core.js` luật đối đầu (thuần, có test); `game/session.js` nối trận đấu, học tập, giao diện, âm thanh;
   `game/enemy-views.js`, `game/heart-tree.js`, `game/sfx.js` là phần nhìn và nghe. `ui/hud.js`, `ui/question-card.js`, `ui/notebook.js`.
 - `actors/` nhân vật (`mam.js`, dùng chung) và sinh vật của đảo; `fx/` hạt (mưa, tuyết, lá) và `weather.js` (preset + nội suy);
@@ -68,6 +71,7 @@ Danh sách trong `.pb-dev.json` → `protected`. Chỉ đổi khi anh Ben duyệ
 | Sai không mất tim; một đòn ≤ 40% tim; ngã thì tỉnh lại và địch chậm dần | `tests/battle-core.test.mjs` | quy tắc kids-games |
 | Hạt Nắng: chạm mới nhặt, không nhặt hai lần, nhớ qua các lần chơi | `tests/collect-core.test.mjs` | 13/11/2026 |
 | Đổi đồ: đủ hạt mới đổi, không trừ hai lần, món đã đổi không mất, số dư không âm; tổng giá cả quầy ≤ số hạt của thế giới | `tests/shop-core.test.mjs` (luật đổi); riêng "tổng giá ≤ số hạt" chưa có cổng tự động: `session.js` chỉ ghi `console.error` lúc mở, đổi giá hay chỗ đặt hạt thì đếm lại tay | 13/11/2026 |
+| Xay bột: mỗi chuyến một mẻ, sai vẫn xong mẻ và vẫn có công, không thưởng hai lần | `tests/mill-core.test.mjs` | 13/11/2026 |
 | Trang phải mở được không lỗi runtime | `scripts/smoke.mjs` | shader treo lúc biên dịch, 12/11/2026 |
 | Shader không biên dịch được phải làm cổng đỏ | `renderer.debug.onShaderError` trong `core/stage.js` đưa lỗi lên hộp lỗi của trang, `smoke.mjs` đọc hộp đó | hoa thung lũng vắng mặt vì biến tên `patch`, 13/11/2026 |
 

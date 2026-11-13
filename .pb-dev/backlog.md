@@ -79,3 +79,10 @@ Mẫu: `- [ ] <tiêu đề> — Khi <tình huống> thì app phải <kết quả
 - [ ] Chưa ai chơi thử: giá các món có vừa không, nút "Vào quầy hàng" có che Mầm không.
 - [ ] Cô Thỏ Bông đứng yên; chưa có lời chào, chưa có tiếng khi mở quầy.
 - [ ] Khi Đảo Mây có Hạt Nắng: số dư phải cộng hạt của mọi thế giới (hiện chỉ tính thế giới đang chơi).
+
+## Xay bột ở cối xay, sóng nước (13/11/2026)
+- Xong: trước cối xay có cửa, bao bột, bó lúa; lại gần hiện nút "Xay bột"; một mẻ là 3 bài toán liên tiếp (cùng hệ chọn bài theo sức, có ghi vào Sổ học); xong mẻ được 1 Hạt Nắng công xay + 1 hạt mỗi bài đúng, cánh quạt quay tít rồi chậm dần; mỗi chuyến đi một mẻ. Bộ đếm góc trái đổi thành "✦ số dư · nhặt n/56". Mầm lội hồ có vòng sóng loang và tiếng nước.
+- Kiểm chứng: 90 test xanh (7 test mới cho luật xay bột); thử trọn một mẻ trong Edge headless (3 bài, thưởng, lưu, lần hai bị từ chối) đạt; ảnh cối xay, thẻ bài, vòng sóng đã tự xem.
+- [ ] Chưa ai nghe thử tiếng nước và tiếng thưởng trên máy thật.
+- [ ] Tải lại trang thì chuyến đi quay về 1 nên xay lại được ngay: chấp nhận (bé phải giải bài mới có hạt), nhưng nếu muốn chặt hơn thì lưu chuyến đã xay.
+- [ ] Bao bột nhìn còn giống đá cuội; chưa có bác thợ xay.

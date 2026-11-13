@@ -34,6 +34,14 @@ function windmill(scene, B) {
   const y0 = heightAt(MILL.x, MILL.z), yaw = -2.1;
   B.add('clay', new THREE.CylinderGeometry(2.1, 3.2, 11, 14), TRS(MILL.x, y0 + 5.5, MILL.z), 0xf6f1e4);
   B.add('clay', new THREE.ConeGeometry(2.7, 3, 14), TRS(MILL.x, y0 + 12.5, MILL.z), 0xd9602e);
+  // cua, bao bot va bo lua truoc coi xay: cho be dung de xay bot
+  const front = (forward, side, y, sx = 1, sy = sx, sz = sx) => TRS(MILL.x, y0, MILL.z, 0, yaw, 0).multiply(TRS(side, y, forward, 0, 0, 0, sx, sy, sz));
+  B.add('clay', new THREE.BoxGeometry(1.3, 2.3, 0.3), front(3.0, 0, 1.15), 0x6b4a3a);
+  for (const [f, s, y, size] of [[3.3, 1.5, 0.4, 1], [3.5, 2.3, 0.38, 0.95], [3.4, 1.9, 1.05, 0.85]]) B.add('clay', new THREE.IcosahedronGeometry(0.5, 1), front(f, s, y, size, size * 0.8, size * 0.9), 0xfff0cf);
+  for (const [f, s] of [[3.4, -1.6], [3.7, -2.2]]) {
+    B.add('clay', new THREE.CylinderGeometry(0.22, 0.34, 1.2, 8), front(f, s, 0.6), 0xe8c24e);
+    B.add('clay', new THREE.TorusGeometry(0.27, 0.06, 6, 12), TRS(MILL.x, y0, MILL.z, 0, yaw, 0).multiply(TRS(s, 0.6, f, Math.PI / 2)), 0xb9814f);
+  }
   const RB = new Builder(), rotor = new THREE.Group();
   for (let k = 0; k < 4; k++) RB.add('clay', new THREE.BoxGeometry(1.3, 8, 0.12), TRS(0, 0, 0, 0, 0, k * Math.PI / 2).multiply(TRS(0, 4.4, 0)), 0xfaf6ee);
   RB.add('clay', new THREE.SphereGeometry(0.5, 10, 8), TRS(0, 0, 0), 0x6b4a3a);
