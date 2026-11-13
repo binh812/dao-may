@@ -7,7 +7,11 @@ code, không asset ngoài. Trả lời anh Ben bằng tiếng Việt có dấu. 
 - Kiểm nhanh (cổng Stop tự chạy, ~5 giây): `scripts/verify-quick.ps1`
 - Kiểm đầy đủ (trước khi merge; 3 mức đồ họa + 6 kiểu thời tiết): `scripts/ci.ps1`
 - Test lõi game (không cần trình duyệt): `node --test "tests/*.test.mjs"`
-- Chạy: `npx http-server . -p 8123 -c-1` rồi mở http://127.0.0.1:8123 (cần mạng: three.js 0.180 nạp từ CDN).
+- Chạy: `node scripts/serve.mjs` rồi mở địa chỉ nó in ra (máy này và điện thoại cùng Wi-Fi). Không cần Internet: three.js 0.180
+  nằm trong `vendor/three` (chép bằng `node scripts/vendor-three.mjs <gói three đã giải nén>`).
+- Chơi không mạng: `sw.js` lưu sẵn mọi file trong `asset-manifest.json`. Thêm/xóa file trong `src/`, `vendor/`, `icons/` thì chạy
+  `node scripts/make-asset-manifest.mjs` (test `tests/offline.test.mjs` đỏ nếu quên). Kiểm thật: `node scripts/offline-check.mjs`
+  (mở một lần, tắt máy chủ, mở lại). Service worker chỉ hoạt động trên HTTPS hoặc localhost, không hoạt động qua `http://192.168...`.
 - Tham số URL: `grade=1|2|3` (tạo hồ sơ tạm, bỏ qua màn chọn lớp), `ask=1` (mở sẵn một thẻ bài tập để chụp ảnh), `mode=view` (ngắm cảnh, Mầm tự nhảy; mặc định là chế độ chơi), `q=low|medium|high`, `w=sun|wind|mist|rain|storm|snow|night`, `cam=x,y,z`, `ui=0`, `spin=0`, `dyn=0`, `flash=0.6`.
 - Kiểm hình ảnh: chụp bằng Edge headless theo skill `threejs-stylized-scene` (bước 4), tự đọc ảnh trước khi báo xong.
 
@@ -32,7 +36,7 @@ code, không asset ngoài. Trả lời anh Ben bằng tiếng Việt có dấu. 
 1. **Lập kế hoạch tách khỏi thực thi.** Việc lớn hơn một file: đọc code liên quan, viết kế hoạch ngắn, rồi mới sửa.
 2. **Sửa nhỏ nhất đủ đạt tiêu chí nghiệm thu.** Không refactor kèm, không thêm tính năng ngoài việc được giao.
 3. **Tối đa 3 lần sửa cùng một lỗi.** Lần thứ 3 vẫn đỏ: dừng, ghi rõ đã thử gì, hỏi anh Ben.
-4. **Tách lỗi môi trường khỏi lỗi code.** Edge treo vì profile cũ, mất mạng CDN, hết RAM → xử lý môi trường, không sửa code để né.
+4. **Tách lỗi môi trường khỏi lỗi code.** Edge treo vì profile cũ, hết RAM → xử lý môi trường, không sửa code để né.
 5. **Bằng chứng trước khi báo xong:** lệnh đã chạy + kết quả; chạm hình ảnh thì có ảnh đã tự xem. FPS trên điện thoại chỉ anh Ben đo được, không suy từ PC.
 6. Làm trên nhánh riêng; commit `feat:`/`fix:`/`chore:`…; không commit thẳng lên `main`.
 

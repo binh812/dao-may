@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-<title>Phòng thử đồ họa 3D</title>
+<title>Đảo Mây</title>
 <style>
   html, body { margin: 0; height: 100%; overflow: hidden; background: #f3c9a0; font-family: system-ui, "Segoe UI", Roboto, sans-serif; }
   canvas { display: block; width: 100vw; height: 100vh; touch-action: none; }
@@ -32,10 +32,16 @@
 </style>
 <script type="importmap">
 { "imports": {
-  "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
-  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"
+  "three": "./vendor/three/build/three.module.js",
+  "three/addons/": "./vendor/three/examples/jsm/"
 } }
 </script>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="theme-color" content="#3f8fe8">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
 </head>
 <body>
 <div id="loading">Đang dựng cảnh…</div>
@@ -54,5 +60,12 @@
   window.addEventListener('unhandledrejection', e => { const el = document.getElementById('err'); el.style.display = 'block'; el.textContent += (e.reason && e.reason.message || e.reason) + '\n'; });
 </script>
 <script type="module" src="./src/main.js"></script>
+<script>
+  // Luu san game de choi khong can mang. Trinh duyet chi cho phep tren HTTPS hoac localhost;
+  // mo qua dia chi mang noi bo (http://192.168...) thi buoc nay duoc bo qua va game van chay binh thuong.
+  if ('serviceWorker' in navigator && window.isSecureContext) {
+    navigator.serviceWorker.register('sw.js').catch((error) => console.warn('Khong dang ky duoc che do khong mang:', error));
+  }
+</script>
 </body>
 </html>
