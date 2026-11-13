@@ -87,21 +87,26 @@ function windmill(scene, B) {
   return { rotor, block: { x: MILL.x, z: MILL.z, r: 3.6 } };
 }
 
-/** Day nui da co tuyet o rat xa, mot phia chan troi. */
-function mountains(B) {
-  const haze = C(0x9ec6ea), rock = C(0x8a8f96).lerp(haze, 0.45), rockDark = C(0x5f6b7a).lerp(haze, 0.45), snow = C(0xf7faff).lerp(haze, 0.12);
-  for (let i = 0; i < 5; i++) {
-    const a = -1.25 + i * 0.3 + rnd() * 0.1, dist = 5200 + rnd() * 1300, radius = 620 + rnd() * 420, height = 780 + rnd() * 560;
-    const g = new THREE.ConeGeometry(radius, height, 9, 6), p = g.attributes.position;
-    for (let v = 0; v < p.count; v++) {
-      const x = p.getX(v), y = p.getY(v), z = p.getZ(v), k = 1 + 0.32 * noise.noise(x / 300 + i * 9, y / 300, z / 300) + 0.12 * noise.noise(x / 90, y / 90 + i, z / 90);
-      p.setXYZ(v, x * k, y + (y > -height / 2 + 1 ? 60 * noise.noise(x / 200, i * 3.1, z / 200) : 0), z * k);
-    }
-    const flat = g.toNonIndexed(); flat.computeVertexNormals();
-    const base = heightAt(Math.cos(a) * dist, Math.sin(a) * dist) - 120, snowLine = base + height * (0.52 + rnd() * 0.12);
-    B.add('far', flat, TRS(Math.cos(a) * dist, base + height / 2, Math.sin(a) * dist, 0, rnd() * 6, 0),
-      (c, px, py, pz, nx, ny) => c.copy(rockDark).lerp(rock, clamp(ny * 1.4 + 0.3, 0, 1)).lerp(snow, smooth(snowLine - 40, snowLine + 60, py + fbm(px / 160, pz / 160, 2) * 90) * smooth(-0.1, 0.35, ny)), { ao: false });
+// Khoi nui da phu tuyet o rat xa: [goc nhin tu doi co (rad), khoang cach, be rong chan, do cao dinh]
+const MASSIFS = [[-0.30, 7600, 3400, 1150], [-1.12, 8200, 3000, 760], [0.70, 8200, 3200, 700]];
+const MASSIF_CELLS = 44, MASSIF_SINK = 260;
+
+/** Mot khoi nui: luoi do cao voi nhieu song nui (ridged noise), dinh nhon o giua, to mau da va tuyet. */
+function massif(B, [angle, dist, size, height], index) {
+  const haze = C(0xa9cdee), rock = C(0x8d8a86).lerp(haze, 0.30), rockDark = C(0x596273).lerp(haze, 0.30), snow = C(0xfbfdff).lerp(haze, 0.06), snowShade = C(0xb9cdea).lerp(haze, 0.15);
+  const g = new THREE.PlaneGeometry(size, size, MASSIF_CELLS, MASSIF_CELLS).rotateX(-Math.PI / 2), p = g.attributes.position, half = size / 2;
+  for (let v = 0; v < p.count; v++) {
+    const x = p.getX(v), z = p.getZ(v), r = Math.min(Math.hypot(x, z) / half, 1), envelope = Math.pow(1 - r, 1.35);
+    let ridge = 0, amp = 0.55, freq = 1;
+    for (let o = 0; o < 4; o++) { ridge += amp * (1 - Math.abs(noise.noise(x * freq / 620 + index * 13, o * 7.3, z * freq / 620))); amp *= 0.5; freq *= 2.1; }
+    p.setY(v, height * (envelope * (0.25 + 0.75 * ridge) + Math.pow(1 - r, 4) * 0.22));
   }
+  const flat = g.toNonIndexed(); flat.computeVertexNormals();
+  const cx = Math.cos(angle) * dist, cz = Math.sin(angle) * dist, base = heightAt(cx, cz) - MASSIF_SINK, snowLine = base + height * 0.42;
+  B.add('far', flat, TRS(cx, base, cz, 0, index * 2.1, 0), (c, px, py, pz, nx, ny) => {
+    const snowy = smooth(snowLine - 80, snowLine + 160, py + fbm(px / 190, pz / 190, 2) * 170) * smooth(0.30, 0.62, ny);
+    c.copy(rockDark).lerp(rock, clamp(ny * 1.5 - 0.1, 0, 1)).lerp(nx * 0.4 + ny > 0.5 ? snow : snowShade, snowy);
+  }, { ao: false });
 }
 
 /** Dung toan bo canh vat; tra ve vat can va phan can cap nhat moi khung hinh. */
@@ -110,7 +115,7 @@ export function createScenery(scene) {
   conifers(scene);
   const colliders = [...broadleaf(B), ...village(B)];
   const mill = windmill(scene, B);
-  mountains(B);
+  MASSIFS.forEach((spec, index) => massif(B, spec, index));
   const group = new THREE.Group(); scene.add(group);
   // nui xa khong chiu suong cua canh (se thanh mang xanh nhat); do mo da pha san vao mau dinh
   B.build(group, { ...MATS, far: toon({ fog: false, flatShading: true }) }, { cast: false });

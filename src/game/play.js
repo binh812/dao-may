@@ -74,7 +74,7 @@ export function createPlay() {
       const r = input.read();
       if (r.lookDX || r.lookDY) {
         cam.yaw -= r.lookDX * CAMERA.yawPerPixel;
-        cam.pitch = THREE.MathUtils.clamp(cam.pitch + r.lookDY * CAMERA.pitchPerPixel, CAMERA.minPitch, CAMERA.maxPitch);
+        cam.pitch = THREE.MathUtils.clamp(cam.pitch + r.lookDY * CAMERA.pitchPerPixel, Math.min(CAMERA.minPitch, realm.cameraPitch ?? CAMERA.minPitch), CAMERA.maxPitch);
         cam.idle = 0;
       } else cam.idle += dt;
       const move = cameraRelative({ x: r.stickX, y: r.stickY }, cam.yaw);

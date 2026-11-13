@@ -52,8 +52,8 @@ export default {
   waveHint: (wave) => campFor(wave).hint,
   sprintScale: 1.9,                    // the gioi rong: giu can het co thi Mam chay nhanh gan gap doi
   treeSpot: { x: 5, z: -6 },
-  cameraYaw: -0.92, cameraPitch: 0.1, cameraLookHeight: 2.4, fogScale: 0.18, paint: true,
-  sky,
+  cameraYaw: -0.92, cameraPitch: 0.04, cameraLookHeight: 3.0, fogScale: 0.18, paint: true,
+  sky: sky.mesh,
   setGrassVisible(visible) { grass.group.visible = visible; },
   update(dt, time, ctx) {
     const focus = ctx.player ?? controls.target;
@@ -64,5 +64,6 @@ export default {
     sun.target.position.set(focus.x, ctx.player ? ctx.player.y : controls.target.y, focus.z);
     sun.position.copy(sun.target.position).addScaledVector(SUN_DIR, SHADOW_DISTANCE);
     scenery.rotor.rotation.z += dt * 0.5 * ctx.wind;
+    sky.drift(dt, ctx.wind);
   },
 };
