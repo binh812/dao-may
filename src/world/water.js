@@ -1,9 +1,8 @@
 import * as THREE from 'three';
 import { POND, STREAM, WATER_Y, height } from './layout.js';
 import { clamp, lerp, rnd } from '../core/util.js';
-import { SKY, SUN_DIR, U, scene } from '../core/stage.js';
+import { SKY, SUN_DIR, U, motesScale, scene } from '../core/stage.js';
 import { world } from './island.js';
-import { motesScale } from './meadow.js';
 
 // ---------------------------------------------------------------- water
 {

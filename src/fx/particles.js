@@ -1,8 +1,11 @@
 import * as THREE from 'three';
 import { Q } from '../core/quality.js';
-import { rnd } from '../core/util.js';
-import { U, scene } from '../core/stage.js';
-import { motesScale } from '../world/meadow.js';
+import { U, motesScale, scene } from '../core/stage.js';
+
+// Bo sinh so rieng: hat mua/tuyet khong duoc tieu chuoi so ngau nhien dung de dung canh,
+// neu khong thu tu nap module se lam doi bo cuc cua the gioi.
+let seedState = 20261113;
+const rnd = () => { seedState |= 0; seedState = seedState + 0x6D2B79F5 | 0; let t = Math.imul(seedState ^ seedState >>> 15, 1 | seedState); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
 
 // ---------------------------------------------------------------- rain
 const rainMesh = (() => {

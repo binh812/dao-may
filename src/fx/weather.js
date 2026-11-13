@@ -4,6 +4,7 @@ import { U, hemi, lanternLight, scene, sun } from '../core/stage.js';
 import { smooth } from '../core/util.js';
 import { rainMesh, snowFlakes, windLeaves } from './particles.js';
 import { volMat } from '../render/post.js';
+import { realm } from '../world/realm.js';
 
 // ---------------------------------------------------------------- weather
 const T = { vol: Q.volSteps > 0, shadow: true, ao: Q.aoTaps > 0, bloom: true, dof: Q.dofTaps > 0, grass: true, env: true, spin: true };
@@ -37,7 +38,7 @@ function updateWeather(dt) {
   const fl = U.flash.value, storm = Math.max(weatherNow.overcast - 1, 0) * 5;
   sun.intensity = weatherNow.sunI + fl * 1.5; sun.color.copy(SUN_DAY).lerp(SUN_MOON, weatherNow.night);
   hemi.intensity = weatherNow.hemiI + fl * 2.2; hemi.color.copy(HEMI_DAY).lerp(HEMI_NIGHT, weatherNow.night);
-  scene.fog.density = weatherNow.fog * 0.6;
+  scene.fog.density = weatherNow.fog * 0.6 * realm.fogScale;
   scene.fog.color.copy(FOG_CLEAR).lerp(FOG_GREY, Math.min(weatherNow.overcast, 1)).multiplyScalar(1 - 0.45 * storm).lerp(FOG_NIGHT, weatherNow.night);
   if (T.env) scene.environmentIntensity = 0.4 * (1 - 0.8 * weatherNow.night);
   lanternLight.intensity = 3 + 16 * weatherNow.night;

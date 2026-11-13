@@ -1,7 +1,7 @@
 // Mot chuyen di: noi luat doi dau, he hoc tap, giao dien va hinh anh. Khong chua luat; luat nam o cac *-core.js va learn/.
 import { camera, scene, U } from '../core/stage.js';
 import { toon } from '../world/materials.js';
-import { colliders, groundAt } from '../world/colliders.js';
+import { realm } from '../world/realm.js';
 import { BATTLE, allAwake, castSkill, createBattle, createEnemy, leafAttack, nearestEnemy, stepBattle } from './battle-core.js';
 import { TUNING } from './player-core.js';
 import { makeQuestion, skillById } from '../learn/questions.js';
@@ -14,7 +14,7 @@ import { createHeartTree } from './heart-tree.js';
 import { createSfx } from './sfx.js';
 
 const SAVE_KEY = 'daomay.profile.v1', MUTE_KEY = 'daomay.muted';
-const SPAWN_SPOTS = [[1.5, 6.0], [-6.5, 5.5], [-0.5, -2.0], [-7.5, 2.0], [2.5, -3.0], [0, 8.5], [-4, 9]];
+const groundAt = (x, z) => realm.groundAt(x, z);
 const WAVE = { firstCount: 3, maxCount: 5, firstWake: 8, wakeStep: 2, maxWake: 16 };
 const PRAISE = ['', 'Tuyệt!', 'Chiêu bậc 2!', 'Chiêu bậc 3, mạnh nhất!'];
 
@@ -39,7 +39,7 @@ function saveProfile(profile, hud) {
 
 /** Cho dung hop le cho Bong Lang: co dat, khong nam trong vat can, khong sat cho Mam dang dung. */
 function spawnEnemies(wave, player, rng) {
-  const valid = SPAWN_SPOTS.filter(([x, z]) => Number.isFinite(groundAt(x, z)) && colliders.every((c) => Math.hypot(x - c.x, z - c.z) > c.r + 1));
+  const valid = realm.spawnSpots.filter(([x, z]) => Number.isFinite(groundAt(x, z)) && realm.colliders.every((c) => Math.hypot(x - c.x, z - c.z) > c.r + 1));
   const away = valid.filter(([x, z]) => Math.hypot(x - player.x, z - player.z) > 4);
   const free = away.length ? away : valid; // Mam dung sat moi cho: van phai co dich, neu khong chuyen di khong bao gio xong
   if (!free.length) throw new Error('khong co cho hop le nao de dat Bong Lang');
@@ -52,7 +52,7 @@ export function createSession(play) {
   const player = play.player, rng = Math.random;
   const views = createEnemyViews(scene, toon, groundAt), card = createQuestionCard();
   const hud = createHud({ onLeaf: useLeaf, onSkill: useSkill });
-  const sfx = createSfx(), tree = createHeartTree(scene, toon, groundAt);
+  const sfx = createSfx(), tree = createHeartTree(scene, toon, groundAt, realm.treeSpot);
   try { sfx.setMuted(localStorage.getItem(MUTE_KEY) === '1'); } catch (error) { console.warn('Khong doc duoc cai dat am thanh:', error); }
   const notebook = createNotebook({
     getProfile: () => state.profile,

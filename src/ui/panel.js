@@ -2,7 +2,7 @@ import { controls, flatAmbient, hemi, scene, sun } from '../core/stage.js';
 import { T, WEATHER, weatherState } from '../fx/weather.js';
 import { bloomPass, combinePass, dofPass } from '../render/post.js';
 import { Q, TIERS, qs, tierName } from '../core/quality.js';
-import { grass } from '../world/meadow.js';
+import { realm } from '../world/realm.js';
 
 // ---------------------------------------------------------------- UI / toggles
 const LABEL = { vol: 'Tia nắng + sương', shadow: 'Bóng đổ', ao: 'AO', bloom: 'Bloom', dof: 'Xa gần', grass: 'Cỏ', env: 'Ánh sáng trời', spin: 'Tự xoay' };
@@ -12,7 +12,7 @@ function applyToggles() {
   bloomPass.enabled = T.bloom;
   combinePass.uniforms.uVolOn.value = T.vol && Q.volSteps > 0 ? 1 : 0;
   dofPass.uniforms.uMaxBlur.value = T.dof && Q.dofTaps > 0 ? 1 : 0;
-  grass.visible = T.grass;
+  realm.setGrassVisible(T.grass);
   scene.environmentIntensity = T.env ? 0.4 : 0; hemi.visible = T.env; flatAmbient.visible = !T.env;
   controls.autoRotate = T.spin;
   document.querySelectorAll('#toggles button').forEach(b => b.classList.toggle('on', T[b.dataset.k]));
