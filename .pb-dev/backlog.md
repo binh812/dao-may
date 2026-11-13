@@ -116,3 +116,8 @@ Mẫu: `- [ ] <tiêu đề> — Khi <tình huống> thì app phải <kết quả
 - [ ] Vật liệu mới chỉ để đổi Hạt Nắng; dùng làm đồ đạc, đổi ở chợ phiên thuộc đợt 5–6.
 - [ ] Chưa có cá và bột trong túi (đợt 4, đợt 6). Vật hái lượm chỉ là khối hình đơn giản, chưa có hình hoa, nấm riêng.
 - [ ] Vị trí vật hái lượm chưa có test tự động (module địa hình cần three.js); hiện lọc lúc chạy: bỏ chỗ rơi vào hồ, ngoài địa hình, sát vật cản.
+
+## Tiếng bước chân theo mặt nền (13/11/2026)
+- Xong: Mầm chạy thì có tiếng bước chân theo quãng đường đã đi (mỗi 1,55 m một tiếng, hai chân hơi lệch giọng); trên đường mòn tiếng gọn và cao, trên cỏ êm và trầm; lội nước giữ tiếng nước cũ.
+- Kiểm chứng: 116 test xanh, trang mở không lỗi. Chưa ai nghe thử: âm thanh không kiểm được bằng trình duyệt không màn hình.
+- [ ] Nghe thử trên điện thoại rồi chỉnh cao độ, âm lượng, nhịp.
