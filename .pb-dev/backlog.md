@@ -107,3 +107,12 @@ Mẫu: `- [ ] <tiêu đề> — Khi <tình huống> thì app phải <kết quả
 - [ ] Chưa có nhân vật bạn Nhím bằng hình 3D ngồi cạnh chiếu; mới có chiếu, sỏi, cờ.
 - [ ] `session.js` đã 390/400 dòng: đợt tới phải tách phần việc tại chỗ (cối xay, ô ăn quan, quầy hàng) ra module riêng trước khi thêm gì.
 - [ ] Truyện và trò dân gian để dành: Cây tre trăm đốt (nối đốt tre đủ 100), Sự tích bánh chưng bánh dày (hình vuông, hình tròn), Sơn Tinh Thủy Tinh (voi chín ngà: bảng nhân 9), Thánh Gióng, Ăn khế trả vàng (túi ba gang: đong đo); nhảy lò cò, thả diều, đánh chuyền, rồng rắn lên mây, kéo co, cướp cờ.
+
+## Đợt 2: túi đồ, hái lượm, vật liệu rơi, Hạt Nắng mọc lại (13/11/2026)
+- Xong: túi đồ (nút 🎒 góc trái, bảng liệt kê); bốn vật liệu: cánh hoa, nấm, gỗ, đá pha lê; quanh mỗi trại Bóng Lặng có một vòng vật hái lượm, chạm là nhặt, mọc lại mỗi chuyến; Bóng Lặng thức để lại 1 vật liệu (con lớn để lại 2 đá pha lê); mang tới quầy cô Thỏ Bông đổi lấy Hạt Nắng (3 hoa = 1, 3 nấm = 1, 2 gỗ = 1, 1 đá = 2); từ chuyến thứ hai của lần chơi, 6 Hạt Nắng đã nhặt mọc lại.
+- Xong (dọn dẹp): tách `save.js` và `loot.js` khỏi `session.js` (còn 341 dòng).
+- Kiểm chứng: 116 test xanh (5 test túi đồ); thử thật trong Edge headless ở quầy hàng: đổi hoa 2 lần, lần 3 nút khóa, đổi đá, số dư và túi được lưu đúng; ảnh vật hái lượm đã tự xem.
+- [ ] Việc nhặt vật khi chạy qua và vật liệu rơi ra khi Bóng Lặng thức chưa thử bằng tay (cần khung hình thật): anh Ben thử trên điện thoại.
+- [ ] Vật liệu mới chỉ để đổi Hạt Nắng; dùng làm đồ đạc, đổi ở chợ phiên thuộc đợt 5–6.
+- [ ] Chưa có cá và bột trong túi (đợt 4, đợt 6). Vật hái lượm chỉ là khối hình đơn giản, chưa có hình hoa, nấm riêng.
+- [ ] Vị trí vật hái lượm chưa có test tự động (module địa hình cần three.js); hiện lọc lúc chạy: bỏ chỗ rơi vào hồ, ngoài địa hình, sát vật cản.

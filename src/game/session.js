@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { camera, scene, U } from '../core/stage.js';
 import { toon } from '../world/materials.js';
 import { realm } from '../world/realm.js';
-import { BATTLE, allAwake, chargePouch, createBattle, createEnemy, leafAttack, nearestEnemy, revivePouch, stepBattle, throwOrb } from './battle-core.js';
+import { BATTLE, allAwake, chargePouch, createBattle, createEnemy, leafAttack, nearestEnemy, stepBattle, throwOrb } from './battle-core.js';
 import { TUNING } from './player-core.js';
 import { makeQuestion, skillById } from '../learn/questions.js';
 import { PUZZLE_KINDS, makePuzzle, pickKind } from '../learn/puzzles.js';
@@ -11,23 +11,22 @@ import { createPuzzleCard } from '../ui/puzzle-card.js';
 import { createOanQuan } from '../ui/oanquan.js';
 import { createJuice } from './juice.js';
 import { createPlayground } from './playground-view.js';
-import { ADAPTIVE, changeGrade, createProfile, masteredCount, pickSkill, recordAnswer, recordMistake, reviveProfile } from '../learn/adaptive.js';
+import { ADAPTIVE, changeGrade, createProfile, masteredCount, pickSkill, recordAnswer, recordMistake } from '../learn/adaptive.js';
 import { createEnemyViews } from './enemy-views.js';
 import { createHud } from '../ui/hud.js';
 import { createQuestionCard } from '../ui/question-card.js';
 import { createNotebook } from '../ui/notebook.js';
 import { createHeartTree } from './heart-tree.js';
 import { createSfx } from './sfx.js';
-import { createCollection, isMilestone, stepCollection, takenIds } from './collect-core.js';
+import { isMilestone, stepCollection, takenIds } from './collect-core.js';
 import { createSeedViews } from './seed-views.js';
-import { CATALOG, SLOTS, balance, buy, catalogTotal, cheapestPrice, createWardrobe, serializeWardrobe, shelf, toggleWear } from './shop-core.js';
+import { CATALOG, SLOTS, balance, buy, catalogTotal, cheapestPrice, serializeWardrobe, shelf, toggleWear } from './shop-core.js';
 import { createShopPanel } from '../ui/shop.js';
-import { canStart, cancelJob, createMill, finishJob, startJob } from './mill-core.js';
+import { canStart, cancelJob, finishJob, startJob } from './mill-core.js';
 import { applyOutfit } from '../actors/outfit.js';
+import { BONUS_KEY, MUTE_KEY, POUCH_KEY, SEED_KEY, WARDROBE_KEY, eraseProgress, loadMill, loadPouch, loadProfile, loadSeeds, loadWardrobe, saveProfile, store } from './save.js';
+import { createLoot } from './loot.js';
 
-const SAVE_KEY = 'daomay.profile.v1', MUTE_KEY = 'daomay.muted';
-const SEED_PREFIX = 'daomay.seeds.', WARDROBE_KEY = 'daomay.wardrobe.v1', BONUS_KEY = 'daomay.bonus.v1', POUCH_KEY = 'daomay.pouch.v1';   // tu do cua Mam dung chung cho moi the gioi
-const SEED_KEY = `${SEED_PREFIX}${realm.name}.v1`;   // Hat Nang da nhat, luu rieng cho tung the gioi
 const groundAt = (x, z) => realm.groundAt(x, z);
 const WAVE = { firstCount: 3, maxCount: 5, bigFrom: 2 };   // tu chuyen thu hai, moi trai co mot Bong Lang lon
 const PUZZLE_SHARE = 0.65;   // phan cau do tuong tac khi nap Tui Nang; con lai la the bai theo suc (de Cay Tam van lon)
@@ -38,58 +37,6 @@ const MAX_START_WAVE = 99;
 const MILL_SPIN_BOOST = 5, SPLASH_EVERY = 0.34, SPLASH_MIN_SPEED = 1.5;   // coi xay quay nhanh sau me bot; nhip tieng nuoc khi loi
 const SHOP_HINT_DELAY_MS = 3600;
 const GUIDE_FROM = 25; // xa hon khoang nay (m) thi hien mui ten chi huong
-
-function loadProfile() {
-  let raw = null;
-  try {
-    raw = localStorage.getItem(SAVE_KEY);
-    const profile = raw === null ? null : reviveProfile(JSON.parse(raw));
-    if (raw !== null && !profile) throw new Error('du lieu khong dung dang');
-    return profile;
-  } catch (error) {
-    console.warn('Khong doc duoc ho so da luu, se tao ho so moi:', error);
-    // giu lai ban khong doc duoc de khong ghi de mat tien do cu
-    try { if (raw !== null) localStorage.setItem(SAVE_KEY + '.bak', raw); } catch (backupError) { console.warn('Khong sao luu duoc ho so cu:', backupError); }
-    return null;
-  }
-}
-function saveProfile(profile, hud) {
-  try { localStorage.setItem(SAVE_KEY, JSON.stringify(profile)); }
-  catch (error) { console.warn('Khong luu duoc ho so:', error); hud.toast('Máy không lưu được tiến độ lần này.', 2600); }
-}
-
-/** Hat Nang cua the gioi nay (neu co): doc cac hat da nhat tu lan choi truoc; khong doc duoc thi coi nhu chua nhat. */
-function loadSeeds() {
-  if (!realm.collectibles?.length) return null;
-  let saved = [];
-  try { const raw = JSON.parse(localStorage.getItem(SEED_KEY) ?? '[]'); if (Array.isArray(raw)) saved = raw.filter((id) => typeof id === 'string'); }
-  catch (error) { console.warn('Khong doc duoc Hat Nang da nhat:', error); }
-  // id da luu ma lan nay khong co (cho dat bi vat can chiem o muc do hoa nay) van duoc giu lai khi ghi, de lan sau khong mat
-  const known = new Set(realm.collectibles.map((item) => item.id));
-  return { collection: createCollection(realm.collectibles, saved), parked: saved.filter((id) => !known.has(id)) };
-}
-
-/** Tu do da luu; khong doc duoc thi coi nhu chua co mon nao (so du tinh lai tu so hat da nhat nen be khong mat hat). */
-function loadWardrobe() {
-  try { return createWardrobe(JSON.parse(localStorage.getItem(WARDROBE_KEY) ?? 'null')); }
-  catch (error) { console.warn('Khong doc duoc tu do cua Mam:', error); return createWardrobe(); }
-}
-/** Hat Nang thuong (xay bot) da luu; khong doc duoc thi coi nhu 0. */
-function loadMill() {
-  try { return createMill(JSON.parse(localStorage.getItem(BONUS_KEY) ?? '0')); }
-  catch (error) { console.warn('Khong doc duoc Hat Nang thuong:', error); return createMill(); }
-}
-/** So vien nang con trong tui tu lan choi truoc; khong doc duoc thi coi nhu tui rong. */
-function loadPouch() {
-  try { return revivePouch(JSON.parse(localStorage.getItem(POUCH_KEY) ?? '0')); }
-  catch (error) { console.warn('Khong doc duoc Tui Nang:', error); return 0; }
-}
-/** Xoa moi tien do: ho so hoc, Hat Nang cua moi the gioi, tu do, Tui Nang. */
-function eraseProgress() {
-  const seedKeys = [];
-  for (let i = 0; i < localStorage.length; i++) { const key = localStorage.key(i); if (key?.startsWith(SEED_PREFIX)) seedKeys.push(key); }
-  for (const key of [SAVE_KEY, WARDROBE_KEY, BONUS_KEY, POUCH_KEY, ...seedKeys]) localStorage.removeItem(key);
-}
 
 /** Cho dung hop le cho Bong Lang: co dat, khong nam trong vat can, khong sat cho Mam dang dung. */
 function spawnEnemies(wave, player, rng) {
@@ -143,7 +90,10 @@ export function createSession(play) {
   }) : null;
   let splashWait = 0;
   let shopHinted = wardrobe.owned.size > 0;   // da tung doi do thi be biet quay hang roi
-  const busy = () => notebook.isOpen() || state.asking || Boolean(shopPanel?.isOpen());
+  const near = (spot) => Boolean(spot) && Math.hypot(player.x - spot.x, player.z - spot.z) < spot.reach;
+  const busy = () => notebook.isOpen() || state.asking || Boolean(shopPanel?.isOpen()) || loot.isOpen();
+  // tui do, vat hai luom, vat lieu roi ra, Hat Nang moc lai (xem loot.js)
+  const loot = createLoot({ enabled: Boolean(stall), player, seeds, atStall: () => near(stall), canOpen: () => Boolean(state.profile) && !busy(), addBonus, juice, sfx, rng });
   // ?wave=N bat dau tu chuyen thu N (de thu va chup anh kiem tra cac diem xa)
   const askedWave = Math.floor(Number(new URLSearchParams(location.search).get('wave')));
   const firstWave = Number.isFinite(askedWave) && askedWave >= 1 ? Math.min(askedWave, MAX_START_WAVE) : 1;
@@ -153,6 +103,7 @@ export function createSession(play) {
     state.wave += 1; state.cleared = false; state.answered = 0; state.correct = 0; state.puzzles = 0;
     state.battle = createBattle(spawnEnemies(state.wave, player, rng), state.battle ? state.battle.faints : 0, state.battle ? state.battle.pouch : loadPouch());
     views.reset(state.battle);
+    loot.newJourney(state.wave > firstWave);
     refreshHud();
     const where = realm.waveHint ? realm.waveHint(state.wave) : null;
     hud.toast(where ?? (state.wave === 1 ? 'Các Bóng Lặng đang ngủ quanh đây. Lại gần và giữ nút Lá để đánh thức chúng!' : `Chuyến ${state.wave}: có một Bóng Lặng lớn đấy!`), 3600);
@@ -165,6 +116,7 @@ export function createSession(play) {
   }
   /** Mot hay nhieu Bong Lang vua thuc (mot vien nang co the danh thuc ca nhom). */
   function onWoke(enemies) {
+    for (const enemy of enemies) loot.drop(enemy);
     for (const enemy of enemies) { views.wake(enemy); popAt(enemy, 'Thức rồi!', { color: '#ffe27a', size: enemy.big ? 34 : 26 }); if (enemy.big) juice.bump(0.45); }
     refreshHud(); sfx.woke();
     if (!allAwake(state.battle)) return;
@@ -191,7 +143,6 @@ export function createSession(play) {
     try { localStorage.setItem(WARDROBE_KEY, JSON.stringify(serializeWardrobe(wardrobe))); return true; }
     catch (error) { console.warn('Khong luu duoc tu do:', error); hud.toast('Máy không lưu được đồ mới lần này.', 2600); return false; }
   }
-  const near = (spot) => Boolean(spot) && Math.hypot(player.x - spot.x, player.z - spot.z) < spot.reach;
   /** Viec lam duoc o cho Mam dang dung: nhan tren nut, hoac null. */
   function actionLabel() {
     if (!state.profile || busy()) return null;
@@ -219,8 +170,7 @@ export function createSession(play) {
   /** Them Hat Nang thuong (coi xay, tro choi dan gian) va luu lai. */
   function addBonus(amount) {
     mill.bonus += amount;
-    try { localStorage.setItem(BONUS_KEY, JSON.stringify(mill.bonus)); } catch (error) { console.warn('Khong luu duoc Hat Nang thuong:', error); }
-    refreshSeeds();
+    store(BONUS_KEY, mill.bonus); refreshSeeds();
   }
 
   /** Mot van o an quan voi ban Nhim. Choi het van la co qua; nghi giua chung thi khong mat gi. */
@@ -269,7 +219,7 @@ export function createSession(play) {
     if (seeds.events.picked.length === 0) return;
     sfx.seed(); refreshSeeds();
     for (const item of seeds.events.picked) juice.pop(item.x, player.y + 1.6, item.z, '+1 ✦', { color: '#ffe27a', size: 22 });
-    try { localStorage.setItem(SEED_KEY, JSON.stringify([...takenIds(seeds), ...seedSave.parked])); } catch (error) { console.warn('Khong luu duoc Hat Nang:', error); }
+    store(SEED_KEY, [...takenIds(seeds), ...seedSave.parked]);
     if (seeds.count === seeds.total) hud.toast('Bé đã nhặt hết Hạt Nắng của thung lũng! Giỏi quá!', 3200);
     else if (isMilestone(seeds)) hud.toast(`${seeds.count} Hạt Nắng rồi! Còn ${seeds.total - seeds.count} hạt đang chờ bé.`, 2600);
     else hintShop();
@@ -285,7 +235,7 @@ export function createSession(play) {
   }
 
   function savePouch() {
-    try { localStorage.setItem(POUCH_KEY, JSON.stringify(state.battle.pouch)); } catch (error) { console.warn('Khong luu duoc Tui Nang:', error); }
+    store(POUCH_KEY, state.battle.pouch);
   }
 
   /** Nut Tui Nang: con vien thi nem; het vien thi moi be nap bang mot cau do (be tu chon, khong bat buoc). */
@@ -358,6 +308,7 @@ export function createSession(play) {
         if (state.profile && !busy()) collectSeeds();
         seedViews.update(state.time);
       }
+      if (loot.update(state.time, Boolean(state.profile) && !busy())) hintShop();
       hud.setAction(actionLabel());
       // tieng nuoc khi Mam loi (the gioi bao qua realm.wading)
       if (realm.wading && player.grounded && Math.hypot(player.vx, player.vz) > SPLASH_MIN_SPEED && !busy()) { splashWait -= dt; if (splashWait <= 0) { splashWait = SPLASH_EVERY; sfx.splash(); } } else splashWait = 0;

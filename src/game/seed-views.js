@@ -17,5 +17,7 @@ export function createSeedViews(scene, collection) {
       });
       mesh.instanceMatrix.needsUpdate = true;
     },
+    /** Go khoi canh (Hat Nang moc lai chi song mot chuyen di). */
+    dispose() { scene.remove(mesh); mesh.geometry.dispose(); mesh.material.dispose(); },
   };
 }

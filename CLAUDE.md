@@ -34,6 +34,10 @@ code, không asset ngoài. Trả lời anh Ben bằng tiếng Việt có dấu. 
 - `game/mill-core.js` luật cân bột ở cối xay (thuần, có test): mỗi chuyến đi một mẻ là MỘT câu đố cân thăng bằng, xong mẻ được 1 hạt công + 1–3 hạt theo cách giải;
   hạt thưởng lưu ở `daomay.bonus.v1` và cộng vào số dư đổi đồ. Việc làm tại chỗ (quầy hàng, cối xay) dùng chung một nút của `hud.setAction`;
   thế giới khai báo chỗ bằng `realm.shop`, `realm.mill`, và báo `realm.wading` để phần chơi phát tiếng nước.
+- `game/bag-core.js` luật túi đồ (thuần, có test): bốn vật liệu (cánh hoa, nấm, gỗ, đá pha lê), đổi ở quầy hàng theo tỉ lệ cố định lấy Hạt Nắng.
+  `game/loot.js` nối túi đồ với vật hái lượm (`realm.gatherables`, mọc lại mỗi chuyến; hình ở `game/gather-views.js`), vật liệu Bóng Lặng để lại,
+  và Hạt Nắng mọc lại (từ chuyến thứ hai của lần chơi, 6 hạt đã nhặt mọc lại, nhặt lần nữa tính là hạt thưởng). `ui/bag.js` nút và bảng túi đồ.
+- `game/save.js` đọc/ghi `localStorage` (hồ sơ, Hạt Nắng, tủ đồ, hạt thưởng, Túi Nắng, túi đồ `daomay.bag.v1`); thêm khóa mới thì thêm vào `eraseProgress`.
 - `game/oanquan-core.js` luật trò chơi dân gian Ô ăn quan (thuần, có test); `ui/oanquan.js` bàn chơi với bạn Nhím (Nhím dễ dần khi bé thua);
   `game/playground-view.js` chiếu chơi ở chỗ thế giới đặt `realm.playground`. Chơi hết ván được 1–3 Hạt Nắng.
 - `game/juice.js` phản hồi của mọi hành động: số bay, chớp sáng màn hình, rung máy quay (`shake`, `play.js` đọc), bảng "Liên hoàn".
@@ -82,6 +86,7 @@ Danh sách trong `.pb-dev.json` → `protected`. Chỉ đổi khi anh Ben duyệ
 | Đố vui: đề nào cũng giải được, chưa giải sẵn, vừa sức lớp, lời giải đưa ra phải đúng, vườn hoa chỉ có một cách xếp, gợi ý không lộ đáp án | `tests/puzzles.test.mjs` (300 đề mỗi loại mỗi lớp) | 13/11/2026 |
 | Hạt Nắng: chạm mới nhặt, không nhặt hai lần, nhớ qua các lần chơi | `tests/collect-core.test.mjs` | 13/11/2026 |
 | Đổi đồ: đủ hạt mới đổi, không trừ hai lần, món đã đổi không mất, số dư không âm; tổng giá cả quầy ≤ số hạt của thế giới | `tests/shop-core.test.mjs` (luật đổi); riêng "tổng giá ≤ số hạt" chưa có cổng tự động: `session.js` chỉ ghi `console.error` lúc mở, đổi giá hay chỗ đặt hạt thì đếm lại tay | 13/11/2026 |
+| Túi đồ: nhặt thì tăng, đổi trừ đúng tỉ lệ, thiếu thì không đổi, không bao giờ âm, dữ liệu lưu hỏng không làm vỡ túi | `tests/bag-core.test.mjs` | 13/11/2026 |
 | Ô ăn quan: rải và ăn đúng luật, không mất viên sỏi nào (tổng luôn 70), ván nào cũng kết thúc, nước sai bị từ chối | `tests/oanquan-core.test.mjs` (300 ván ngẫu nhiên) | 13/11/2026 |
 | Cân bột: mỗi chuyến một mẻ, xem cách giải vẫn xong mẻ và vẫn có công, để sau thì làm lại được, không thưởng hai lần | `tests/mill-core.test.mjs` | 13/11/2026 |
 | Trang phải mở được không lỗi runtime | `scripts/smoke.mjs` | shader treo lúc biên dịch, 12/11/2026 |
