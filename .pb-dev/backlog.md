@@ -86,3 +86,14 @@ Mẫu: `- [ ] <tiêu đề> — Khi <tình huống> thì app phải <kết quả
 - [ ] Chưa ai nghe thử tiếng nước và tiếng thưởng trên máy thật.
 - [ ] Tải lại trang thì chuyến đi quay về 1 nên xay lại được ngay: chấp nhận (bé phải giải bài mới có hạt), nhưng nếu muốn chặt hơn thì lưu chuyến đã xay.
 - [ ] Bao bột nhìn còn giống đá cuội; chưa có bác thợ xay.
+
+## Đợt 1 của phương án toàn cảnh: nhịp đánh, Túi Nắng, đố vui tương tác (13/11/2026)
+- Xong: giữ nút Lá là bắn liên tục; Bóng Lặng thường còn 4 điểm (khoảng 2 giây bắn lá), từ chuyến 2 mỗi trại có một Bóng Lặng lớn 12 điểm; chiêu Tia Nắng (mỗi phát một bài) bỏ hẳn, thay bằng Túi Nắng: bé tự bấm "Nạp nắng", giải MỘT câu đố được 3 viên (2 nếu cần gợi ý hay thử lại, 1 nếu xem cách giải), mỗi viên 8 điểm lan 4 m, túi giữ qua các chuyến và các lần chơi.
+- Xong: bốn loại đố vui thao tác trực tiếp theo lớp 1–3: cân thăng bằng (đặt quả cân, cân nghiêng theo), đong nước (hai bình, đổ đầy, rót qua lại), tìm quy luật (hình hoặc số), vườn hoa (ô vuông Latin 3×3, 4×4). Có gợi ý, xem cách giải, "Để sau"; không giới hạn giờ. Khoảng 65% lần nạp là đố vui, còn lại là thẻ bài theo sức để Cây Tâm vẫn lớn.
+- Xong: cối xay đổi từ chuỗi 3 thẻ bài thành một câu đố cân bột.
+- Kiểm chứng: 100 test xanh (8 test đố vui, 300 đề mỗi loại mỗi lớp; test trận đấu viết lại); ci.ps1 xanh; thử thật trong Edge headless ba kịch bản (cân: lệch rồi thăng bằng, túi 3 viên, ném khi không có địch không mất viên; vườn hoa: kiểm tra sai, gợi ý, xem cách giải, túi 1 viên; cối xay: để sau, làm lại, +4 hạt, lần hai bị từ chối); ảnh 4 câu đố dọc và ngang đã tự xem.
+- [ ] Chưa ai thử bằng tay trên điện thoại: cảm giác giữ nút Lá, ném nắng, kích thước nút trong câu đố, tiếng.
+- [ ] Đố vui chưa ghi vào Sổ học (bố mẹ chưa thấy bé đã giải bao nhiêu câu, loại nào).
+- [ ] Cối xay chưa có trò quay tay cho cánh quạt như phương án; mới là cân bột.
+- [ ] Bóng Lặng chưa có kiểu di chuyển mới (lăn, nhảy, bay, núp) và chưa rơi vật liệu: thuộc đợt 2 và sau.
+- [ ] Kéo thả thật (kéo quả cân bằng ngón tay) chưa có; hiện là chạm để đặt, chạm lại để lấy ra.
