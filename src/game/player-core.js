@@ -5,6 +5,7 @@ export const TUNING = Object.freeze({
   runSpeed: 5.2, glideSpeed: 6.4, accel: 28, airAccel: 10,
   gravity: 24, jumpV: 8.6, glideFall: 1.6,
   stepUp: 0.5, coyote: 0.12, radius: 0.45, respawnY: -14, maxStep: 1 / 60,
+  sprintAfter: 1.2, sprintRamp: 1.0, sprintStick: 0.9, // giu can gan het co qua sprintAfter giay thi tang toc dan trong sprintRamp giay
 });
 
 const GROUND_EPS = 0.05;
@@ -16,6 +17,7 @@ export function createPlayer(x, z, world) {
     x, y: ground, z, vx: 0, vy: 0, vz: 0, yaw: 0,
     grounded: true, gliding: false, coyote: 0,
     jumpLatch: false,      // nut nhay dang duoc giu tu lan nhan truoc
+    runHeld: 0,            // so giay da giu can gan het co lien tuc (de tang toc)
     glideArmed: false,     // da nha nut sau khi bat nhay, nen giu lan nua la luon
     safeX: x, safeZ: z,
     events: { jumped: false, landed: false, respawned: false },
@@ -96,7 +98,10 @@ function subStep(s, input, dt, world) {
   }
 
   const mag = Math.min(1, Math.hypot(input.moveX, input.moveZ));
-  const speed = s.gliding ? TUNING.glideSpeed : TUNING.runSpeed;
+  // tang toc: dem thoi gian giu can het co; tha can la ve toc do thuong ngay. The gioi khong dat sprintScale thi khong co gi doi.
+  s.runHeld = mag >= TUNING.sprintStick ? s.runHeld + dt : 0;
+  const sprint = Math.min(Math.max((s.runHeld - TUNING.sprintAfter) / TUNING.sprintRamp, 0), 1);
+  const speed = (s.gliding ? TUNING.glideSpeed : TUNING.runSpeed) * (1 + ((world.sprintScale ?? 1) - 1) * sprint);
   const accel = (s.grounded ? TUNING.accel : TUNING.airAccel) * dt;
   const scale = mag > 1e-4 ? speed / Math.max(Math.hypot(input.moveX, input.moveZ), 1e-4) * mag : 0;
   s.vx = approach(s.vx, input.moveX * scale, accel);

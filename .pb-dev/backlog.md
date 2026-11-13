@@ -48,3 +48,10 @@ Mẫu: `- [ ] <tiêu đề> — Khi <tình huống> thì app phải <kết quả
 - [ ] Thung lũng chưa có nội dung riêng: Bóng Lặng chỉ xuất hiện quanh chỗ sinh; làng, cối xay, rừng chưa có gì để làm. Chưa có sông, hồ, đường mòn, người dân.
 - [ ] Núi xa còn là nón đều; mây chưa trôi; Cây Tâm còn là khối cầu trơn (cả hai thế giới).
 - [ ] Chạy 1 km mất hơn 3 phút — cần chạy nhanh hoặc lượn xa cho thế giới rộng.
+
+## Số đo trên điện thoại của anh Ben (13/11/2026)
+- 60 fps ở cả Đảo Mây và Thung lũng (anh Ben báo; chưa rõ mức đồ họa đang chạy, mặc định trên điện thoại là Vừa). Việc "Đo FPS" ở các mục trên coi như xong cho máy này.
+
+## Hành trình trong thung lũng (13/11/2026)
+- Xong: giữ cần hết cỡ 1,2 giây thì Mầm tăng tốc dần tới 1,9 lần (chỉ ở thế giới rộng); mỗi chuyến Bóng Lặng ngủ ở một nơi xa dần (đồi cỏ, bìa đồng, đường xuống thung, mép làng, cối xay, bìa rừng); mũi tên chỉ hướng kèm khoảng cách khi Bóng Lặng ở xa hơn 22 m. Tham số thử: `wave=N`.
+- [ ] Chưa ai chơi thử phần này: tốc độ chạy nhanh có vừa không, đi 345 m tới làng có chán không.

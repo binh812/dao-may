@@ -18,7 +18,10 @@ export function createHud({ onLeaf, onSkill, worldLabel, onSwitchWorld }) {
   const toastBox = node('div', 'position:fixed;z-index:6;left:50%;top:30%;transform:translateX(-50%);max-width:86vw;padding:10px 16px;border-radius:16px;background:rgba(28,22,34,.62);color:#fff;font:700 17px/1.35 system-ui,sans-serif;text-align:center;pointer-events:none;opacity:0;transition:opacity .35s;');
   const switcher = node('div', PILL + 'right:max(12px,env(safe-area-inset-right));top:calc(max(10px,env(safe-area-inset-top)) + 82px);pointer-events:auto;cursor:pointer;background:rgba(255,250,240,.9);color:#3a2a4a;font-size:13px;', `Sang ${worldLabel}`);
   switcher.addEventListener('pointerdown', (e) => { e.preventDefault(); onSwitchWorld(); });
-  const all = [hearts, progress, combo, leaf, skill, toastBox, switcher];
+  const guide = node('div', PILL + 'left:max(14px,env(safe-area-inset-left));bottom:max(18px,env(safe-area-inset-bottom));display:none;font-size:14px;');
+  const arrow = node('span', 'display:inline-block;margin-right:8px;font-size:18px;', '▲'), guideText = node('span', '');
+  guide.append(arrow, guideText);
+  const all = [hearts, progress, combo, leaf, skill, toastBox, switcher, guide];
   hearts.style.display = progress.style.display = 'none'; // chua co tran thi chua hien
   document.body.append(...all);
   leaf.addEventListener('pointerdown', (e) => { e.preventDefault(); onLeaf(); });
@@ -32,6 +35,12 @@ export function createHud({ onLeaf, onSkill, worldLabel, onSwitchWorld }) {
     setCombo(tier) { combo.textContent = tier > 1 ? `Combo ×${tier}` : ''; combo.style.opacity = tier > 1 ? '1' : '0'; },
     setProgress(text) { progress.textContent = text; progress.style.display = text ? 'block' : 'none'; },
     setSkillReady(ready) { skill.style.opacity = ready ? '1' : '.45'; },
+    /** Mui ten chi huong: angle (rad, 0 = thang truoc mat, duong = ben phai) va khoang cach (m); null de an. */
+    setGuide(angle, meters) {
+      if (angle === null) { guide.style.display = 'none'; return; }
+      guide.style.display = 'block'; arrow.style.transform = `rotate(${angle}rad)`;
+      guideText.textContent = `Bóng Lặng cách ${Math.round(meters / 5) * 5} m`;
+    },
     toast(text, ms = 1800) { toastBox.textContent = text; toastBox.style.opacity = '1'; clearTimeout(toastTimer); toastTimer = setTimeout(() => { toastBox.style.opacity = '0'; }, ms); },
     /** Bang giua man hinh co mot nut; goi lai voi null de go. */
     banner(title, lines, buttonLabel, onClick) {

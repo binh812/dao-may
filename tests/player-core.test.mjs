@@ -126,6 +126,24 @@ test('a world can lower or remove the fall depth', () => {
   assert.ok(stuckRespawns > 0, 'muc roi mac dinh phai con tac dung khi the gioi khong dat rieng');
 });
 
+test('holding the stick fully speeds up only in worlds that allow sprinting, and letting go resets it', () => {
+  const wide = flat({ sprintScale: 2 }), s = createPlayer(0, 0, wide);
+  run(s, wide, 1, { moveX: 1, moveZ: 0, jump: false });
+  assert.ok(Math.abs(s.vx - TUNING.runSpeed) < 0.05, `chua du lau thi van toc do thuong: ${s.vx}`);
+  run(s, wide, 3, { moveX: 1, moveZ: 0, jump: false });
+  assert.ok(Math.abs(s.vx - TUNING.runSpeed * 2) < 0.1, `toc do khi tang toc: ${s.vx}`);
+  run(s, wide, 0.2, idle); run(s, wide, 1, { moveX: 1, moveZ: 0, jump: false });
+  assert.ok(s.vx <= TUNING.runSpeed + 0.05, `tha can roi day lai phai ve toc do thuong: ${s.vx}`);
+  // day nhe (nua can) khong bao gio tang toc
+  const gentle = createPlayer(0, 0, wide);
+  run(gentle, wide, 5, { moveX: 0.5, moveZ: 0, jump: false });
+  assert.ok(gentle.vx <= TUNING.runSpeed * 0.5 + 0.05, `vx=${gentle.vx}`);
+  // the gioi khong dat sprintScale: giu bao lau cung khong nhanh hon
+  const small = flat(), t = createPlayer(0, 0, small);
+  run(t, small, 5, { moveX: 1, moveZ: 0, jump: false });
+  assert.ok(Math.abs(t.vx - TUNING.runSpeed) < 0.05, `vx=${t.vx}`);
+});
+
 test('big dt does not tunnel', () => {
   // Vach mong 0,5 m: mot buoc lon duy nhat se nhay qua no neu khong chia buoc con.
   const world = flat({ heightAt: (x) => (x > 2 && x < 2.5 ? 3 : 0) }), s = createPlayer(1.4, 0, world);

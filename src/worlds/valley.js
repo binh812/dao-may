@@ -14,6 +14,17 @@ import { createScenery } from '../valley/scenery.js';
 
 const FAR_PLANE = 9000, SHADOW_HALF = 26, SHADOW_DISTANCE = 70;
 const SPAWN = { x: 0, z: 0 };
+// Moi chuyen di, Bong Lang ngu o mot noi xa dan: doi co -> bia dong -> duong xuong thung -> mep lang -> coi xay -> bia rung.
+const CAMPS = [
+  { x: 0, z: 0, hint: 'Các Bóng Lặng đang ngủ quanh đây. Lại gần và đánh thức chúng!' },
+  { x: 95, z: -70, hint: 'Chuyến 2: có Bóng Lặng ngủ ở bìa đồng cỏ. Đi theo mũi tên nhé!' },
+  { x: 205, z: -150, hint: 'Chuyến 3: Bóng Lặng đang ngủ trên đường xuống thung lũng.' },
+  { x: 292, z: -208, hint: 'Chuyến 4: ngôi làng mái cam đang ngủ gật. Tới đánh thức nào!' },
+  { x: 440, z: -185, hint: 'Chuyến 5: cối xay gió ngừng quay rồi. Bóng Lặng ở quanh đó.' },
+  { x: 150, z: 185, hint: 'Chuyến 6: Bóng Lặng trốn ở bìa rừng thông.' },
+];
+const CAMP_RING = [[10, 4], [-9, 8], [5, -12], [-13, -6], [15, -8], [-4, 14], [12, 12]];
+const campFor = (wave) => CAMPS[(wave - 1) % CAMPS.length];
 const MIST_BELOW_PLAYER = 5; // suong dong o cho trung, thap hon cho nguoi choi dung
 
 // nang cao, hoi chech sau lung nguoi choi luc dau: dong co sang, may co khoi
@@ -36,7 +47,10 @@ export default {
   respawnY: -Infinity,                 // co tuong chan o mep, khong the roi; long thung lung nam duoi muc roi mac dinh
   mistScale: 0.12, mistFloor: 0,                        // cap nhat moi khung hinh: suong bam theo mat dat cho nguoi choi dung
   spawn: SPAWN,
-  spawnSpots: [[14, 6], [-12, 10], [6, -16], [-18, -8], [22, -10], [-6, 20], [18, 18]],
+  spawnSpots: CAMP_RING.map(([dx, dz]) => [CAMPS[0].x + dx, CAMPS[0].z + dz]),
+  spotsForWave: (wave) => { const camp = campFor(wave); return CAMP_RING.map(([dx, dz]) => [camp.x + dx, camp.z + dz]); },
+  waveHint: (wave) => campFor(wave).hint,
+  sprintScale: 1.9,                    // the gioi rong: giu can het co thi Mam chay nhanh gan gap doi
   treeSpot: { x: 5, z: -6 },
   cameraYaw: -0.92, cameraPitch: 0.1, cameraLookHeight: 2.4, fogScale: 0.18, paint: true,
   sky,
