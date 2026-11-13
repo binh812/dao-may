@@ -18,13 +18,13 @@ import { createQuestionCard } from '../ui/question-card.js';
 import { createNotebook } from '../ui/notebook.js';
 import { createHeartTree } from './heart-tree.js';
 import { createSfx } from './sfx.js';
-import { createCollection, isMilestone, stepCollection, takenIds } from './collect-core.js';
+import { isMilestone, stepCollection, takenIds } from './collect-core.js';
 import { createSeedViews } from './seed-views.js';
 import { CATALOG, SLOTS, balance, buy, catalogTotal, cheapestPrice, serializeWardrobe, shelf, toggleWear } from './shop-core.js';
 import { createShopPanel } from '../ui/shop.js';
 import { canStart, cancelJob, finishJob, startJob } from './mill-core.js';
 import { applyOutfit } from '../actors/outfit.js';
-import { BONUS_KEY, MUTE_KEY, POUCH_KEY, SEED_KEY, WARDROBE_KEY, eraseProgress, loadBag, loadMill, loadPouch, loadProfile, loadSeeds, loadWardrobe, saveProfile, store } from './save.js';
+import { BONUS_KEY, MUTE_KEY, POUCH_KEY, SEED_KEY, WARDROBE_KEY, eraseProgress, loadMill, loadPouch, loadProfile, loadSeeds, loadWardrobe, saveProfile, store } from './save.js';
 import { createLoot } from './loot.js';
 
 const groundAt = (x, z) => realm.groundAt(x, z);
@@ -93,7 +93,7 @@ export function createSession(play) {
   const near = (spot) => Boolean(spot) && Math.hypot(player.x - spot.x, player.z - spot.z) < spot.reach;
   const busy = () => notebook.isOpen() || state.asking || Boolean(shopPanel?.isOpen()) || loot.isOpen();
   // tui do, vat hai luom, vat lieu roi ra, Hat Nang moc lai (xem loot.js)
-  const loot = createLoot({ player, seeds, atStall: () => near(stall), canOpen: () => Boolean(state.profile) && !busy(), addBonus, juice, hud, sfx, rng });
+  const loot = createLoot({ enabled: Boolean(stall), player, seeds, atStall: () => near(stall), canOpen: () => Boolean(state.profile) && !busy(), addBonus, juice, sfx, rng });
   // ?wave=N bat dau tu chuyen thu N (de thu va chup anh kiem tra cac diem xa)
   const askedWave = Math.floor(Number(new URLSearchParams(location.search).get('wave')));
   const firstWave = Number.isFinite(askedWave) && askedWave >= 1 ? Math.min(askedWave, MAX_START_WAVE) : 1;

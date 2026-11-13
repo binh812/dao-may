@@ -12,14 +12,17 @@ import { createBagUi } from '../ui/bag.js';
 
 const DROPS = ['hoa', 'go', 'nam'], BIG_DROP = { id: 'da', amount: 2 };   // Bong Lang thuc giac de lai vat lieu; con lon de lai da pha le
 const REGROW = 6;          // moi chuyen moi, ngan nay Hat Nang da nhat moc lai (nhat lan nua thi tinh la hat thuong)
+const OVERFLOW_SEEDS = 1;  // tui day loai do: moi lan nhat doi thang thanh ngan nay Hat Nang, de khong vat nao bi mat
 const DROP_HEIGHT = 0.9, PICK_HEIGHT = 1.2, SEED_POP_HEIGHT = 1.6;
 const ICON = Object.fromEntries(MATERIALS.map((m) => [m.id, m.icon]));
 
 /**
+ * enabled: the gioi co quay hang de doi do thi moi co tui (khong thi tra ve ban khong lam gi);
  * player: nhan vat; seeds: bo Hat Nang chinh (hoac null); atStall(): Mam co dang o quay hang khong;
  * canOpen(): luc nay mo tui duoc khong; addBonus(n): cong Hat Nang thuong; juice, hud, sfx, rng: phan hoi va ngau nhien.
  */
-export function createLoot({ player, seeds, atStall, canOpen, addBonus, juice, hud, sfx, rng }) {
+export function createLoot({ enabled, player, seeds, atStall, canOpen, addBonus, juice, sfx, rng }) {
+  if (!enabled) return { isOpen: () => false, newJourney() {}, drop() {}, update: () => false };
   const bag = loadBag(), groundAt = (x, z) => realm.groundAt(x, z);
   // vat hai luom moc lai moi chuyen di nen khong luu
   const wild = realm.gatherables?.length ? createCollection(realm.gatherables) : null, wildViews = wild ? createGatherViews(scene, toon, wild) : null;
@@ -30,11 +33,11 @@ export function createLoot({ player, seeds, atStall, canOpen, addBonus, juice, h
     onTrade: (id) => { if (!atStall()) return; const deal = trade(bag, id); if (!deal.ok) return; store(BAG_KEY, serializeBag(bag)); addBonus(deal.seeds); sfx.buy(); },
   });
 
-  /** Bo vat vao tui, luu, hien chu bay tai cho nhat. Tui day loai do thi nhac be di doi. */
+  /** Bo vat vao tui, luu, hien chu bay tai cho nhat. Phan khong vua tui (loai do da day) doi thang thanh Hat Nang: khong mat gi. */
   function gain(id, amount, x, y, z) {
     const added = addItem(bag, id, amount);
     if (added > 0) { store(BAG_KEY, serializeBag(bag)); bagUi.refresh(); juice.pop(x, y, z, `+${added} ${ICON[id]}`, { size: 24 }); }
-    else hud.toast('Túi đầy loại này rồi! Bé mang tới quầy cô Thỏ Bông đổi lấy Hạt Nắng nhé.', 2600);
+    if (added < amount) { addBonus(OVERFLOW_SEEDS); juice.pop(x, y + 0.5, z, `+${OVERFLOW_SEEDS} ✦`, { color: '#ffe27a', size: 22 }); }
   }
 
   return {
