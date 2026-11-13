@@ -1,4 +1,5 @@
 // Mot chuyen di: noi luat doi dau, he hoc tap, giao dien va hinh anh. Khong chua luat; luat nam o cac *-core.js va learn/.
+import * as THREE from 'three';
 import { camera, scene, U } from '../core/stage.js';
 import { toon } from '../world/materials.js';
 import { realm } from '../world/realm.js';
@@ -16,6 +17,7 @@ import { createSfx } from './sfx.js';
 const SAVE_KEY = 'daomay.profile.v1', MUTE_KEY = 'daomay.muted';
 const groundAt = (x, z) => realm.groundAt(x, z);
 const WAVE = { firstCount: 3, maxCount: 5, firstWake: 8, wakeStep: 2, maxWake: 16 };
+const GUIDE_FROM = 22; // xa hon khoang nay (m) thi hien mui ten chi huong
 const PRAISE = ['', 'Tuyệt!', 'Chiêu bậc 2!', 'Chiêu bậc 3, mạnh nhất!'];
 
 function loadProfile() {
@@ -39,7 +41,8 @@ function saveProfile(profile, hud) {
 
 /** Cho dung hop le cho Bong Lang: co dat, khong nam trong vat can, khong sat cho Mam dang dung. */
 function spawnEnemies(wave, player, rng) {
-  const valid = realm.spawnSpots.filter(([x, z]) => Number.isFinite(groundAt(x, z)) && realm.colliders.every((c) => Math.hypot(x - c.x, z - c.z) > c.r + 1));
+  const spots = realm.spotsForWave ? realm.spotsForWave(wave) : realm.spawnSpots; // the gioi rong: moi chuyen o mot noi
+  const valid = spots.filter(([x, z]) => Number.isFinite(groundAt(x, z)) && realm.colliders.every((c) => Math.hypot(x - c.x, z - c.z) > c.r + 1));
   const away = valid.filter(([x, z]) => Math.hypot(x - player.x, z - player.z) > 4);
   const free = away.length ? away : valid; // Mam dung sat moi cho: van phai co dich, neu khong chuyen di khong bao gio xong
   if (!free.length) throw new Error('khong co cho hop le nao de dat Bong Lang');
@@ -62,14 +65,18 @@ export function createSession(play) {
     isMuted: () => sfx.isMuted(),
     setMuted: (value) => { sfx.setMuted(value); try { localStorage.setItem(MUTE_KEY, value ? '1' : '0'); } catch (error) { console.warn('Khong luu duoc cai dat am thanh:', error); } },
   });
-  const state = { profile: loadProfile(), battle: null, wave: 0, asking: false, cleared: false, answered: 0, correct: 0, time: 0 };
+  const guideForward = new THREE.Vector3();
+  // ?wave=N bat dau tu chuyen thu N (de thu va chup anh kiem tra cac diem xa)
+  const firstWave = Math.max(1, Math.floor(Number(new URLSearchParams(location.search).get('wave'))) || 1);
+  const state = { profile: loadProfile(), battle: null, wave: firstWave - 1, asking: false, cleared: false, answered: 0, correct: 0, time: 0 };
 
   function startWave() {
     state.wave += 1; state.cleared = false; state.answered = 0; state.correct = 0;
     state.battle = createBattle(spawnEnemies(state.wave, player, rng), state.battle ? state.battle.faints : 0);
     views.reset(state.battle);
     refreshHud();
-    hud.toast(state.wave === 1 ? 'Các Bóng Lặng đang ngủ quanh đây. Lại gần và đánh thức chúng!' : `Chuyến ${state.wave}: Bóng Lặng ngủ say hơn rồi đấy!`, 3200);
+    const where = realm.waveHint ? realm.waveHint(state.wave) : null;
+    hud.toast(where ?? (state.wave === 1 ? 'Các Bóng Lặng đang ngủ quanh đây. Lại gần và đánh thức chúng!' : `Chuyến ${state.wave}: Bóng Lặng ngủ say hơn rồi đấy!`), 3600);
   }
   function refreshHud() {
     const b = state.battle, awake = b.enemies.filter((e) => e.awake).length;
@@ -83,6 +90,18 @@ export function createSession(play) {
     state.cleared = true; sfx.cleared();
     const solved = state.answered ? `Bé đã giải đúng ${state.correct}/${state.answered} bài trong chuyến này.` : 'Lần tới thử chiêu Tia Nắng nhé: giải đúng thì chiêu mạnh hơn nhiều!';
     hud.banner(realm.name === 'valley' ? 'Thung lũng đã thức giấc!' : 'Đảo đã thức giấc!', [solved, `Kỹ năng đã thành thạo: ${masteredCount(state.profile)}.`], 'Chuyến mới', startWave);
+  }
+
+  /** Mui ten chi toi Bong Lang gan nhat khi no o xa (the gioi rong de khong bi lac). */
+  function updateGuide(b) {
+    const target = nearestEnemy(b, player, Infinity);
+    if (!target) { hud.setGuide(null); return; }
+    const dx = target.x - player.x, dz = target.z - player.z, dist = Math.hypot(dx, dz);
+    if (dist < GUIDE_FROM) { hud.setGuide(null); return; }
+    camera.getWorldDirection(guideForward);
+    // goc giua huong nhin cua may quay va huong toi muc tieu, tren mat phang ngang; duong la lech sang phai man hinh
+    const angle = Math.atan2(guideForward.x * dz - guideForward.z * dx, guideForward.x * dx + guideForward.z * dz);
+    hud.setGuide(angle, dist);
   }
 
   function useLeaf() {
@@ -140,6 +159,7 @@ export function createSession(play) {
         if (b.events.hit) { refreshHud(); sfx.hit(); hud.toast(b.events.fainted ? 'Mầm ngủ gật một chút. Dậy nào, không sao cả!' : 'Ối! Chạy ra khỏi vòng đỏ nhé.', 1600); }
         for (const s of b.events.struck) views.strike(s.x, s.z);
         hud.setSkillReady(nearestEnemy(b, player, BATTLE.skillRange) !== null);
+        updateGuide(b);
       }
       views.update(dt, state.time, b, camera);
       U.player.value.set(player.x, player.y, player.z);
