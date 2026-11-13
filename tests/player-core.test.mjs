@@ -134,6 +134,12 @@ test('holding the stick fully speeds up only in worlds that allow sprinting, and
   assert.ok(Math.abs(s.vx - TUNING.runSpeed * 2) < 0.1, `toc do khi tang toc: ${s.vx}`);
   run(s, wide, 0.2, idle); run(s, wide, 1, { moveX: 1, moveZ: 0, jump: false });
   assert.ok(s.vx <= TUNING.runSpeed + 0.05, `tha can roi day lai phai ve toc do thuong: ${s.vx}`);
+  // ngon tay rung o mep can (do lon tut xuong 0.7 trong vai khung hinh) khong lam mat da chay nhanh
+  const wobble = createPlayer(0, 0, wide);
+  run(wobble, wide, 3, { moveX: 1, moveZ: 0, jump: false });
+  run(wobble, wide, 0.1, { moveX: 0.7, moveZ: 0, jump: false });
+  run(wobble, wide, 0.5, { moveX: 1, moveZ: 0, jump: false });
+  assert.ok(wobble.vx > TUNING.runSpeed * 1.8, `rung nhe ma mat da: ${wobble.vx}`);
   // day nhe (nua can) khong bao gio tang toc
   const gentle = createPlayer(0, 0, wide);
   run(gentle, wide, 5, { moveX: 0.5, moveZ: 0, jump: false });

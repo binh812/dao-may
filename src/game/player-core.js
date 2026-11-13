@@ -5,7 +5,7 @@ export const TUNING = Object.freeze({
   runSpeed: 5.2, glideSpeed: 6.4, accel: 28, airAccel: 10,
   gravity: 24, jumpV: 8.6, glideFall: 1.6,
   stepUp: 0.5, coyote: 0.12, radius: 0.45, respawnY: -14, maxStep: 1 / 60,
-  sprintAfter: 1.2, sprintRamp: 1.0, sprintStick: 0.9, // giu can gan het co qua sprintAfter giay thi tang toc dan trong sprintRamp giay
+  sprintAfter: 1.2, sprintRamp: 1.0, sprintStick: 0.9, sprintRelease: 0.6, // giu can gan het co qua sprintAfter giay thi tang toc dan trong sprintRamp giay
 });
 
 const GROUND_EPS = 0.05;
@@ -71,7 +71,7 @@ function settleVertically(s, world, dt) {
 }
 
 function respawn(s, world) {
-  s.x = s.safeX; s.z = s.safeZ; s.vx = s.vy = s.vz = 0;
+  s.x = s.safeX; s.z = s.safeZ; s.vx = s.vy = s.vz = 0; s.runHeld = 0;
   pushOutOfColliders(s, world);
   const ground = world.heightAt(s.x, s.z);
   s.y = Number.isFinite(ground) ? ground : 0;
@@ -99,7 +99,8 @@ function subStep(s, input, dt, world) {
 
   const mag = Math.min(1, Math.hypot(input.moveX, input.moveZ));
   // tang toc: dem thoi gian giu can het co; tha can la ve toc do thuong ngay. The gioi khong dat sprintScale thi khong co gi doi.
-  s.runHeld = mag >= TUNING.sprintStick ? s.runHeld + dt : 0;
+  // bat dau dem khi day gan het co; da dem roi thi chi mat khi can ve duoi sprintRelease, de ngon tay rung nhe o mep can khong lam mat da
+  if (mag >= TUNING.sprintStick || (s.runHeld > 0 && mag >= TUNING.sprintRelease)) s.runHeld += dt; else s.runHeld = 0;
   const sprint = Math.min(Math.max((s.runHeld - TUNING.sprintAfter) / TUNING.sprintRamp, 0), 1);
   const speed = (s.gliding ? TUNING.glideSpeed : TUNING.runSpeed) * (1 + ((world.sprintScale ?? 1) - 1) * sprint);
   const accel = (s.grounded ? TUNING.accel : TUNING.airAccel) * dt;
