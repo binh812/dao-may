@@ -11,6 +11,7 @@ import { CAMP_SPOTS, EDGE, createTerrain, groundAt } from '../valley/terrain.js'
 import { createSky } from '../valley/sky.js';
 import { createGrass } from '../valley/grass.js';
 import { createScenery } from '../valley/scenery.js';
+import { seedSpots } from '../valley/seeds.js';
 
 const FAR_PLANE = 10500, SHADOW_HALF = 26, SHADOW_DISTANCE = 70;
 // Tham so thu `at=x,z`: sinh ra o cho khac de chup anh kiem tra (vd. at=300,-215 la mep lang)
@@ -56,6 +57,7 @@ export default {
   waveHint: (wave) => campFor(wave).hint,
   sprintScale: 1.9,                    // the gioi rong: giu can het co thi Mam chay nhanh gan gap doi
   treeSpot: { x: 3.5, z: -9 },
+  collectibles: seedSpots(groundAt, scenery.colliders),   // Hat Nang rai doc duong, quanh ho va coi xay
   cameraYaw: -0.92, cameraPitch: 0.04, cameraLookHeight: 3.0, fogScale: 0.18, paint: true,
   sky: sky.mesh,
   setGrassVisible(visible) { grass.group.visible = visible; },
@@ -69,7 +71,7 @@ export default {
     sun.position.copy(sun.target.position).addScaledVector(SUN_DIR, SHADOW_DISTANCE);
     scenery.rotor.rotation.z += dt * 0.5 * ctx.wind;
     sky.drift(dt, ctx.wind);
-    scenery.life.update(dt, time);
+    scenery.life.update(dt, time); scenery.lake.update(time);
     scenery.massifs.visible = U.overcast.value < MASSIF_HIDDEN_OVERCAST;   // troi mua: nui xa khuat sau man may (nui khong chiu suong cua canh)
   },
 };

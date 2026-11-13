@@ -5,7 +5,7 @@ import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometr
 import { MATS, toon } from '../world/materials.js';
 import { Q, tierName } from '../core/quality.js';
 import { C, blob, noise, rnd, smooth } from '../core/util.js';
-import { EDGE, MILL, VILLAGE, fieldAmount, fieldCoords, forestMask, heightAt, nearCamp, pathDistance } from './terrain.js';
+import { EDGE, MILL, VILLAGE, fieldAmount, fieldCoords, forestMask, heightAt, nearCamp, nearLake, pathDistance } from './terrain.js';
 
 const TREES_PER_FIELD = 1 / 7;                 // so cay tan la = Q.field x he so nay
 const HEDGE_SHARE = 0.5, CLUMP_SHARE = 0.35;   // phan con lai la cay le
@@ -46,7 +46,7 @@ function treeGeometry(shape, seed) {
 /** Chon cho moc cay; tra ve danh sach { x, z, s, shape }. */
 function placements(total) {
   const spots = [];
-  const free = (x, z) => !nearCamp(x, z) && Math.hypot(x, z) > CLEAR.spawn && Math.hypot(x, z) < EDGE + 250 && pathDistance(x, z) > CLEAR.path
+  const free = (x, z) => !nearCamp(x, z) && !nearLake(x, z, 1.15) && Math.hypot(x, z) > CLEAR.spawn && Math.hypot(x, z) < EDGE + 250 && pathDistance(x, z) > CLEAR.path
     && Math.hypot(x - VILLAGE.x, z - VILLAGE.z) > CLEAR.village && Math.hypot(x - MILL.x, z - MILL.z) > CLEAR.mill && forestMask(x, z) < 0.62;
   const push = (x, z, s) => { if (free(x, z)) spots.push({ x, z, s, shape: rnd() < 0.7 ? 0 : 1 }); };
   // doc bo rao cac o ruong
