@@ -12,7 +12,7 @@ export function node(tag, css, text = '') {
 }
 function button(css, text, onTap) {
   const b = node('button', TAP + css, text);
-  b.type = 'button'; b.onclick = onTap;
+  b.type = 'button'; b.onclick = (event) => { event.stopPropagation(); onTap(); };
   return b;
 }
 
@@ -130,7 +130,38 @@ function garden(p, act) {
   };
 }
 
-const WIDGETS = { balance, pour, pattern, garden };
+// ---------------------------------------------------------------- Tam Cam nhat thoc
+function sort(p, act) {
+  const el = node('div', 'display:grid;gap:8px;');
+  const pool = node('div', 'display:flex;flex-wrap:wrap;gap:6px;justify-content:center;min-height:50px;padding:6px;border-radius:14px;background:#f1e3c8;');
+  const row = node('div', 'display:grid;grid-template-columns:1fr 1fr;gap:8px;');
+  let active = 0;
+  const GRAIN = 'min-width:46px;height:44px;padding:0 6px;border-radius:22px 22px 18px 18px;font-weight:800;font-size:17px;';
+  const grains = p.grains.map((value, i) => button(GRAIN, String(value), () => act((s) => ({ side: s.side.map((v, k) => (k !== i ? v : v === null ? active : null)) }))));
+  const baskets = p.baskets.map((name, basket) => {
+    const box = node('div', TAP + 'min-height:96px;');
+    const choose = () => act((s) => { active = basket; return s; });   // doi thung ben trong act de khong doi khi the dang khoa
+    box.onclick = choose; box.tabIndex = 0; box.setAttribute('role', 'button'); box.setAttribute('aria-label', `Chọn thúng: ${name}`);
+    box.onkeydown = (event) => { if (event.target === box && (event.code === 'Enter' || event.code === 'Space')) { event.preventDefault(); choose(); } };
+    box.style.cssText += 'padding:6px;border-radius:10px 10px 26px 26px;background:#e7c98f;display:flex;flex-direction:column;gap:5px;align-items:center;';
+    const label = node('div', 'font:800 14px/1.2 system-ui,sans-serif;'), inside = node('div', 'display:flex;flex-wrap:wrap;gap:4px;justify-content:center;');
+    label.textContent = name; box.append(label, inside); row.append(box);
+    return { box, inside };
+  });
+  el.append(pool, row);
+  return {
+    el, auto: false, ready: (state) => state.side.every((v) => v !== null),
+    render(state, locked) {
+      grains.forEach((grain, i) => {
+        grain.disabled = locked; grain.style.background = state.side[i] === null ? '#fff3c4' : '#fffdf6';
+        (state.side[i] === null ? pool : baskets[state.side[i]].inside).append(grain);
+      });
+      baskets.forEach(({ box }, basket) => { box.style.outline = basket === active && !locked ? '4px solid #ff9a3d' : 'none'; });
+    },
+  };
+}
+
+const WIDGETS = { balance, pour, pattern, garden, sort };
 
 export function createWidget(puzzle, act) {
   const make = WIDGETS[puzzle.kind];

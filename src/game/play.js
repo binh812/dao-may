@@ -7,9 +7,10 @@ import { chr, eyes, sprout, squash } from '../actors/mam.js';
 import { TUNING, createPlayer, stepPlayer } from './player-core.js';
 import { cameraRelative, steerYaw } from './input-core.js';
 import { createTouchControls } from './touch-controls.js';
+import { shake } from './juice.js';
 
 const CAMERA = { distance: 8.5, portraitDistance: 10.5, pitch: 0.42, minPitch: 0.12, maxPitch: 1.1, lookHeight: 1.1, clearance: 0.6, follow: 9, yawPerPixel: 0.006, pitchPerPixel: 0.004, steerAfter: 1.5, steerRate: 0.8 };
-const HINT_SECONDS = 6;
+const HINT_SECONDS = 6, SHAKE_FADE = 9;
 const WALL_HEIGHT = 1e5; // the gioi tra do cao tu muc nay tro len cho vung khong duoc vao
 
 const angleDelta = (from, to) => Math.atan2(Math.sin(to - from), Math.cos(to - from));
@@ -43,6 +44,9 @@ export function createPlay() {
     const k = cam.snapped ? 1 - Math.exp(-dt * CAMERA.follow) : 1;
     camera.position.lerp(desired, k); lookAt.lerp(target, k); cam.snapped = true;
     camera.lookAt(lookAt);
+    // rung may quay (trung don, nem nang): lech ngau nhien roi tat nhanh
+    if (dt <= 0) shake.power = 0;   // game dang dung (mo the bai): khong rung, neu khong may quay se troi dan
+    else if (shake.power > 0.002) { camera.position.x += (Math.random() - 0.5) * shake.power; camera.position.y += (Math.random() - 0.5) * shake.power; shake.power *= Math.exp(-dt * SHAKE_FADE); } else shake.power = 0;
   }
 
   function updateActor(dt, speed) {

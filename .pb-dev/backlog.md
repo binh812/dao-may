@@ -97,3 +97,13 @@ Mẫu: `- [ ] <tiêu đề> — Khi <tình huống> thì app phải <kết quả
 - [ ] Cối xay chưa có trò quay tay cho cánh quạt như phương án; mới là cân bột.
 - [ ] Bóng Lặng chưa có kiểu di chuyển mới (lăn, nhảy, bay, núp) và chưa rơi vật liệu: thuộc đợt 2 và sau.
 - [ ] Kéo thả thật (kéo quả cân bằng ngón tay) chưa có; hiện là chạm để đặt, chạm lại để lấy ra.
+
+## Trò chơi dân gian, truyện cổ tích, hiệu ứng (13/11/2026)
+- Xong: Ô ăn quan chơi với bạn Nhím trên chiếu cạnh Cây Tâm (lá cờ cam để thấy từ xa); luật đầy đủ (rải, bốc rải tiếp, ăn liên tiếp, ăn quan, rải lại khi hết sỏi, tàn cuộc); chơi hết ván được 3/2/1 Hạt Nắng (thắng/hòa/thua); Nhím dễ dần khi bé thua.
+- Xong: câu đố theo truyện Tấm Cám (nhặt thóc: phân loại số vào hai thúng theo lớp: bé hơn/lớn hơn, chẵn/lẻ, bảng nhân 3, chia hết cho 5), có câu dẫn truyện.
+- Xong: hiệu ứng trận đấu: số bay khi trúng đòn, địch nảy và chớp sáng, lá chạm địch tóe mảnh, viên nắng nổ thành cột sáng + vòng sáng + hạt vàng + chớp màn hình + rung máy quay, Bóng Lặng thức nổ hoa nhiều hơn (con lớn nổ to), bảng "Liên hoàn ×N", chớp đỏ khi Mầm trúng đòn, "+1 ✦" khi nhặt Hạt Nắng. Tôn trọng cài đặt giảm chuyển động.
+- Kiểm chứng: 111 test xanh; thử thật trong Edge headless: chơi trọn một ván ô ăn quan (14 nước của bé, tổng điểm 70, thưởng được lưu), Tấm Cám (kiểm tra sai rồi sửa đúng, túi 2 viên); ảnh bàn cờ dọc/ngang, câu đố, chiếu chơi đã tự xem.
+- [ ] Hiệu ứng động (số bay, rung, nổ) chưa ai nhìn bằng mắt khi đang chơi: trình duyệt không màn hình gần như không chạy khung hình. Cần anh Ben xem trên điện thoại và đo fps.
+- [ ] Chưa có nhân vật bạn Nhím bằng hình 3D ngồi cạnh chiếu; mới có chiếu, sỏi, cờ.
+- [ ] `session.js` đã 390/400 dòng: đợt tới phải tách phần việc tại chỗ (cối xay, ô ăn quan, quầy hàng) ra module riêng trước khi thêm gì.
+- [ ] Truyện và trò dân gian để dành: Cây tre trăm đốt (nối đốt tre đủ 100), Sự tích bánh chưng bánh dày (hình vuông, hình tròn), Sơn Tinh Thủy Tinh (voi chín ngà: bảng nhân 9), Thánh Gióng, Ăn khế trả vàng (túi ba gang: đong đo); nhảy lò cò, thả diều, đánh chuyền, rồng rắn lên mây, kéo co, cướp cờ.

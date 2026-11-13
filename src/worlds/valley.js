@@ -60,6 +60,7 @@ export default {
   sprintScale: 1.9,                    // the gioi rong: giu can het co thi Mam chay nhanh gan gap doi
   treeSpot: { x: 3.5, z: -9 },
   shop: SHOP,
+  playground: { x: -6, z: -19, yaw: 0.5, reach: 5.5 },   // chieu o an quan canh Cay Tam, ngay cho be bat dau
   mill: { x: MILL.x, z: MILL.z, reach: MILL_REACH },   // xay bot: giai bai lay Hat Nang (moi chuyen mot me)
   millBoost: 0,                        // phan choi dat len khi xay xong me bot
   wading: false,                       // Mam dang loi trong ho (phan choi dung de phat tieng nuoc)

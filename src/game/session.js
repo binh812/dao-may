@@ -8,6 +8,9 @@ import { TUNING } from './player-core.js';
 import { makeQuestion, skillById } from '../learn/questions.js';
 import { PUZZLE_KINDS, makePuzzle, pickKind } from '../learn/puzzles.js';
 import { createPuzzleCard } from '../ui/puzzle-card.js';
+import { createOanQuan } from '../ui/oanquan.js';
+import { createJuice } from './juice.js';
+import { createPlayground } from './playground-view.js';
 import { ADAPTIVE, changeGrade, createProfile, masteredCount, pickSkill, recordAnswer, recordMistake, reviveProfile } from '../learn/adaptive.js';
 import { createEnemyViews } from './enemy-views.js';
 import { createHud } from '../ui/hud.js';
@@ -28,6 +31,8 @@ const SEED_KEY = `${SEED_PREFIX}${realm.name}.v1`;   // Hat Nang da nhat, luu ri
 const groundAt = (x, z) => realm.groundAt(x, z);
 const WAVE = { firstCount: 3, maxCount: 5, bigFrom: 2 };   // tu chuyen thu hai, moi trai co mot Bong Lang lon
 const PUZZLE_SHARE = 0.65;   // phan cau do tuong tac khi nap Tui Nang; con lai la the bai theo suc (de Cay Tam van lon)
+const OANQUAN_REWARD = { win: 3, draw: 2, lose: 1 };   // Hat Nang cho mot van choi het; thua van co qua
+const STREAK_GAP = 1.6, POP_HEIGHT = 1.7;   // qua ngan nay giay khong trung don thi chuoi lien hoan ve 0; do cao chu bay tren dau dich
 const CHARGE_PRAISE = { first: 'Giỏi quá!', later: 'Bé làm được rồi!', shown: 'Lần sau bé sẽ tự làm được!' };
 const MAX_START_WAVE = 99;
 const MILL_SPIN_BOOST = 5, SPLASH_EVERY = 0.34, SPLASH_MIN_SPEED = 1.5;   // coi xay quay nhanh sau me bot; nhip tieng nuoc khi loi
@@ -115,6 +120,12 @@ export function createSession(play) {
   const guideForward = new THREE.Vector3();
   const seedSave = loadSeeds(), seeds = seedSave?.collection ?? null, seedViews = seeds ? createSeedViews(scene, seeds) : null;
   const wardrobe = loadWardrobe(), mill = loadMill(), millSpot = realm.mill ?? null;
+  const juice = createJuice(camera), yardSpot = realm.playground ?? null;
+  const yard = yardSpot ? createPlayground(scene, toon, groundAt, yardSpot) : null;
+  const oanquan = createOanQuan({ onSound: (kind) => { if (kind === 'capture') sfx.correct(1); else if (kind === 'win') sfx.cleared(); else if (kind === 'end') sfx.wrong(); else sfx.pebble(); } });
+  const popAt = (enemy, text, style) => juice.pop(enemy.x, groundAt(enemy.x, enemy.z) + POP_HEIGHT * (enemy.big ? 1.5 : 1), enemy.z, text, style);
+  let streak = 0, streakAge = 0;
+  const addStreak = (hits) => { streak += hits; streakAge = 0; juice.streak(streak); };
   applyOutfit(wardrobe.worn);
   // ?wear=id,id mac thu cac mon (chi de chup anh kiem tra; khong luu, khong tinh la so huu)
   const askedWear = (new URLSearchParams(location.search).get('wear') ?? '').split(',');
@@ -154,7 +165,7 @@ export function createSession(play) {
   }
   /** Mot hay nhieu Bong Lang vua thuc (mot vien nang co the danh thuc ca nhom). */
   function onWoke(enemies) {
-    for (const enemy of enemies) views.wake(enemy);
+    for (const enemy of enemies) { views.wake(enemy); popAt(enemy, 'Thức rồi!', { color: '#ffe27a', size: enemy.big ? 34 : 26 }); if (enemy.big) juice.bump(0.45); }
     refreshHud(); sfx.woke();
     if (!allAwake(state.battle)) return;
     state.cleared = true; sfx.cleared();
@@ -185,12 +196,14 @@ export function createSession(play) {
   function actionLabel() {
     if (!state.profile || busy()) return null;
     if (near(stall)) return 'Vào quầy hàng';
+    if (near(yardSpot)) return 'Chơi ô ăn quan';
     if (near(millSpot) && !state.cleared) return canStart(mill, state.wave) ? 'Cân bột' : 'Bột đã cân xong ✓';
     return null;
   }
   function useAction() {
     if (!state.profile || busy()) return;
     if (near(stall)) shopPanel.open();
+    else if (near(yardSpot)) startOanQuan();
     else if (near(millSpot) && !state.cleared) { if (canStart(mill, state.wave)) startMill(); else hud.toast('Mẻ bột chuyến này xong rồi. Chuyến sau cối xay lại có mẻ mới nhé!', 2600); }
   }
 
@@ -201,6 +214,29 @@ export function createSession(play) {
     if (!correct) recordMistake(state.profile, question);
     saveProfile(state.profile, hud);
     return masteredNow;
+  }
+
+  /** Them Hat Nang thuong (coi xay, tro choi dan gian) va luu lai. */
+  function addBonus(amount) {
+    mill.bonus += amount;
+    try { localStorage.setItem(BONUS_KEY, JSON.stringify(mill.bonus)); } catch (error) { console.warn('Khong luu duoc Hat Nang thuong:', error); }
+    refreshSeeds();
+  }
+
+  /** Mot van o an quan voi ban Nhim. Choi het van la co qua; nghi giua chung thi khong mat gi. */
+  function startOanQuan() {
+    state.asking = true;
+    let game;
+    try { game = oanquan.play(); }
+    catch (error) { console.error('Khong mo duoc ban o an quan:', error); hud.toast('Có trục trặc nhỏ, bé thử lại nhé.'); state.asking = false; return; }
+    game.then(({ result }) => {
+      if (!result) return;
+      const reward = OANQUAN_REWARD[result];
+      addBonus(reward);
+      hud.toast(`${result === 'win' ? 'Bé thắng ván ô ăn quan!' : 'Ván ô ăn quan vui quá!'} Bé được ${reward} Hạt Nắng.`, 3200);
+      hintShop();
+    }).catch((error) => { console.error('Loi trong van o an quan:', error); hud.toast('Có trục trặc nhỏ, bé thử lại nhé.'); })
+      .finally(() => { state.asking = false; });
   }
 
   /** Can mot me bot: MOT cau do can thang bang; xong thi nhan Hat Nang va coi xay quay nhanh. Luat o mill-core.js. */
@@ -215,8 +251,7 @@ export function createSession(play) {
       if (!quality) { cancelJob(mill); return; }   // be bam "De sau": khong mat gi, quay lai luc nao cung duoc
       const reward = finishJob(mill, quality);
       state.puzzles += 1; realm.millBoost = MILL_SPIN_BOOST;
-      try { localStorage.setItem(BONUS_KEY, JSON.stringify(mill.bonus)); } catch (error) { console.warn('Khong luu duoc Hat Nang thuong:', error); }
-      refreshSeeds(); refreshHud(); sfx.cleared();
+      addBonus(0); refreshHud(); sfx.cleared();   // finishJob da cong thuong; o day chi luu va cap nhat
       hud.toast(`Cối xay quay tít! ${CHARGE_PRAISE[quality]} Bé được ${reward} Hạt Nắng.`, 3400);
       hintShop();
     }).catch(stop).finally(() => { state.asking = false; });
@@ -233,6 +268,7 @@ export function createSession(play) {
     stepCollection(seeds, player);
     if (seeds.events.picked.length === 0) return;
     sfx.seed(); refreshSeeds();
+    for (const item of seeds.events.picked) juice.pop(item.x, player.y + 1.6, item.z, '+1 ✦', { color: '#ffe27a', size: 22 });
     try { localStorage.setItem(SEED_KEY, JSON.stringify([...takenIds(seeds), ...seedSave.parked])); } catch (error) { console.warn('Khong luu duoc Hat Nang:', error); }
     if (seeds.count === seeds.total) hud.toast('Bé đã nhặt hết Hạt Nắng của thung lũng! Giỏi quá!', 3200);
     else if (isMilestone(seeds)) hud.toast(`${seeds.count} Hạt Nắng rồi! Còn ${seeds.total - seeds.count} hạt đang chờ bé.`, 2600);
@@ -243,7 +279,8 @@ export function createSession(play) {
     if (!state.battle || busy() || state.cleared) return;
     const hit = leafAttack(state.battle, player);
     if (!hit) return;
-    views.leaf(player, hit.target); sfx.leaf();
+    views.leaf(player, hit.target); views.hit(hit.target); sfx.leaf();
+    popAt(hit.target, `+${BATTLE.leafDamage}`, { color: '#b9f59a', size: 20 }); addStreak(1);
     if (hit.woke) onWoke([hit.target]); else refreshHud();
   }
 
@@ -259,6 +296,8 @@ export function createSession(play) {
     const thrown = throwOrb(state.battle, player);
     if (!thrown) { hud.toast('Lại gần một Bóng Lặng rồi hãy ném nhé!'); return; }
     views.orb(player, thrown.target); sfx.orb(); savePouch();
+    for (const hit of thrown.hits) { views.hit(hit.enemy); popAt(hit.enemy, `+${BATTLE.orbDamage}`, { color: '#ffd24a', size: 32 }); }
+    juice.flash('#fff0b0', 0.45); juice.bump(0.35); addStreak(thrown.hits.length);
     const woke = thrown.hits.filter((hit) => hit.woke).map((hit) => hit.enemy);
     if (woke.length) onWoke(woke); else refreshHud();
   }
@@ -313,6 +352,8 @@ export function createSession(play) {
     update(dt) {
       state.time += dt;
       tree.update(dt, state.time);
+      if (yard) yard.update(state.time);
+      streakAge += dt; if (streakAge > STREAK_GAP) streak = 0;
       if (seeds) {
         if (state.profile && !busy()) collectSeeds();
         seedViews.update(state.time);
@@ -326,7 +367,7 @@ export function createSession(play) {
       if (!state.cleared && !busy()) {
         if (hud.leafHeld()) useLeaf();   // giu nut La la ban lien tuc; nhip ban do battle-core quyet dinh
         stepBattle(b, player, dt);
-        if (b.events.hit) { refreshHud(); sfx.hit(); hud.toast(b.events.fainted ? 'Mầm ngủ gật một chút. Dậy nào, không sao cả!' : 'Ối! Chạy ra khỏi vòng đỏ nhé.', 1600); }
+        if (b.events.hit) { refreshHud(); sfx.hit(); juice.flash('#ff5a4a', 0.5); juice.bump(0.5); streak = 0; hud.toast(b.events.fainted ? 'Mầm ngủ gật một chút. Dậy nào, không sao cả!' : 'Ối! Chạy ra khỏi vòng đỏ nhé.', 1600); }
         for (const s of b.events.struck) views.strike(s.x, s.z);
         hud.setSkillReady(b.pouch === 0 || nearestEnemy(b, player, BATTLE.orbRange) !== null);
         updateGuide(b);
@@ -341,6 +382,8 @@ export function createSession(play) {
     /** Dung cho anh chup kiem tra: mo bang doi do ngay. */
     debugShop() { if (shopPanel && state.profile) shopPanel.open(); },
     /** Dung cho anh chup kiem tra: bat dau me bot ngay. */
+    /** Dung cho anh chup kiem tra: mo ngay ban o an quan. */
+    debugOanQuan() { if (state.profile && !busy()) startOanQuan(); },
     debugMill() { if (millSpot && state.profile && !busy()) startMill(); },
     runSpeed: TUNING.runSpeed,
   };

@@ -9,7 +9,8 @@ const FLOWER_COLORS = [0xff8fb8, 0xffd84d, 0xffffff, 0xb692ff, 0xff7a59, 0x8fe07
 export function createEnemyViews(scene, makeToon, groundAt) {
   const root = new THREE.Group(); scene.add(root);
   const bodyGeo = new THREE.SphereGeometry(BODY_RADIUS, 24, 16), eyeGeo = new THREE.SphereGeometry(0.09, 10, 8), bitGeo = new THREE.SphereGeometry(0.09, 8, 6);
-  const bodyMat = makeToon({ vertexColors: false, color: 0x9b96b4 }), eyeMat = new THREE.MeshBasicMaterial({ color: 0x2a2433 });
+  const BODY_COLOR = new THREE.Color(0x9b96b4), FLASH_COLOR = new THREE.Color(0xfff6c8);
+  const eyeMat = new THREE.MeshBasicMaterial({ color: 0x2a2433 });
   const barBack = new THREE.MeshBasicMaterial({ color: 0x2a2433, transparent: true, opacity: 0.55, depthTest: false });
   const barFill = new THREE.MeshBasicMaterial({ color: 0xffd04a, depthTest: false });
   const warnMat = new THREE.MeshBasicMaterial({ color: 0xff5a4a, transparent: true, opacity: 0.3, depthWrite: false });
@@ -22,7 +23,7 @@ export function createEnemyViews(scene, makeToon, groundAt) {
 
   function addView(enemy) {
     const g = new THREE.Group();
-    const body = new THREE.Mesh(bodyGeo, bodyMat); body.scale.set(1, 0.82, 1); body.position.y = BODY_RADIUS * 0.82; body.castShadow = true;
+    const body = new THREE.Mesh(bodyGeo, makeToon({ vertexColors: false, color: BODY_COLOR.getHex() })); body.scale.set(1, 0.82, 1); body.position.y = BODY_RADIUS * 0.82; body.castShadow = true;
     const eyes = [-0.24, 0.24].map((x) => { const e = new THREE.Mesh(eyeGeo, eyeMat); e.position.set(x, 0.68, 0.6); e.scale.set(1.5, 0.25, 0.6); g.add(e); return e; });
     const bar = new THREE.Group(); bar.position.y = BAR_Y;
     const back = new THREE.Mesh(barBackGeo, barBack), fill = new THREE.Mesh(barFillGeo, barFill);
@@ -30,7 +31,7 @@ export function createEnemyViews(scene, makeToon, groundAt) {
     const warn = new THREE.Mesh(warnGeo, warnMat.clone()); warn.visible = false; warn.renderOrder = 5;
     g.add(body, bar); root.add(g, warn);
     if (enemy.big) { body.scale.multiplyScalar(BIG_SCALE); body.position.y *= BIG_SCALE; eyes.forEach((e) => { e.position.multiplyScalar(BIG_SCALE); e.scale.multiplyScalar(BIG_SCALE); }); bar.position.y *= BIG_SCALE; bar.scale.setScalar(1.3); }
-    views.set(enemy.id, { g, body, eyes, bar, fill, warn, phase: Math.random() * 6 });
+    views.set(enemy.id, { g, body, eyes, bar, fill, warn, phase: Math.random() * 6, punch: 0 });
   }
 
   function burst(x, y, z, count, mats, speed) {
@@ -41,18 +42,26 @@ export function createEnemyViews(scene, makeToon, groundAt) {
     }
   }
 
+  /** Vong sang lan ra tren mat dat; size nhan voi BATTLE.orbSplash; delay giay sau moi bat dau no. */
+  function ring(x, y, z, size, delay) {
+    const mesh = new THREE.Mesh(ringGeo, beamMat.clone()); mesh.position.set(x, y, z); mesh.scale.setScalar(0.01); root.add(mesh);
+    transient.push({ mesh, life: delay + RING_LIFE, kind: 'ring', size, ownMaterial: true });
+  }
+
   return {
     /** Dong bo danh sach hinh voi danh sach dich cua mot tran moi. */
     reset(battle) {
-      for (const v of views.values()) { root.remove(v.g, v.warn); v.warn.material.dispose(); }
+      for (const v of views.values()) { root.remove(v.g, v.warn); v.warn.material.dispose(); v.body.material.dispose(); }
       views.clear();
       battle.enemies.forEach(addView);
     },
     /** Bong Lang thuc giac: bien mat trong mot chum hoa. */
     wake(enemy) {
       const v = views.get(enemy.id); if (!v) return;
-      root.remove(v.g, v.warn); v.warn.material.dispose(); views.delete(enemy.id);
-      burst(enemy.x, groundAt(enemy.x, enemy.z) + 0.7, enemy.z, 18, bitMats, 3.2);
+      root.remove(v.g, v.warn); v.warn.material.dispose(); v.body.material.dispose(); views.delete(enemy.id);
+      const y = groundAt(enemy.x, enemy.z) + 0.7;
+      burst(enemy.x, y, enemy.z, enemy.big ? 54 : 30, bitMats, enemy.big ? 5.2 : 3.6);
+      ring(enemy.x, y - 0.45, enemy.z, enemy.big ? 1.4 : 0.8, 0);
     },
     /** Tia nang doi xuong muc tieu; bac cang cao tia cang to. */
     beam(enemy, tier) {
@@ -66,13 +75,15 @@ export function createEnemyViews(scene, makeToon, groundAt) {
       const y1 = groundAt(enemy.x, enemy.z) + 0.7;
       transient.push({ mesh, life: 0.2, total: 0.2, kind: 'leaf', x0: from.x, y0: from.y + 0.8, z0: from.z, x1: enemy.x, y1, z1: enemy.z });
     },
+    /** Bong Lang vua trung don: nay len va chop sang. */
+    hit(enemy) { const v = views.get(enemy.id); if (v) v.punch = 1; },
     /** Vien nang bay tu Mam toi muc tieu roi lan ra thanh vong sang ban kinh BATTLE.orbSplash. */
     orb(from, enemy) {
       const mesh = new THREE.Mesh(bitGeo, orbMat); mesh.scale.setScalar(3.4); root.add(mesh);
       const y1 = groundAt(enemy.x, enemy.z) + 0.7;
-      transient.push({ mesh, life: ORB_FLIGHT, total: ORB_FLIGHT, kind: 'leaf', x0: from.x, y0: from.y + 1, z0: from.z, x1: enemy.x, y1, z1: enemy.z });
-      const ring = new THREE.Mesh(ringGeo, beamMat.clone()); ring.position.set(enemy.x, y1 - 0.45, enemy.z); ring.scale.setScalar(0.01); root.add(ring);
-      transient.push({ mesh: ring, life: ORB_FLIGHT + RING_LIFE, kind: 'ring', ownMaterial: true });
+      transient.push({ mesh, life: ORB_FLIGHT, total: ORB_FLIGHT, kind: 'leaf', silent: true, x0: from.x, y0: from.y + 1, z0: from.z, x1: enemy.x, y1, z1: enemy.z });
+      ring(enemy.x, y1 - 0.45, enemy.z, 1, ORB_FLIGHT);
+      transient.push({ life: ORB_FLIGHT, kind: 'boom', x: enemy.x, y: y1, z: enemy.z, target: enemy });
     },
     /** Don cua Bong Lang cham dat: bui tung len. */
     strike(x, z) { burst(x, groundAt(x, z) + 0.2, z, 8, [barBack], 2.4); },
@@ -81,7 +92,10 @@ export function createEnemyViews(scene, makeToon, groundAt) {
         const v = views.get(enemy.id); if (!v) continue;
         const ratio = enemy.wake / enemy.maxWake, ground = groundAt(enemy.x, enemy.z);
         v.g.position.set(enemy.x, ground + Math.abs(Math.sin(time * 1.6 + v.phase)) * 0.12, enemy.z);
-        v.body.scale.y = (0.82 + Math.sin(time * 2 + v.phase) * 0.04) * (enemy.big ? BIG_SCALE : 1);
+        const big = enemy.big ? BIG_SCALE : 1;
+        v.punch = Math.max(0, v.punch - dt * 6);
+        v.body.scale.set(big * (1 + v.punch * 0.22), (0.82 + Math.sin(time * 2 + v.phase) * 0.04) * big * (1 - v.punch * 0.2), big * (1 + v.punch * 0.22));
+        v.body.material.color.copy(BODY_COLOR).lerp(FLASH_COLOR, v.punch);
         v.g.rotation.y = Math.atan2(camera.position.x - enemy.x, camera.position.z - enemy.z);
         v.eyes.forEach((e) => { e.scale.y = 0.25 + ratio * 0.9; });
         v.bar.quaternion.copy(camera.quaternion).premultiply(v.g.quaternion.clone().invert());
@@ -97,11 +111,13 @@ export function createEnemyViews(scene, makeToon, groundAt) {
         const t = transient[i]; t.life -= dt;
         if (t.kind === 'bit') { t.vy -= GRAVITY * dt; t.mesh.position.x += t.vx * dt; t.mesh.position.y += t.vy * dt; t.mesh.position.z += t.vz * dt; t.mesh.scale.setScalar(Math.max(t.life / BURST_LIFE, 0.01)); }
         else if (t.kind === 'beam') { t.mesh.material.opacity = Math.max(t.life / 0.55, 0) * 0.8; t.mesh.scale.x = t.mesh.scale.z = 0.6 + (1 - t.life / 0.55) * 0.8; }
-        else if (t.kind === 'ring') { const k = THREE.MathUtils.clamp(1 - t.life / RING_LIFE, 0, 1); t.mesh.scale.setScalar(Math.max(k * BATTLE.orbSplash, 0.01)); t.mesh.material.opacity = (1 - k) * 0.85; }
+        else if (t.kind === 'ring') { const k = THREE.MathUtils.clamp(1 - t.life / RING_LIFE, 0, 1); t.mesh.scale.setScalar(Math.max(k * BATTLE.orbSplash * t.size, 0.01)); t.mesh.material.opacity = (1 - k) * 0.85; }
         else if (t.kind === 'leaf') { const k = 1 - Math.max(t.life, 0) / t.total; t.mesh.position.set(t.x0 + (t.x1 - t.x0) * k, t.y0 + (t.y1 - t.y0) * k + Math.sin(k * Math.PI) * 0.5, t.z0 + (t.z1 - t.z0) * k); t.mesh.rotation.y += dt * 20; }
         if (t.life <= 0) {
-          root.remove(t.mesh);
-          if (t.ownMaterial) t.mesh.material.dispose();
+          if (t.kind === 'leaf' && !t.silent) burst(t.x1, t.y1, t.z1, 4, [leafMat], 1.6);     // la cham dich: toe may manh la
+          if (t.kind === 'boom') { burst(t.x, t.y, t.z, 26, [orbMat, bitMats[1], bitMats[2]], 5); this.beam(t.target, 2); }
+          if (t.mesh) root.remove(t.mesh);
+          if (t.ownMaterial && t.mesh) t.mesh.material.dispose();
           if (t.ownGeometry) t.mesh.geometry.dispose();
           transient.splice(i, 1);
         }
