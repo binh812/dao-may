@@ -29,6 +29,10 @@ export function createSfx() {
     glide: () => note({ from: 500, to: 420, dur: 0.25, type: 'sine', gain: 0.07 }),
     seed: () => chord([1319, 1760], 0.05, { dur: 0.14, type: 'sine', gain: 0.16 }),
     buy: () => chord([784, 988, 1319, 1568], 0.07, { dur: 0.26, type: 'triangle', gain: 0.16 }),
+    /** Tieng buoc chan theo mat nen: 'grass' em va tram, 'path' (dat nen) gon va cao hon. Hai chan hoi lech giong nhau cho do deu. */
+    step: (surface, left) => (surface === 'path'
+      ? note({ from: left ? 250 : 225, to: 120, dur: 0.05, type: 'triangle', gain: 0.07 })
+      : note({ from: left ? 120 : 105, to: 60, dur: 0.07, type: 'sine', gain: 0.09 })),
     splash: () => { note({ from: 760, to: 300, dur: 0.07, type: 'sine', gain: 0.07 }); note({ from: 520, to: 240, dur: 0.09, type: 'triangle', gain: 0.05, delay: 0.05 }); },
     leaf: () => note({ from: 900, to: 500, dur: 0.09, type: 'triangle', gain: 0.12 }),
     pebble: () => note({ from: 1500, to: 900, dur: 0.05, type: 'triangle', gain: 0.09 }),

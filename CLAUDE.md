@@ -33,7 +33,7 @@ code, không asset ngoài. Trả lời anh Ben bằng tiếng Việt có dấu. 
   `actors/outfit.js` các món gắn sẵn trên Mầm (id khớp `CATALOG`). Quầy hàng chỉ có ở thế giới đặt `realm.shop`; tủ đồ dùng chung mọi thế giới.
 - `game/mill-core.js` luật cân bột ở cối xay (thuần, có test): mỗi chuyến đi một mẻ là MỘT câu đố cân thăng bằng, xong mẻ được 1 hạt công + 1–3 hạt theo cách giải;
   hạt thưởng lưu ở `daomay.bonus.v1` và cộng vào số dư đổi đồ. Việc làm tại chỗ (quầy hàng, cối xay) dùng chung một nút của `hud.setAction`;
-  thế giới khai báo chỗ bằng `realm.shop`, `realm.mill`, và báo `realm.wading` để phần chơi phát tiếng nước.
+  thế giới khai báo chỗ bằng `realm.shop`, `realm.mill`, và báo `realm.wading` để phần chơi phát tiếng nước, `realm.footing(x, z)` ('path' | 'grass') để tiếng bước chân đổi theo mặt nền.
 - `game/bag-core.js` luật túi đồ (thuần, có test): bốn vật liệu (cánh hoa, nấm, gỗ, đá pha lê), đổi ở quầy hàng theo tỉ lệ cố định lấy Hạt Nắng.
   `game/loot.js` nối túi đồ với vật hái lượm (`realm.gatherables`, mọc lại mỗi chuyến; hình ở `game/gather-views.js`), vật liệu Bóng Lặng để lại,
   và Hạt Nắng mọc lại (từ chuyến thứ hai của lần chơi, 6 hạt đã nhặt mọc lại, nhặt lần nữa tính là hạt thưởng). `ui/bag.js` nút và bảng túi đồ.

@@ -7,7 +7,7 @@ import '../core/stage.js';
 import '../world/materials.js';
 import { SUN_DIR, U, camera, controls, scene, sun } from '../core/stage.js';
 import { chr } from '../actors/mam.js';
-import { CAMP_SPOTS, EDGE, LAKE_LEVEL, MILL, SHOP, createTerrain, groundAt, lakeShape } from '../valley/terrain.js';
+import { CAMP_SPOTS, EDGE, LAKE_LEVEL, MILL, SHOP, createTerrain, groundAt, lakeShape, pathDistance } from '../valley/terrain.js';
 import { createSky } from '../valley/sky.js';
 import { createGrass } from '../valley/grass.js';
 import { createScenery } from '../valley/scenery.js';
@@ -32,6 +32,7 @@ const CAMP_RING = [[10, 4], [-9, 8], [5, -12], [-13, -6], [15, -8], [-4, 14], [1
 const campFor = (wave) => CAMPS[(wave - 1) % CAMPS.length];
 const MASSIF_HIDDEN_OVERCAST = 0.6;
 const MILL_REACH = 9.5, MILL_BOOST_FADE = 5;   // khoang cach de xay bot; coi xay quay nhanh roi cham dan trong ngan nay giay
+const PATH_HALF_WIDTH = 1.6;   // nua be rong duong mon (m) tinh la dang di tren dat nen
 const WADE_SHAPE = 1.05, WADE_ABOVE = 0.15, RIPPLE_MIN_SPEED = 1.5;
 const MIST_BELOW_PLAYER = 5; // suong dong o cho trung, thap hon cho nguoi choi dung
 
@@ -64,6 +65,8 @@ export default {
   playground: { x: -6, z: -19, yaw: 0.5, reach: 5.5 },   // chieu o an quan canh Cay Tam, ngay cho be bat dau
   mill: { x: MILL.x, z: MILL.z, reach: MILL_REACH },   // xay bot: giai bai lay Hat Nang (moi chuyen mot me)
   millBoost: 0,                        // phan choi dat len khi xay xong me bot
+  /** Mat nen duoi chan (de phat tieng buoc chan): 'path' tren duong mon, con lai la 'grass'. */
+  footing: (x, z) => (pathDistance(x, z) < PATH_HALF_WIDTH ? 'path' : 'grass'),
   wading: false,                       // Mam dang loi trong ho (phan choi dung de phat tieng nuoc)
   gatherables: gatherSpots(groundAt, scenery.colliders),   // hoa, nam, go, da pha le quanh cac trai; moc lai moi chuyen
   collectibles: seedSpots(groundAt, scenery.colliders),   // Hat Nang rai doc duong, quanh ho va coi xay

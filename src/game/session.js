@@ -34,7 +34,7 @@ const OANQUAN_REWARD = { win: 3, draw: 2, lose: 1 };   // Hat Nang cho mot van c
 const STREAK_GAP = 1.6, POP_HEIGHT = 1.7;   // qua ngan nay giay khong trung don thi chuoi lien hoan ve 0; do cao chu bay tren dau dich
 const CHARGE_PRAISE = { first: 'Giỏi quá!', later: 'Bé làm được rồi!', shown: 'Lần sau bé sẽ tự làm được!' };
 const MAX_START_WAVE = 99;
-const MILL_SPIN_BOOST = 5, SPLASH_EVERY = 0.34, SPLASH_MIN_SPEED = 1.5;   // coi xay quay nhanh sau me bot; nhip tieng nuoc khi loi
+const MILL_SPIN_BOOST = 5, SPLASH_EVERY = 0.34, SPLASH_MIN_SPEED = 1.5, STEP_LENGTH = 1.55;   // STEP_LENGTH: quang duong (m) giua hai tieng buoc chan   // coi xay quay nhanh sau me bot; nhip tieng nuoc khi loi
 const SHOP_HINT_DELAY_MS = 3600;
 const GUIDE_FROM = 25; // xa hon khoang nay (m) thi hien mui ten chi huong
 
@@ -88,7 +88,7 @@ export function createSession(play) {
     onBuy: (id) => { if (!buy(wardrobe, id, collected()).ok) return; const saved = wardrobeChanged(); refreshSeeds(); sfx.buy(); if (saved) hud.toast('Mầm có đồ mới rồi! Xinh quá!', 2200); },
     onWear: (id) => { if (toggleWear(wardrobe, id)) wardrobeChanged(); },
   }) : null;
-  let splashWait = 0;
+  let splashWait = 0, stepLeft = 0, leftFoot = false;
   let shopHinted = wardrobe.owned.size > 0;   // da tung doi do thi be biet quay hang roi
   const near = (spot) => Boolean(spot) && Math.hypot(player.x - spot.x, player.z - spot.z) < spot.reach;
   const busy = () => notebook.isOpen() || state.asking || Boolean(shopPanel?.isOpen()) || loot.isOpen();
@@ -311,6 +311,9 @@ export function createSession(play) {
       if (loot.update(state.time, Boolean(state.profile) && !busy())) hintShop();
       hud.setAction(actionLabel());
       // tieng nuoc khi Mam loi (the gioi bao qua realm.wading)
+      // tieng buoc chan theo quang duong da di va mat nen (the gioi bao qua realm.footing); dang loi nuoc thi da co tieng nuoc
+      const pace = Math.hypot(player.vx, player.vz);
+      if (player.grounded && pace > SPLASH_MIN_SPEED && !realm.wading && !busy()) { stepLeft -= pace * dt; if (stepLeft <= 0) { stepLeft = STEP_LENGTH; leftFoot = !leftFoot; sfx.step(realm.footing ? realm.footing(player.x, player.z) : 'grass', leftFoot); } } else stepLeft = 0;
       if (realm.wading && player.grounded && Math.hypot(player.vx, player.vz) > SPLASH_MIN_SPEED && !busy()) { splashWait -= dt; if (splashWait <= 0) { splashWait = SPLASH_EVERY; sfx.splash(); } } else splashWait = 0;
       const b = state.battle; if (!b) return;
       if (player.events.jumped) sfx.jump();
