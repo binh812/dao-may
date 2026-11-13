@@ -10,7 +10,7 @@ function seeded(seed) {
   return () => { a = (a + 0x6d2b79f5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
 }
 function each(kind, check) {
-  for (const grade of GRADES) { const rng = seeded(grade * 7919 + kind.length); for (let i = 0; i < ROUNDS; i++) check(makePuzzle(kind, grade, rng), grade); }
+  for (const grade of GRADES) { const rng = seeded(grade * 7919 + PUZZLE_KINDS.indexOf(kind) * 104729); for (let i = 0; i < ROUNDS; i++) check(makePuzzle(kind, grade, rng), grade); }
 }
 
 test('every puzzle of every kind starts unsolved and its offered solution solves it', () => {
@@ -30,7 +30,8 @@ test('balance: weights are positive, the answer uses each tray weight at most on
     assert.equal(new Set(p.answer).size, p.answer.length);
     assert.equal(p.answer.reduce((sum, i) => sum + p.tray[i], 0), total);
     assert.ok(total <= LIMIT[grade], `lop ${grade}: tong ${total}`);
-    assert.equal(p.left.length, grade === 1 ? 1 : p.left.length);
+    assert.ok(!p.tray.includes(total), `mot qua can ${total} la xong, be khong phai cong`);
+    assert.ok(p.answer.length >= 2);
     assert.ok(grade === 1 ? p.left.length === 1 : p.left.length <= 2);
     // bo bot mot qua can khoi loi giai thi can phai lech
     const state = solutionState(p); state.on[p.answer[0]] = false;
@@ -113,7 +114,7 @@ test('hints guide without giving the answer away', () => {
   for (const kind of PUZZLE_KINDS) each(kind, (p) => {
     const hint = hintText(p);
     assert.ok(hint.length > 15);
-    if (kind === 'balance') for (const i of p.answer) assert.ok(!new RegExp(`(^|\\D)${p.tray[i]}(\\D|$)`).test(hint));
+    if (kind === 'balance') assert.ok(!/\d/.test(hint), 'goi y can khong duoc neu con so nao');
     if (kind === 'pattern' && p.numeric) for (const cell of p.blanks) assert.ok(!hint.includes(String(p.cells[cell])));
   });
 });

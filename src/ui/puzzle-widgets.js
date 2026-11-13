@@ -26,7 +26,7 @@ function balance(p, act) {
   const foot = node('div', 'position:absolute;left:50%;bottom:0;width:70px;height:8px;margin-left:-35px;border-radius:4px;background:#8f6c42;');
   const beam = node('div', `position:absolute;left:50%;top:38px;width:${BEAM_HALF * 2}px;height:8px;margin-left:-${BEAM_HALF}px;border-radius:4px;background:#8f6c42;transition:transform .45s cubic-bezier(.3,1.5,.5,1);`);
   const PAN = 'position:absolute;top:44px;width:100px;min-height:46px;padding:4px 3px;box-sizing:border-box;border-radius:6px 6px 22px 22px;background:#f1e3c8;border-bottom:5px solid #b08a5a;display:flex;flex-wrap:nowrap;gap:3px;justify-content:center;align-items:flex-end;transition:transform .45s cubic-bezier(.3,1.5,.5,1);';
-  const leftPan = node('div', PAN + 'left:0;'), rightPan = node('div', PAN + 'right:0;');
+  const leftPan = node('div', PAN + 'left:0;'), rightPan = node('div', PAN + 'right:0;flex-wrap:wrap;');   // nhieu qua can thi xep hai hang
   for (const weight of p.left) leftPan.append(node('div', `min-width:32px;height:36px;padding:0 3px;border-radius:9px 9px 6px 6px;background:#e9d6ad;border:2px solid #b89b62;display:grid;place-items:center;font:800 17px system-ui,sans-serif;color:${INK};`, String(weight)));
   scale.append(post, foot, beam, leftPan, rightPan);
   const tray = node('div', 'display:flex;flex-wrap:wrap;gap:8px;justify-content:center;');
@@ -51,7 +51,7 @@ const LITRE_PX = 13, JUG_WIDTH = 70;
 function pour(p, act) {
   const el = node('div', 'display:flex;gap:10px;justify-content:center;align-items:flex-end;');
   const move = (name) => () => act((s) => pourMove(p, s, name));
-  const SMALL = 'min-height:40px;padding:0 8px;border-radius:12px;background:#a9dcff;font-weight:700;font-size:13px;';
+  const SMALL = 'min-height:44px;padding:0 8px;border-radius:12px;background:#a9dcff;font-weight:700;font-size:13px;';
   function jug(cap, fillMove, emptyMove) {
     const box = node('div', 'display:grid;gap:5px;justify-items:center;');
     const glass = node('div', `position:relative;width:${JUG_WIDTH}px;height:${cap * LITRE_PX + 8}px;border:3px solid #7fa7c4;border-top:0;border-radius:4px 4px 16px 16px;overflow:hidden;background:rgba(255,255,255,.7);`);

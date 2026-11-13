@@ -19,8 +19,13 @@ function shuffled(rng, list) {
 const TRAYS = { 1: [1, 2, 3, 4, 5], 2: [1, 2, 3, 5, 8, 10], 3: [2, 3, 5, 10, 15, 20] };
 
 function makeBalance(grade, rng) {
-  const tray = TRAYS[grade], order = shuffled(rng, tray.map((_, i) => i));
-  const answer = order.slice(0, int(rng, 2, 3)).sort((a, b) => a - b), total = answer.reduce((sum, i) => sum + tray[i], 0);
+  const tray = TRAYS[grade];
+  let answer, total;
+  // tong khong duoc trung mot qua can co san, keo be chi cham mot lan la xong ma khong phai cong
+  do {
+    answer = shuffled(rng, tray.map((_, i) => i)).slice(0, int(rng, 2, 3)).sort((a, b) => a - b);
+    total = answer.reduce((sum, i) => sum + tray[i], 0);
+  } while (tray.includes(total));
   // lop 1 mot bao; lop 2, 3 hai bao de be phai cong truoc
   const first = grade === 1 ? total : int(rng, 1, total - 1), left = first === total ? [total] : [first, total - first];
   return { left, tray: [...tray], answer, prompt: 'Đặt quả cân lên đĩa bên phải cho cân thăng bằng.' };

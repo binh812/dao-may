@@ -53,7 +53,6 @@ function saveProfile(profile, hud) {
   catch (error) { console.warn('Khong luu duoc ho so:', error); hud.toast('Máy không lưu được tiến độ lần này.', 2600); }
 }
 
-/** Cho dung hop le cho Bong Lang: co dat, khong nam trong vat can, khong sat cho Mam dang dung. */
 /** Hat Nang cua the gioi nay (neu co): doc cac hat da nhat tu lan choi truoc; khong doc duoc thi coi nhu chua nhat. */
 function loadSeeds() {
   if (!realm.collectibles?.length) return null;
@@ -87,6 +86,7 @@ function eraseProgress() {
   for (const key of [SAVE_KEY, WARDROBE_KEY, BONUS_KEY, POUCH_KEY, ...seedKeys]) localStorage.removeItem(key);
 }
 
+/** Cho dung hop le cho Bong Lang: co dat, khong nam trong vat can, khong sat cho Mam dang dung. */
 function spawnEnemies(wave, player, rng) {
   const spots = realm.spotsForWave ? realm.spotsForWave(wave) : realm.spawnSpots; // the gioi rong: moi chuyen o mot noi
   const valid = spots.filter(([x, z]) => Number.isFinite(groundAt(x, z)) && realm.colliders.every((c) => Math.hypot(x - c.x, z - c.z) > c.r + 1));
@@ -255,7 +255,7 @@ export function createSession(play) {
   function useSkill() {
     if (!state.battle || busy()) return;
     if (state.battle.pouch === 0) { chargeUp(); return; }
-    if (state.cleared) return;
+    if (state.cleared) { hud.toast('Bóng Lặng thức hết rồi! Bé giữ viên nắng cho chuyến sau nhé.'); return; }
     const thrown = throwOrb(state.battle, player);
     if (!thrown) { hud.toast('Lại gần một Bóng Lặng rồi hãy ném nhé!'); return; }
     views.orb(player, thrown.target); sfx.orb(); savePouch();
