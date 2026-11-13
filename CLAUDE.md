@@ -24,6 +24,7 @@ code, không asset ngoài. Trả lời anh Ben bằng tiếng Việt có dấu. 
   nhân vật và máy quay. `world/colliders.js` cấp vật cản và mặt đất cho game.
 - `learn/` — hệ học tập, toàn bộ là luật thuần có test: `questions.js` (chương trình lớp 1–3, sinh bài kèm gợi ý và lời giải),
   `adaptive.js` (hồ sơ, xếp lớp, chọn bài theo sức, bài đã sai), `parent-gate.js` (cổng phụ huynh).
+- `game/collect-core.js` luật nhặt Hạt Nắng (thuần, có test; thế giới nào đặt `realm.collectibles` thì có), `game/seed-views.js` phần nhìn.
 - `game/battle-core.js` luật đối đầu (thuần, có test); `game/session.js` nối trận đấu, học tập, giao diện, âm thanh;
   `game/enemy-views.js`, `game/heart-tree.js`, `game/sfx.js` là phần nhìn và nghe. `ui/hud.js`, `ui/question-card.js`, `ui/notebook.js`.
 - `actors/` nhân vật (`mam.js`, dùng chung) và sinh vật của đảo; `fx/` hạt (mưa, tuyết, lá) và `weather.js` (preset + nội suy);
@@ -36,7 +37,8 @@ code, không asset ngoài. Trả lời anh Ben bằng tiếng Việt có dấu. 
   - `worlds/valley.js` — thung lũng rộng 2,4 km kiểu tranh vẽ; module ở `valley/`: `terrain.js` (hàm độ cao, lưới 10 m, bản đồ
     độ cao cho shader, lớp vẽ mặt đất: ô ruộng, bờ rào, đường mòn; `PATH_GLSL` và `pathDistance` cùng một công thức), `grass.js`
     (cỏ và hoa chỉ sống trong ô 72 m quanh người chơi, quấn theo vị trí), `scenery.js` (rừng thông instanced, cối xay, núi tuyết xa),
-    `trees.js` (cây tán lá instanced dọc bờ rào), `village.js` (làng, nhà trại), `life.js` (bướm, đàn chim, cừu), `sky.js` (mây tích
+    `trees.js` (cây tán lá instanced dọc bờ rào), `village.js` (làng, nhà trại), `life.js` (bướm, đàn chim, cừu), `water.js` (hồ: mặt nước vẽ, lá súng, vịt; Mầm lội nước nông vì `groundAt` kê lên sát mặt hồ),
+    `seeds.js` (chỗ đặt Hạt Nắng, id cố định vì tiến độ lưu theo id), `sky.js` (mây tích
     nướng một lần lúc mở game: đi tia qua lớp mây 3D, ghi độ sáng/độ dày vào ảnh toàn cảnh, lúc vẽ cắt ngưỡng thành mảng màu).
 - **Thứ tự `import` trong `worlds/island.js` là thứ tự dựng cảnh**: các module của đảo dùng chung một bộ sinh số ngẫu nhiên có
   seed, đổi thứ tự là đổi cả cảnh. Module dùng chung không được gọi `rnd()` của `core/util.js` (hạt mưa có bộ sinh riêng).
@@ -62,6 +64,7 @@ Danh sách trong `.pb-dev.json` → `protected`. Chỉ đổi khi anh Ben duyệ
 | Luật di chuyển của Mầm (12 tình huống) | `tests/player-core.test.mjs` — hiện chỉ chạy trên CI GitHub và khi gọi tay, chưa nằm trong cổng Stop | M1, 12/11/2026 |
 | Bài tập phải đúng: đáp án tính lại độc lập, 4 lựa chọn khác nhau, gợi ý không lộ đáp án, lời giải kết bằng "Đáp số" | `tests/learn.test.mjs` (400 bài mỗi kỹ năng) | M2, 12/11/2026 |
 | Sai không mất tim; một đòn ≤ 40% tim; ngã thì tỉnh lại và địch chậm dần | `tests/battle-core.test.mjs` | quy tắc kids-games |
+| Hạt Nắng: chạm mới nhặt, không nhặt hai lần, nhớ qua các lần chơi | `tests/collect-core.test.mjs` | 13/11/2026 |
 | Trang phải mở được không lỗi runtime | `scripts/smoke.mjs` | shader treo lúc biên dịch, 12/11/2026 |
 | Shader không biên dịch được phải làm cổng đỏ | `renderer.debug.onShaderError` trong `core/stage.js` đưa lỗi lên hộp lỗi của trang, `smoke.mjs` đọc hộp đó | hoa thung lũng vắng mặt vì biến tên `patch`, 13/11/2026 |
 

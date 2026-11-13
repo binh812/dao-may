@@ -13,8 +13,11 @@ import { createQuestionCard } from '../ui/question-card.js';
 import { createNotebook } from '../ui/notebook.js';
 import { createHeartTree } from './heart-tree.js';
 import { createSfx } from './sfx.js';
+import { createCollection, isMilestone, stepCollection, takenIds } from './collect-core.js';
+import { createSeedViews } from './seed-views.js';
 
 const SAVE_KEY = 'daomay.profile.v1', MUTE_KEY = 'daomay.muted';
+const SEED_KEY = `daomay.seeds.${realm.name}.v1`;   // Hat Nang da nhat, luu rieng cho tung the gioi
 const groundAt = (x, z) => realm.groundAt(x, z);
 const WAVE = { firstCount: 3, maxCount: 5, firstWake: 8, wakeStep: 2, maxWake: 16 };
 const MAX_START_WAVE = 99;
@@ -41,6 +44,17 @@ function saveProfile(profile, hud) {
 }
 
 /** Cho dung hop le cho Bong Lang: co dat, khong nam trong vat can, khong sat cho Mam dang dung. */
+/** Hat Nang cua the gioi nay (neu co): doc cac hat da nhat tu lan choi truoc; khong doc duoc thi coi nhu chua nhat. */
+function loadSeeds() {
+  if (!realm.collectibles?.length) return null;
+  let saved = [];
+  try { const raw = JSON.parse(localStorage.getItem(SEED_KEY) ?? '[]'); if (Array.isArray(raw)) saved = raw.filter((id) => typeof id === 'string'); }
+  catch (error) { console.warn('Khong doc duoc Hat Nang da nhat:', error); }
+  // id da luu ma lan nay khong co (cho dat bi vat can chiem o muc do hoa nay) van duoc giu lai khi ghi, de lan sau khong mat
+  const known = new Set(realm.collectibles.map((item) => item.id));
+  return { collection: createCollection(realm.collectibles, saved), parked: saved.filter((id) => !known.has(id)) };
+}
+
 function spawnEnemies(wave, player, rng) {
   const spots = realm.spotsForWave ? realm.spotsForWave(wave) : realm.spawnSpots; // the gioi rong: moi chuyen o mot noi
   const valid = spots.filter(([x, z]) => Number.isFinite(groundAt(x, z)) && realm.colliders.every((c) => Math.hypot(x - c.x, z - c.z) > c.r + 1));
@@ -62,11 +76,13 @@ export function createSession(play) {
   const notebook = createNotebook({
     getProfile: () => state.profile,
     changeGrade: (grade) => { changeGrade(state.profile, grade); saveProfile(state.profile, hud); refreshHud(); },
-    resetProgress: () => { try { localStorage.removeItem(SAVE_KEY); } catch (error) { console.warn('Khong xoa duoc ho so:', error); } location.reload(); },
+    resetProgress: () => { try { localStorage.removeItem(SAVE_KEY); localStorage.removeItem(SEED_KEY); } catch (error) { console.warn('Khong xoa duoc ho so:', error); } location.reload(); },
     isMuted: () => sfx.isMuted(),
     setMuted: (value) => { sfx.setMuted(value); try { localStorage.setItem(MUTE_KEY, value ? '1' : '0'); } catch (error) { console.warn('Khong luu duoc cai dat am thanh:', error); } },
   });
   const guideForward = new THREE.Vector3();
+  const seedSave = loadSeeds(), seeds = seedSave?.collection ?? null, seedViews = seeds ? createSeedViews(scene, seeds) : null;
+  if (seeds) hud.setSeeds(seeds.count, seeds.total);
   // ?wave=N bat dau tu chuyen thu N (de thu va chup anh kiem tra cac diem xa)
   const askedWave = Math.floor(Number(new URLSearchParams(location.search).get('wave')));
   const firstWave = Number.isFinite(askedWave) && askedWave >= 1 ? Math.min(askedWave, MAX_START_WAVE) : 1;
@@ -104,6 +120,15 @@ export function createSession(play) {
     // goc giua huong nhin cua may quay va huong toi muc tieu, tren mat phang ngang; duong la lech sang phai man hinh
     const angle = Math.atan2(guideForward.x * dz - guideForward.z * dx, guideForward.x * dx + guideForward.z * dz);
     hud.setGuide(angle, dist);
+  }
+
+  function collectSeeds() {
+    stepCollection(seeds, player);
+    if (seeds.events.picked.length === 0) return;
+    sfx.seed(); hud.setSeeds(seeds.count, seeds.total);
+    try { localStorage.setItem(SEED_KEY, JSON.stringify([...takenIds(seeds), ...seedSave.parked])); } catch (error) { console.warn('Khong luu duoc Hat Nang:', error); }
+    if (seeds.count === seeds.total) hud.toast('Bé đã nhặt hết Hạt Nắng của thung lũng! Giỏi quá!', 3200);
+    else if (isMilestone(seeds)) hud.toast(`${seeds.count} Hạt Nắng rồi! Còn ${seeds.total - seeds.count} hạt đang chờ bé.`, 2600);
   }
 
   function useLeaf() {
@@ -153,6 +178,10 @@ export function createSession(play) {
     update(dt) {
       state.time += dt;
       tree.update(dt, state.time);
+      if (seeds) {
+        if (state.profile && !notebook.isOpen() && !state.asking) collectSeeds();
+        seedViews.update(state.time);
+      }
       const b = state.battle; if (!b) return;
       if (player.events.jumped) sfx.jump();
       if (player.events.landed) sfx.land();

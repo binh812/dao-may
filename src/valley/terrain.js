@@ -10,6 +10,7 @@ export const EDGE = 1050;                      // ban kinh vung duoc di
 export const WALL = 1e6;                       // do cao tra ve cho vung khong duoc vao (nguoi choi bi chan lai)
 export const VILLAGE = { x: 360, z: -280, r: 85 };
 export const MILL = { x: 470, z: -150 };
+export const LAKE = { x: 215, z: -305, r: 46, depth: 3.4, below: 0.55, wade: 0.28 };   // ho: tam, ban kinh, do sau long ho, mat nuoc thap hon bo, do sau Mam loi duoc
 // Noi Bong Lang ngu o tung chuyen di [x, z]; canh vat phai chua trong quanh cac diem nay (CAMP_CLEAR)
 export const CAMP_SPOTS = [[0, 0], [95, -70], [205, -150], [292, -208], [440, -185], [150, 185]];
 export const CAMP_CLEAR = 21;
@@ -34,11 +35,30 @@ function rawHeight(x, z) {
 }
 const VILLAGE_LEVEL = rawHeight(VILLAGE.x, VILLAGE.z), MILL_LEVEL = rawHeight(MILL.x, MILL.z) + 3;
 
-/** Do cao giai tich tai (x, z); dung de dat vat the. Mat dat nguoi choi dung la groundAt (khop voi luoi). */
-export function heightAt(x, z) {
+function dryHeight(x, z) {
   let h = rawHeight(x, z);
   h = lerp(h, VILLAGE_LEVEL, smooth(VILLAGE.r * 1.6, VILLAGE.r * 0.7, Math.hypot(x - VILLAGE.x, z - VILLAGE.z)));
   return lerp(h, MILL_LEVEL, smooth(40, 14, Math.hypot(x - MILL.x, z - MILL.z)));
+}
+const LAKE_SHORE = dryHeight(LAKE.x, LAKE.z);
+export const LAKE_LEVEL = LAKE_SHORE - LAKE.below;         // cao do mat nuoc
+const LAKE_SHELF = 1.3, LAKE_BLEND = 2.0;                  // them phang toi lakeShape = LAKE_SHELF, hoa vao dia hinh toi LAKE_BLEND
+
+/** Vi tri so voi bo ho: < 1 la trong long ho, 1 la mep, > 1 la ngoai (bo ho luon song nhe, khong tron deu). */
+export function lakeShape(x, z) {
+  const dx = x - LAKE.x, dz = z - LAKE.z, angle = Math.atan2(dz, dx);
+  return Math.hypot(dx, dz) / (LAKE.r * (1 + 0.16 * Math.sin(angle * 3 + 1) + 0.08 * Math.sin(angle * 5 + 2)));
+}
+/** Co nam trong ho hoac sat bo khong (de canh vat tranh ra). */
+export function nearLake(x, z, margin = 1.3) { return lakeShape(x, z) < margin; }
+
+/** Do cao giai tich tai (x, z); dung de dat vat the. Mat dat nguoi choi dung la groundAt (khop voi luoi). */
+export function heightAt(x, z) {
+  const shape = lakeShape(x, z);
+  if (shape > LAKE_BLEND) return dryHeight(x, z);
+  // Quanh ho co mot them dat phang ngang cao do bo, rong hon mot o luoi (10 m): nho vay moi dinh luoi ngoai mep nuoc deu cao hon
+  // mat ho, bo ho khong co vach vo hinh va mat nuoc khong lo lung. Ngoai them thi hoa dan vao dia hinh tu nhien.
+  return lerp(dryHeight(x, z), LAKE_SHORE, smooth(LAKE_BLEND, LAKE_SHELF, shape)) - LAKE.depth * smooth(0.95, 0.45, shape);
 }
 
 /** Khoang cach (m) tu (x, z) toi duong mon gan nhat. Shader dung cung cong thuc (PATH_GLSL). */
@@ -68,7 +88,7 @@ export function fieldCoords(x, z) {
 /** 0..1: muc do "la ruong" tai (x, z): vanh quanh lang, khong tinh rung. */
 export function fieldAmount(x, z) {
   const dv = Math.hypot(x - VILLAGE.x, z - VILLAGE.z);
-  return smooth(FIELD_NEAR[0], FIELD_NEAR[1], dv) * smooth(FIELD_FAR[0], FIELD_FAR[1], dv) * (1 - smooth(0.5, 0.6, forestMask(x, z)));
+  return smooth(FIELD_NEAR[0], FIELD_NEAR[1], dv) * smooth(FIELD_FAR[0], FIELD_FAR[1], dv) * (1 - smooth(0.5, 0.6, forestMask(x, z))) * smooth(1.05, 1.35, lakeShape(x, z));
 }
 
 /** 0..1: cho nao la rung thong. Tranh doi co luc dau va lang. */
@@ -111,6 +131,12 @@ const HEIGHTS = near.heights;
 /** Mat dat nguoi choi dung: noi suy dung theo tam giac cua luoi; ngoai EDGE la tuong chan. */
 export function groundAt(x, z) {
   if (Math.hypot(x, z) > EDGE) return WALL;
+  const bed = surfaceAt(x, z);
+  return lakeShape(x, z) < 1.1 ? Math.max(bed, LAKE_LEVEL - LAKE.wade) : bed;   // trong ho Mam loi nuoc nong, khong chim
+}
+
+/** Be mat luoi dia hinh tai (x, z), ke ca day ho. */
+export function surfaceAt(x, z) {
   const fx = (x + HALF) / STEP, fz = (z + HALF) / STEP, i = Math.min(Math.floor(fx), CELLS - 1), j = Math.min(Math.floor(fz), CELLS - 1), tx = fx - i, tz = fz - j;
   const a = HEIGHTS[j * ROW + i], b = HEIGHTS[j * ROW + i + 1], c = HEIGHTS[(j + 1) * ROW + i], d = HEIGHTS[(j + 1) * ROW + i + 1];
   return tx + tz <= 1 ? a + (b - a) * tx + (c - a) * tz : d + (c - d) * (1 - tx) + (b - d) * (1 - tz);

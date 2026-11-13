@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { U } from '../core/stage.js';
 import { TRS, rnd } from '../core/util.js';
 import { COMMON, FRAG_TAIL, instanced, sharedUniforms } from './grass.js';
-import { MILL, VILLAGE, fieldAmount, forestMask, heightAt, nearCamp, pathDistance } from './terrain.js';
+import { MILL, VILLAGE, fieldAmount, forestMask, heightAt, nearCamp, nearLake, pathDistance } from './terrain.js';
 
 const BUTTERFLIES = 44, BUTTERFLY_TILE = 46;        // buom song trong o vuong canh nay quanh nguoi choi (quan lai nhu co)
 const FLOCKS = [                                    // dan chim: tam vong luon, ban kinh, do cao so voi mat dat, so con, toc do goc
@@ -89,7 +89,7 @@ function flocksOfSheep(B) {
     if (forestMask(cx, cz) > 0.5 || fieldAmount(cx, cz) > 0.7 && rnd() < 0.5 || Math.hypot(cx, cz) < SHEEP_CLEAR.spawn) continue;
     for (let i = 0, count = SHEEP_PER_FLOCK[0] + Math.floor(rnd() * (SHEEP_PER_FLOCK[1] - SHEEP_PER_FLOCK[0] + 1)); i < count; i++) {
       const x = cx + (rnd() - .5) * 16, z = cz + (rnd() - .5) * 16, size = 0.85 + rnd() * 0.5;
-      if (nearCamp(x, z) || pathDistance(x, z) < SHEEP_CLEAR.path || Math.hypot(x - VILLAGE.x, z - VILLAGE.z) < SHEEP_CLEAR.village || Math.hypot(x - MILL.x, z - MILL.z) < SHEEP_CLEAR.mill) continue;
+      if (nearCamp(x, z) || nearLake(x, z) || pathDistance(x, z) < SHEEP_CLEAR.path || Math.hypot(x - VILLAGE.x, z - VILLAGE.z) < SHEEP_CLEAR.village || Math.hypot(x - MILL.x, z - MILL.z) < SHEEP_CLEAR.mill) continue;
       if (blocks.some((b) => Math.hypot(b.x - x, b.z - z) < 1.8)) continue;
       sheep(B, x, z, rnd() * Math.PI * 2, size); blocks.push({ x, z, r: 0.6 * size });
     }

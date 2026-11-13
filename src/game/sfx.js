@@ -27,6 +27,7 @@ export function createSfx() {
     jump: () => note({ from: 320, to: 620, dur: 0.16, type: 'triangle' }),
     land: () => note({ from: 150, to: 70, dur: 0.1, type: 'sine', gain: 0.25 }),
     glide: () => note({ from: 500, to: 420, dur: 0.25, type: 'sine', gain: 0.07 }),
+    seed: () => chord([1319, 1760], 0.05, { dur: 0.14, type: 'sine', gain: 0.16 }),
     leaf: () => note({ from: 900, to: 500, dur: 0.09, type: 'triangle', gain: 0.12 }),
     correct: (tier) => chord([523, 659, 784, 1047].slice(0, 2 + Math.min(tier, 2)), 0.07, { dur: 0.22, type: 'triangle' }),
     wrong: () => chord([330, 277], 0.12, { dur: 0.25, type: 'sine', gain: 0.14 }),   // nhe nhang, khong che trach

@@ -64,3 +64,10 @@ Mẫu: `- [ ] <tiêu đề> — Khi <tình huống> thì app phải <kết quả
 - [ ] Mép mây ở mức Thấp/Vừa còn gợn bậc thang (do số bước đi tia ít).
 - [ ] Chưa có nước (sông, hồ), cầu, hàng rào gỗ, người dân; nhà chưa đổ bóng; cừu đứng yên.
 - [ ] Đảo Mây: nếu giữ thì cần mở rộng không gian (anh Ben thấy chật).
+
+## Hồ nước và Hạt Nắng (13/11/2026)
+- Xong: hồ cạnh làng (mặt nước ba tông, bọt bờ, gợn sóng, lá súng, 6 con vịt bơi; Mầm lội được nước nông); 56 Hạt Nắng rải dọc đường mòn, quanh hồ và cối xay, nhặt bằng cách chạm, có bộ đếm, lưu theo từng thế giới (`daomay.seeds.<thế giới>.v1`), xóa cùng "làm lại từ đầu".
+- Kiểm chứng: 69 test xanh (6 test mới cho luật nhặt); cổng đầy đủ xanh; ảnh chụp bờ hồ ngày và trong hồ ban đêm đã tự xem.
+- [ ] Hạt Nắng mới chỉ để đếm và khen; chưa đổi được gì (ý: mở trang phục cho Mầm, làm Cây Tâm nở hoa) — cần anh Ben chọn.
+- [ ] Chưa có tiếng nước, vòng sóng khi Mầm lội; vịt chưa tránh Mầm.
+- [ ] Đảo Mây chưa có Hạt Nắng.

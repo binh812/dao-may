@@ -4,7 +4,8 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { MATS, toon } from '../world/materials.js';
 import { Q } from '../core/quality.js';
 import { Builder, C, TRS, clamp, fbm, noise, rnd, smooth } from '../core/util.js';
-import { EDGE, MILL, forestMask, heightAt } from './terrain.js';
+import { EDGE, MILL, forestMask, heightAt, nearLake } from './terrain.js';
+import { createLake } from './water.js';
 import { createTrees } from './trees.js';
 import { createVillage } from './village.js';
 import { createLife } from './life.js';
@@ -20,7 +21,7 @@ function conifers(scene) {
   let n = 0, guard = 0;
   while (n < total && guard++ < total * 40) {
     const a = rnd() * Math.PI * 2, r = 120 + Math.sqrt(rnd()) * (FOREST_REACH - 120), x = Math.cos(a) * r, z = Math.sin(a) * r;
-    if (forestMask(x, z) < 0.56 + rnd() * 0.08) continue;
+    if (forestMask(x, z) < 0.56 + rnd() * 0.08 || nearLake(x, z)) continue;
     const s = 3.6 + rnd() * 2.2;
     _m.compose(_p.set(x, heightAt(x, z) - 0.4, z), _q.setFromEuler(_e.set(0, rnd() * 6.283, 0)), _s.set(s * (0.85 + rnd() * 0.3), s, s * (0.85 + rnd() * 0.3)));
     mesh.setMatrixAt(n, _m); mesh.setColorAt(n, _c.copy(dark).lerp(light, rnd())); n++;
@@ -71,6 +72,8 @@ export function createScenery(scene, grassCenter) {
   const colliders = [...createTrees(scene), ...createVillage(B)];
   const mill = windmill(scene, B), life = createLife(scene, B, grassCenter);
   colliders.push(...life.colliders);
+  const lake = createLake(scene, B);
+  colliders.push(...lake.colliders);
   const group = new THREE.Group(); scene.add(group);
   // nui xa khong chiu suong cua canh (se thanh mang xanh nhat); do mo da pha san vao mau dinh
   const massifs = new THREE.Group(), massifBuilder = new Builder(); scene.add(massifs);
@@ -80,5 +83,5 @@ export function createScenery(scene, grassCenter) {
   B.build(group, MATS, { cast: false });
   group.traverse((o) => { o.frustumCulled = false; });
   colliders.push(mill.block);
-  return { colliders: colliders.filter((c) => Math.hypot(c.x, c.z) < EDGE + 50), rotor: mill.rotor, life, massifs };
+  return { colliders: colliders.filter((c) => Math.hypot(c.x, c.z) < EDGE + 50), rotor: mill.rotor, life, massifs, lake };
 }
