@@ -70,7 +70,7 @@ export function createSession(play) {
   const wardrobe = loadWardrobe(), mill = loadMill(), millSpot = realm.mill ?? null;
   const juice = createJuice(camera), yardSpot = realm.playground ?? null;
   const yard = yardSpot ? createPlayground(scene, toon, groundAt, yardSpot) : null;
-  const villagers = realm.villagers ? createVillagers(scene, realm.villagers, groundAt) : null;
+  const villagers = realm.villagers ? createVillagers(scene, realm.villagers, groundAt, realm.colliders) : null;
   const oanquan = createOanQuan({ onSound: (kind) => { if (kind === 'capture') sfx.correct(1); else if (kind === 'win') sfx.cleared(); else if (kind === 'end') sfx.wrong(); else sfx.pebble(); } });
   const popAt = (enemy, text, style) => juice.pop(enemy.x, groundAt(enemy.x, enemy.z) + POP_HEIGHT * (enemy.big ? 1.5 : 1), enemy.z, text, style);
   let streak = 0, streakAge = 0;

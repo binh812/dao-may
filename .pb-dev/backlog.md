@@ -170,3 +170,10 @@ Mẫu: `- [ ] <tiêu đề> — Khi <tình huống> thì app phải <kết quả
 - [ ] Công chúa: mũ còn sọc ở hai bên, lưng váy có vệt kéo sọc; nhìn gần thấy rõ. Cần bản vẽ mũ riêng hoặc dựng mũ thành khối riêng.
 - [ ] Dân làng chưa là vật cản (Mầm đi xuyên qua được), chưa có hoạt ảnh vẫy tay, chưa có chuyện để kể.
 - [ ] Ba mô hình nhân vật nặng tổng cộng khoảng 2,9 MB trong gói chơi không mạng.
+
+## Mũ công chúa, bạn Nhím, dân làng là vật cản (14/11/2026)
+- Xong: mũ công chúa dựng thành khối riêng (chỏm + vành phẳng, cấu hình `hat` trong `cong-chua.json`); tóc dưới vành lấy màu hàng tóc bên dưới. Hết sọc ở mũ.
+- Xong: bạn Nhím ngồi sau chiếu ô ăn quan, chào khi Mầm lại gần; ba dân làng đều là vật cản.
+- [ ] Lưng váy công chúa vẫn có vệt màu da (trong bản vẽ phía sau, cánh tay che lên váy). Cần bản vẽ tay dang rộng hơn.
+- [ ] Vành mũ dựng nằm ngang, bản vẽ thì nghiêng; Nhím vẫn là bản dựng tay cũ (khối tròn, màu trơn).
+- [ ] Bấm vào Nhím chưa mở bàn ô ăn quan (vẫn dùng nút hành động khi đứng gần chiếu).

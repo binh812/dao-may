@@ -96,5 +96,18 @@
  "body_gap": 0.012,
  "envelope": 3,
  "head_envelope": 5,
- "arm_side": false
+ "arm_side": false,
+ "hat": {
+  "z": 0.925,
+  "brim": 0.165,
+  "crown": 0.08,
+  "top": 0.998,
+  "head_r": 0.1,
+  "from": 0.795,
+  "white_z": 0.985,
+  "band_z": 0.962,
+  "hair_z": 0.8,
+  "fringe_z": 0.905,
+  "fringe_x": 0.06
+ }
 }

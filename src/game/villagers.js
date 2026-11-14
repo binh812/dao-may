@@ -7,14 +7,15 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 const BAKED_GLOW = 0.38;                 // nhu Mam: phan mau cua anh luon hien du o trong bong
 const TURN_RATE = 5;                     // toc do quay mat ve phia Mam (1/giay)
 const NOTICE = 9, GREET = 4.2, FORGET = 12;   // (m) thay Mam thi quay lai; gan hon thi chao; di xa hon muc nay moi chao lai
+const BODY_RADIUS = 0.45;                // (m) dan lang la vat can: Mam di vong qua chu khong xuyen qua
 const BETWEEN_GREETINGS = 4;             // (giay) hai nguoi dung gan nhau khong chao de len nhau: nguoi sau cho nguoi truoc noi xong
 
 function angleDelta(from, to) { return Math.atan2(Math.sin(to - from), Math.cos(to - from)); }
 
 /**
- * spots: [{ id, model, name, height, x, z, yaw, lines: [cau chao...] }]. Tra ve { update(dt, player, canGreet) -> cau chao moi hoac null }.
+ * spots: [{ id, model, name, height, x, z, yaw, radius?, lines: [cau chao...] }]; `colliders` la mang vat can cua the gioi (them vao tai cho). Tra ve { update(dt, player, canGreet) -> cau chao moi hoac null }.
  */
-export function createVillagers(scene, spots, groundAt) {
+export function createVillagers(scene, spots, groundAt, colliders) {
   const people = [], loader = new GLTFLoader();
   let quiet = 0;
   for (const spot of spots) {
@@ -28,11 +29,13 @@ export function createVillagers(scene, spots, groundAt) {
       model.scale.setScalar(spot.height);                // mo hinh nhin ve +Z, cung quy uoc yaw voi Mam
       model.traverse((node) => {
         if (!node.isMesh) return;
-        node.material = new THREE.MeshLambertMaterial({ map: node.material.map, emissiveMap: node.material.map, emissive: new THREE.Color(BAKED_GLOW, BAKED_GLOW, BAKED_GLOW), side: THREE.DoubleSide });
-        if (node.material.map) node.material.map.anisotropy = 4;
+        // mo hinh dung tu ban ve (co anh hoa tiet): vat lieu nhu Mam. Mo hinh to mau tron (ban Nhim) giu vat lieu goc.
+        const painted = (material) => { const map = material.map; if (!map) return material; map.anisotropy = 4; return new THREE.MeshLambertMaterial({ map, emissiveMap: map, emissive: new THREE.Color(BAKED_GLOW, BAKED_GLOW, BAKED_GLOW), side: THREE.DoubleSide }); };
+        node.material = Array.isArray(node.material) ? node.material.map(painted) : painted(node.material);
         node.castShadow = true; node.frustumCulled = false;
       });
       person.root.add(model);
+      colliders.push({ x: spot.x, z: spot.z, r: spot.radius ?? BODY_RADIUS });   // chi thanh vat can khi da hien hinh: nap loi thi khong de lai buc tuong vo hinh
       person.mixer = new THREE.AnimationMixer(model);
       const action = person.mixer.clipAction(idle); action.time = people.indexOf(person) * 0.7; action.play();   // lech nhip de hai nguoi khong tho deu tam tap
     }, undefined, (error) => console.error(`Khong nap duoc mo hinh ${spot.model}:`, error));
