@@ -18,7 +18,7 @@ export function createHud({ onLeaf, onSkill, onAction, worldLabel, onSwitchWorld
   const toastBox = node('div', 'position:fixed;z-index:6;left:50%;top:30%;transform:translateX(-50%);max-width:86vw;padding:10px 16px;border-radius:16px;background:rgba(28,22,34,.62);color:#fff;font:700 17px/1.35 system-ui,sans-serif;text-align:center;pointer-events:none;opacity:0;transition:opacity .35s;');
   const switcher = node('div', PILL + 'right:max(12px,env(safe-area-inset-right));top:calc(max(10px,env(safe-area-inset-top)) + 82px);pointer-events:auto;cursor:pointer;background:rgba(255,250,240,.9);color:#3a2a4a;font-size:13px;', `Sang ${worldLabel}`);
   switcher.addEventListener('pointerdown', (e) => { e.preventDefault(); onSwitchWorld(); });
-  const seeds = node('div', PILL + 'left:max(96px,env(safe-area-inset-left));top:calc(max(10px,env(safe-area-inset-top)) + 40px);display:none;font-size:14px;color:#ffe9a8;');
+  const seeds = node('div', PILL + 'left:calc(max(14px,env(safe-area-inset-left)) + 82px);top:calc(max(10px,env(safe-area-inset-top)) + 40px);display:none;font-size:14px;color:#ffe9a8;');
   const guide = node('div', PILL + 'left:max(14px,env(safe-area-inset-left));bottom:max(18px,env(safe-area-inset-bottom));display:none;font-size:14px;box-sizing:border-box;max-width:calc(100vw - 214px);line-height:1.25;border-radius:18px;');   // khong lan sang nut La
   const arrow = node('span', 'display:inline-block;margin-right:8px;font-size:18px;', '▲'), guideText = node('span', '');
   guide.append(arrow, guideText);
