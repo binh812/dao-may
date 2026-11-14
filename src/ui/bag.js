@@ -2,7 +2,7 @@
 // Chi la giao dien; luat o game/bag-core.js. Nut doi chi bat khi Mam dang dung o quay hang.
 import { node } from './puzzle-widgets.js';
 
-const PILL = 'position:fixed;z-index:3;left:max(96px,env(safe-area-inset-left));top:calc(max(10px,env(safe-area-inset-top)) + 78px);min-height:44px;padding:0 14px;border:0;border-radius:999px;background:rgba(255,250,240,.92);color:#3a2a4a;font:800 15px system-ui,sans-serif;cursor:pointer;touch-action:manipulation;box-shadow:0 3px 10px rgba(40,20,60,.25);';
+const PILL = 'position:fixed;z-index:3;left:calc(max(14px,env(safe-area-inset-left)) + 82px);top:calc(max(10px,env(safe-area-inset-top)) + 78px);min-height:44px;padding:0 14px;border:0;border-radius:999px;background:rgba(255,250,240,.92);color:#3a2a4a;font:800 15px system-ui,sans-serif;cursor:pointer;touch-action:manipulation;box-shadow:0 3px 10px rgba(40,20,60,.25);';
 const CARD = 'position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:8;width:min(94vw,430px);max-height:94vh;overflow-y:auto;box-sizing:border-box;padding:14px;border-radius:22px;background:#fffaf0;box-shadow:0 10px 30px rgba(40,20,60,.35);font-family:system-ui,"Segoe UI",Roboto,sans-serif;color:#3a2a4a;user-select:none;-webkit-user-select:none;';
 const BTN = 'min-height:46px;padding:0 14px;border:0;border-radius:14px;font:800 15px system-ui,sans-serif;color:#3a2a4a;cursor:pointer;touch-action:manipulation;';
 const TAP_GUARD_MS = 350;
