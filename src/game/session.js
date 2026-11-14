@@ -11,6 +11,7 @@ import { createPuzzleCard } from '../ui/puzzle-card.js';
 import { createOanQuan } from '../ui/oanquan.js';
 import { createJuice } from './juice.js';
 import { createPlayground } from './playground-view.js';
+import { createVillagers } from './villagers.js';
 import { ADAPTIVE, changeGrade, createProfile, masteredCount, pickSkill, recordAnswer, recordMistake } from '../learn/adaptive.js';
 import { createEnemyViews } from './enemy-views.js';
 import { createHud } from '../ui/hud.js';
@@ -69,6 +70,7 @@ export function createSession(play) {
   const wardrobe = loadWardrobe(), mill = loadMill(), millSpot = realm.mill ?? null;
   const juice = createJuice(camera), yardSpot = realm.playground ?? null;
   const yard = yardSpot ? createPlayground(scene, toon, groundAt, yardSpot) : null;
+  const villagers = realm.villagers ? createVillagers(scene, realm.villagers, groundAt) : null;
   const oanquan = createOanQuan({ onSound: (kind) => { if (kind === 'capture') sfx.correct(1); else if (kind === 'win') sfx.cleared(); else if (kind === 'end') sfx.wrong(); else sfx.pebble(); } });
   const popAt = (enemy, text, style) => juice.pop(enemy.x, groundAt(enemy.x, enemy.z) + POP_HEIGHT * (enemy.big ? 1.5 : 1), enemy.z, text, style);
   let streak = 0, streakAge = 0;
@@ -303,6 +305,8 @@ export function createSession(play) {
       state.time += dt;
       tree.update(dt, state.time);
       if (yard) yard.update(state.time);
+      const hello = villagers?.update(dt, player, Boolean(state.profile) && !busy());
+      if (hello) hud.toast(`${hello.name}: ${hello.text}`, 3400);
       streakAge += dt; if (streakAge > STREAK_GAP) streak = 0;
       if (seeds) {
         if (state.profile && !busy()) collectSeeds();

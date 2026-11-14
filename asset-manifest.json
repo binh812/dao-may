@@ -2,6 +2,8 @@
   "files": [
     "index.html",
     "manifest.webmanifest",
+    "assets/models/cong-chua.glb",
+    "assets/models/hoang-tu.glb",
     "assets/models/mam.glb",
     "icons/icon-192.png",
     "icons/icon-512.png",
@@ -36,6 +38,7 @@
     "src/game/sfx.js",
     "src/game/shop-core.js",
     "src/game/touch-controls.js",
+    "src/game/villagers.js",
     "src/learn/adaptive.js",
     "src/learn/parent-gate.js",
     "src/learn/puzzles.js",

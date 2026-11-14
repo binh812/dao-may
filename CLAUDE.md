@@ -40,6 +40,8 @@ file `.glb` do kịch bản trong repo sinh ra từ bản vẽ (xem `tools/blend
 - `game/save.js` đọc/ghi `localStorage` (hồ sơ, Hạt Nắng, tủ đồ, hạt thưởng, Túi Nắng, túi đồ `daomay.bag.v1`); thêm khóa mới thì thêm vào `eraseProgress`.
 - `game/oanquan-core.js` luật trò chơi dân gian Ô ăn quan (thuần, có test); `ui/oanquan.js` bàn chơi với bạn Nhím (Nhím dễ dần khi bé thua);
   `game/playground-view.js` chiếu chơi ở chỗ thế giới đặt `realm.playground`. Chơi hết ván được 1–3 Hạt Nắng.
+- `game/villagers.js` dân làng (thế giới khai báo ở `realm.villagers`: mô hình, chỗ đứng, câu chào): đứng thở, quay mặt về phía Mầm khi bé
+  lại gần và chào một câu qua `hud.toast`. Chỉ chào hỏi, không giao việc. Mô hình ở `assets/models/` (hoàng tử, công chúa), dựng bằng `tu_anh.py`.
 - `game/juice.js` phản hồi của mọi hành động: số bay, chớp sáng màn hình, rung máy quay (`shake`, `play.js` đọc), bảng "Liên hoàn".
   Máy đặt giảm chuyển động thì bỏ rung và chớp. Hiệu ứng 3D của trận đấu (nổ hoa, vòng sáng, địch nảy và chớp) ở `game/enemy-views.js`.
 - `game/battle-core.js` luật đối đầu (thuần, có test): chiêu Lá giữ nút là bắn liên tục, không cần bài; Túi Nắng nạp bằng một câu đố tự nguyện
