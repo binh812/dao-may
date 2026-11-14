@@ -163,3 +163,10 @@ Mẫu: `- [ ] <tiêu đề> — Khi <tình huống> thì app phải <kết quả
 - Xong: `mam.glb` có thêm hai đoạn Jump (co chân, tay giơ ngang) và Glide (dang tay, chân duỗi ra sau); `hero.js` trộn sang khi rời đất / khi lượn. Tư thế dùng chung ở `nguoi_chung.air_motion`.
 - Đã xem: ảnh dựng trong Blender của hai tư thế; một ảnh trong game lúc đang lượn. Chưa xem chuyển động liên tục (máy chụp không quay phim).
 - Xong: mũ và chồi lá bám theo xương đầu, khăn theo xương ngực (`hero.js` + `outfit.carryOutfit`).
+
+## Hoàng tử và công chúa vào làng (14/11/2026)
+- Xong: dựng lại hai mô hình bằng `tu_anh.py` bản mới (JPEG, khoảng 1 MB mỗi người thay vì gần 3 MB), đặt hai bên đường vào làng, quay mặt và chào khi Mầm lại gần (`game/villagers.js`, `realm.villagers`).
+- Xong: dòng hướng dẫn đầu game xuống đáy màn hình khi máy xoay ngang (trước đó chồng lên dòng nhắc Bóng Lặng).
+- [ ] Công chúa: mũ còn sọc ở hai bên, lưng váy có vệt kéo sọc; nhìn gần thấy rõ. Cần bản vẽ mũ riêng hoặc dựng mũ thành khối riêng.
+- [ ] Dân làng chưa là vật cản (Mầm đi xuyên qua được), chưa có hoạt ảnh vẫy tay, chưa có chuyện để kể.
+- [ ] Ba mô hình nhân vật nặng tổng cộng khoảng 2,9 MB trong gói chơi không mạng.

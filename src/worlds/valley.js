@@ -63,6 +63,13 @@ export default {
   treeSpot: { x: 3.5, z: -9 },
   shop: SHOP,
   playground: { x: -6, z: -19, yaw: 0.5, reach: 5.5 },   // chieu o an quan canh Cay Tam, ngay cho be bat dau
+  // dan lang dung hai ben duong vao lang; chi chao hoi, khong giao viec
+  villagers: [
+    { id: 'hoang-tu', model: 'hoang-tu', name: 'Hoàng tử', height: 1.85, x: 313.6, z: -224.5, yaw: -0.76,
+      lines: ['Chào Mầm! Bạn đi đường xa có mệt không?', 'Nhờ bạn mà cả thung lũng tỉnh giấc đấy!', 'Cối xay phía đông đang chờ bạn xay bột đó.'] },
+    { id: 'cong-chua', model: 'cong-chua', name: 'Công chúa', height: 1.7, x: 308.4, z: -229.6, yaw: -0.76,
+      lines: ['Chào Mầm! Chiếc áo choàng của bạn ấm quá!', 'Bạn thử chơi ô ăn quan với Nhím chưa?', 'Hoa ngoài đồng nở đẹp lắm, bạn ra ngắm thử xem!'] },
+  ],
   mill: { x: MILL.x, z: MILL.z, reach: MILL_REACH },   // xay bot: giai bai lay Hat Nang (moi chuyen mot me)
   millBoost: 0,                        // phan choi dat len khi xay xong me bot
   /** Mat nen duoi chan (de phat tieng buoc chan): 'path' tren duong mon, con lai la 'grass'. */
