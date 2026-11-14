@@ -132,10 +132,11 @@ composer.addPass(new OutputPass());
 const PAINT_STEP = 1.35;
 const paintPass = new ShaderPass(new THREE.ShaderMaterial({
   defines: { RADIUS: Math.max(Q.paintRadius, 1) },
-  uniforms: { tDiffuse: { value: null }, tDepth: { value: rtScene.depthTexture }, uTexel: { value: new THREE.Vector2() } },
+  uniforms: { tDiffuse: { value: null }, tDepth: { value: rtScene.depthTexture }, uTexel: { value: new THREE.Vector2() },
+    uKeep: { value: new THREE.Vector4(0, 0, 0, 0) }, uKeepDist: { value: new THREE.Vector2(0, 1) }, uNearFar: { value: new THREE.Vector2(0.1, 1000) } },
   vertexShader: VS,
   fragmentShader: /* glsl */`
-    uniform sampler2D tDiffuse, tDepth; uniform vec2 uTexel; varying vec2 vUv;
+    uniform sampler2D tDiffuse, tDepth; uniform vec2 uTexel, uKeepDist, uNearFar; uniform vec4 uKeep; varying vec2 vUv;
     void region(vec2 dir, inout vec3 best, inout float bestVar){
       vec3 sum = vec3(0.), sq = vec3(0.);
       for (int i = 0; i <= RADIUS; i++) for (int j = 0; j <= RADIUS; j++) {
@@ -149,9 +150,31 @@ const paintPass = new ShaderPass(new THREE.ShaderMaterial({
       if (texture2D(tDepth, vUv).x >= 0.99999) { gl_FragColor = src; return; }
       vec3 best = src.rgb; float bestVar = 1e9;
       region(vec2(1., 1.), best, bestVar); region(vec2(-1., 1.), best, bestVar); region(vec2(1., -1.), best, bestVar); region(vec2(-1., -1.), best, bestVar);
-      gl_FragColor = vec4(best, src.a);
+      // vung giu net (nhan vat): trong hinh elip uKeep tren man hinh VA o dung khoang cach cua nhan vat thi tra lai diem anh goc
+      float keep = 0.;
+      if (uKeep.z > 0.) {
+        float z = texture2D(tDepth, vUv).x, dist = uNearFar.x * uNearFar.y / (uNearFar.y - z * (uNearFar.y - uNearFar.x));
+        keep = (1. - smoothstep(0.8, 1., length((vUv - uKeep.xy) / uKeep.zw))) * (1. - smoothstep(uKeepDist.y * 0.6, uKeepDist.y, abs(dist - uKeepDist.x)));
+      }
+      gl_FragColor = vec4(mix(best, src.rgb, keep), src.a);
     }`,
 }));
+const _keep = new THREE.Vector3();
+/**
+ * Giu net mot vat giua lop loc net co: tam (toa do the gioi), nua be ngang va nua chieu cao (m). Bo loc lam tron moi thu thanh
+ * mang mau, hop voi canh nhung lam nhoe khuon mat va trang phuc cua nhan vat. Goi moi khung hinh; halfHeight = 0 de tat.
+ */
+export function keepSharp(centre, halfWidth, halfHeight) {
+  const keep = paintPass.uniforms.uKeep.value;
+  _keep.copy(centre).applyMatrix4(camera.matrixWorldInverse);
+  const dist = -_keep.z;
+  if (!(halfHeight > 0) || dist <= camera.near) { keep.set(0, 0, 0, 0); return; }
+  const span = 2 * dist * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2);      // chieu cao khung nhin (m) o khoang cach do
+  _keep.copy(centre).project(camera);
+  keep.set(_keep.x * 0.5 + 0.5, _keep.y * 0.5 + 0.5, halfWidth / (span * camera.aspect), halfHeight / span);
+  paintPass.uniforms.uKeepDist.value.set(dist, Math.max(halfWidth, halfHeight) * 1.3);
+  paintPass.uniforms.uNearFar.value.set(camera.near, camera.far);
+}
 paintPass.enabled = Boolean(realm.paint) && Q.paintRadius > 0;
 paintPass.setSize = (width, height) => paintPass.uniforms.uTexel.value.set(PAINT_STEP / width, PAINT_STEP / height);
 composer.addPass(paintPass);

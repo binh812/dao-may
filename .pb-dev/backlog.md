@@ -130,3 +130,9 @@ Mẫu: `- [ ] <tiêu đề> — Khi <tình huống> thì app phải <kết quả
 - [ ] Chưa có hoạt ảnh nhảy và lượn riêng (đang dùng dáng đi chậm khi ở trên không); mắt không chớp; tay ngắn vì áo choàng che.
 - [ ] Hoàng tử và công chúa còn ở nhánh `spike/blender-nhan-vat`, chưa vào game; vành mũ nghiêng của công chúa chưa dựng đúng.
 - [ ] Mầm chưa được anh Ben duyệt thiết kế (do Claude đề xuất).
+
+## Mầm sắc nét hơn khi chơi (14/11/2026)
+- Anh Ben gửi ảnh chụp trên điện thoại (60 fps, 52 lệnh vẽ, 2.088k tam giác, màn dọc): Mầm nhỏ và nhòe.
+- Xong: lớp lọc nét cọ (Kuwahara) không còn áp lên Mầm (`keepSharp` trong `render/post.js`: giữ nguyên điểm ảnh trong một hình elip quanh nhân vật và ở đúng khoảng cách của nhân vật); máy quay lại gần hơn (dọc 10,5 → 8,4 m, ngang 8,5 → 7,6 m); Mầm cao 1,5 m thay vì 1,3 m; bật lọc dị hướng cho ảnh của Mầm.
+- Kiểm chứng: ảnh trước/sau ở màn dọc mức đồ họa cao đã tự xem; 116 test xanh.
+- [ ] Đầu ngón tay và đỉnh mũ còn chấm màu nền xanh đậm; cỏ sát chân Mầm cũng không qua lớp lọc (cùng khoảng cách), cần anh Ben xem có lộ không.

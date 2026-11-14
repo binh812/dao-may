@@ -7,9 +7,10 @@ import { body, squash } from './mam.js';
 import { fitOutfit } from './outfit.js';
 
 const MODEL_URL = new URL('../../assets/models/mam.glb', import.meta.url).href;
-const HEIGHT = 1.3;                               // chieu cao cua Mam trong game (m); mo hinh goc cao 1 don vi
-// cho dat trang phuc tren dang moi: dinh mu trum, co, va ti le so voi than bong cu (ban kinh 0.5)
-const FIT = { sproutY: 1.27, hatY: 1.24, hatScale: 0.46, scarfY: 0.93, scarfScale: 0.40 };
+const HEIGHT = 1.5;                               // chieu cao cua Mam trong game (m); mo hinh goc cao 1 don vi
+export const HERO_HEIGHT = HEIGHT;
+// cho dat trang phuc tren dang moi (ti le theo chieu cao): dinh mu trum, co, va co so voi than bong cu (ban kinh 0.5)
+const FIT = { sproutY: 0.977 * HEIGHT, hatY: 0.954 * HEIGHT, hatScale: 0.354 * HEIGHT, scarfY: 0.715 * HEIGHT, scarfScale: 0.308 * HEIGHT };
 const WALK_STRIDE_SPEED = 2.4;                    // toc do (m/s) ma doan Walk chay dung nhip goc
 const BAKED_GLOW = 0.38;                          // phan mau cua anh luon hien du o trong bong: giu duoc net ve, khong bi den kit khi quay lung ve nang
 const BLEND_RATE = 9, MOVING_FROM = 0.5, AIR_WALK = 0.35;
@@ -27,6 +28,7 @@ new GLTFLoader().load(MODEL_URL, (gltf) => {
     if (!node.isMesh) return;
     // anh da ve san sang toi: dung vat lieu Lambert de van chiu den va bong cua canh (dem thi toi di) ma khong bong lay
     node.material = new THREE.MeshLambertMaterial({ map: node.material.map, emissiveMap: node.material.map, emissive: new THREE.Color(BAKED_GLOW, BAKED_GLOW, BAKED_GLOW), side: THREE.DoubleSide });
+    node.material.map.anisotropy = 8;                 // nhin xien van net
     node.castShadow = true; node.receiveShadow = false; node.frustumCulled = false;   // luoi co xuong: khung bao khong theo hoat anh
   });
   squash.add(model);
