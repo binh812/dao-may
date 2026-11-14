@@ -4,6 +4,11 @@ import * as THREE from 'three';
 import { sprout, squash } from './mam.js';
 
 const SPROUT_Y = 0.95, SPROUT_Y_WITH_HAT = { 'mu-rom': 1.07, 'mu-len': 1.1 };   // doi mu thi choi nho len tren chop mu
+const HAT_TOP = 0.93, SCARF_MID = 0.43;                     // do cao cua mu va khan trong he cua than bong cu
+const HATS = ['mu-rom', 'mu-len', 'vong-hoa'], SCARVES = ['khan-do', 'khan-xanh'];
+// cach dat trang phuc len than hien tai; mac dinh la than bong cu, fitOutfit doi khi mo hinh dang nguoi nap xong
+const fit = { sproutY: SPROUT_Y, hatLift: 1 };
+let lastWorn = { hat: null, scarf: null, sprout: null };
 const SCARF_TILT = 0.3;
 const LEAF_GREEN = 0x66d06a, LEAF_GOLD = 0xf5c33b;
 
@@ -76,5 +81,17 @@ export function applyOutfit(worn) {
   const wearing = new Set(Object.values(worn).filter(Boolean));
   for (const [id, [, group]] of Object.entries(pieces)) group.visible = wearing.has(id);
   leafMaterial.color.setHex(worn.sprout === 'choi-vang' ? LEAF_GOLD : LEAF_GREEN);
-  sprout.position.y = SPROUT_Y_WITH_HAT[worn.hat] ?? SPROUT_Y;
+  sprout.position.y = fit.sproutY + ((SPROUT_Y_WITH_HAT[worn.hat] ?? SPROUT_Y) - SPROUT_Y) * fit.hatLift;
+  lastWorn = worn;
+}
+
+/**
+ * Dat lai mu, khan, choi cho mot dang than khac: hatY/scarfY la do cao dinh dau va co (m), hatScale/scarfScale la ti le
+ * so voi than bong cu. Goi lai applyOutfit de choi nam dung cho.
+ */
+export function fitOutfit({ sproutY, hatY, hatScale, scarfY, scarfScale }) {
+  for (const id of HATS) { const group = pieces[id][1]; group.scale.setScalar(hatScale); group.position.y = hatY - HAT_TOP * hatScale; }
+  for (const id of SCARVES) { const group = pieces[id][1]; group.scale.setScalar(scarfScale); group.position.y = scarfY - SCARF_MID * scarfScale; }
+  fit.sproutY = sproutY; fit.hatLift = hatScale;
+  applyOutfit(lastWorn);
 }

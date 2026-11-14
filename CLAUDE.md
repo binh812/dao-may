@@ -1,7 +1,7 @@
 # games-3d-lab — hướng dẫn cho Claude
 
-Phòng thử đồ họa và nền của game 3D three.js phong cách tranh vẽ anime, nhắm điện thoại (web). Toàn bộ hình ảnh dựng bằng
-code, không asset ngoài. Trả lời anh Ben bằng tiếng Việt có dấu. Kỹ thuật và bẫy đã gặp: skill `threejs-stylized-scene`.
+Phòng thử đồ họa và nền của game 3D three.js phong cách tranh vẽ anime, nhắm điện thoại (web). Cảnh dựng bằng code; nhân vật là
+file `.glb` do kịch bản trong repo sinh ra từ bản vẽ (xem `tools/blender/`), không tải asset của người khác. Trả lời anh Ben bằng tiếng Việt có dấu. Kỹ thuật và bẫy đã gặp: skill `threejs-stylized-scene`.
 
 ## Lệnh
 - Kiểm nhanh (cổng Stop tự chạy, ~5 giây): `scripts/verify-quick.ps1`
@@ -9,7 +9,7 @@ code, không asset ngoài. Trả lời anh Ben bằng tiếng Việt có dấu. 
 - Test lõi game (không cần trình duyệt): `node --test "tests/*.test.mjs"`
 - Chạy: `node scripts/serve.mjs` rồi mở địa chỉ nó in ra (máy này và điện thoại cùng Wi-Fi). Không cần Internet: three.js 0.180
   nằm trong `vendor/three` (chép bằng `node scripts/vendor-three.mjs <gói three đã giải nén>`).
-- Chơi không mạng: `sw.js` lưu sẵn mọi file trong `asset-manifest.json`. Thêm/xóa file trong `src/`, `vendor/`, `icons/` thì chạy
+- Chơi không mạng: `sw.js` lưu sẵn mọi file trong `asset-manifest.json`. Thêm/xóa file trong `src/`, `vendor/`, `icons/`, `assets/models/` thì chạy
   `node scripts/make-asset-manifest.mjs` (test `tests/offline.test.mjs` đỏ nếu quên). Kiểm thật: `node scripts/offline-check.mjs`
   (mở một lần, tắt máy chủ, mở lại). Service worker chỉ hoạt động trên HTTPS hoặc localhost, không hoạt động qua `http://192.168...`.
 - Tham số URL: `world=island|valley` (chọn thế giới; mặc định `island`), `grade=1|2|3` (tạo hồ sơ tạm, bỏ qua màn chọn lớp), `ask=1` (mở sẵn một lần nạp Túi Nắng: đố vui hoặc thẻ bài), `puzzle=balance|pour|pattern|garden|sort` (mở sẵn đúng loại đố vui đó), `oanquan=1` (mở sẵn bàn ô ăn quan), `mode=view` (ngắm cảnh, Mầm tự nhảy; mặc định là chế độ chơi), `q=low|medium|high`, `w=sun|wind|mist|rain|storm|snow|night`, `at=x,z` (chỉ thung lũng: sinh ra ở chỗ khác để chụp ảnh, vd. `at=285,-200` là mép làng), `yaw=rad` (chỉ thung lũng: hướng máy quay lúc đầu), `shop=1` (mở sẵn bảng đổi đồ), `mill=1` (mở ngay câu đố cân bột), `wear=id,id` (mặc thử trang phục, không lưu), `wave=N`, `cam=x,y,z`, `ui=0`, `spin=0`, `dyn=0`, `flash=0.6`.
@@ -45,7 +45,12 @@ code, không asset ngoài. Trả lời anh Ben bằng tiếng Việt có dấu. 
 - `game/battle-core.js` luật đối đầu (thuần, có test): chiêu Lá giữ nút là bắn liên tục, không cần bài; Túi Nắng nạp bằng một câu đố tự nguyện
   (3/2/1 viên theo cách giải), mỗi viên 8 điểm lan 4 m; Bóng Lặng thường 4 điểm, Bóng Lặng lớn 12 điểm (mỗi trại một con từ chuyến 2); `game/session.js` nối trận đấu, học tập, giao diện, âm thanh;
   `game/enemy-views.js`, `game/heart-tree.js`, `game/sfx.js` là phần nhìn và nghe. `ui/hud.js`, `ui/question-card.js`, `ui/notebook.js`.
-- `actors/` nhân vật (`mam.js`, dùng chung) và sinh vật của đảo; `fx/` hạt (mưa, tuyết, lá) và `weather.js` (preset + nội suy);
+- `actors/` nhân vật và sinh vật của đảo. `mam.js` giữ khung của Mầm (`chr` → `squash` → thân, chồi lá) và thân bông cũ làm dự phòng;
+  `hero.js` nạp `assets/models/mam.glb` (Mầm dạng người), ẩn thân cũ, chạy hoạt ảnh Idle/Walk theo tốc độ; `outfit.js` có `fitOutfit` để mũ,
+  khăn, chồi khớp dáng mới. Không nạp được mô hình thì game vẫn chạy với thân cũ.
+- `tools/blender/` (không nằm trong game): `tu_anh.py` + `kit2.py` dựng nhân vật từ bản vẽ ba góc nhìn (`assets/concept/`) theo file
+  `nhan_vat/<tên>.json`, xuất `assets/models/<tên>.glb`. Cần Blender 5.2; ảnh ghép `*-ghep.png` tạo bằng ffmpeg từ hai tờ bản vẽ. Quy trình: skill `blender-nhan-vat-glb`.
+- (tiếp `actors/`) `fx/` hạt (mưa, tuyết, lá) và `weather.js` (preset + nội suy);
   `render/post.js` hậu kỳ, AO, ánh sáng thể tích, lớp lọc nét cọ (Kuwahara, chỉ bật khi thế giới đặt `paint`); `ui/panel.js`.
 - **Nhiều thế giới:** `main.js` chọn thế giới theo `?world=`, nạp `worlds/<tên>.js`, đăng ký qua `world/realm.js`, rồi mới nạp
   `app.js` (đổi kích thước + vòng lặp dùng chung). Phần game (`play`, `session`, `app`, `panel`, `weather`, `post`) chỉ đọc

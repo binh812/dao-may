@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { camera, controls, U } from '../core/stage.js';
 import { realm } from '../world/realm.js';
 import { chr, eyes, sprout, squash } from '../actors/mam.js';
+import { updateHero } from '../actors/hero.js';
 import { TUNING, createPlayer, stepPlayer } from './player-core.js';
 import { cameraRelative, steerYaw } from './input-core.js';
 import { createTouchControls } from './touch-controls.js';
@@ -69,6 +70,7 @@ export function createPlay() {
     sprout.scale.set(leaf, 1, leaf);
     anim.blink -= dt; if (anim.blink < 0) anim.blink = 2 + Math.random() * 3;
     const lid = anim.blink < 0.12 ? 0.12 : 1.15; eyes.forEach((e) => { e.scale.y = lid; });
+    updateHero(dt, speed, player.grounded);
     U.player.value.set(player.x, player.y, player.z);
   }
 

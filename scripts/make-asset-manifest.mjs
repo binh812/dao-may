@@ -1,5 +1,5 @@
 // Liet ke moi file game can de chay khong mang va ghi vao asset-manifest.json (service worker doc file nay).
-// Chay sau khi them/xoa file trong src/, vendor/, icons/: node scripts/make-asset-manifest.mjs
+// Chay sau khi them/xoa file trong src/, vendor/, icons/, assets/models/: node scripts/make-asset-manifest.mjs
 // tests/offline.test.mjs se do neu file tren dia khong con khop.
 import { readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
@@ -8,7 +8,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const TOP_LEVEL = ['index.html', 'manifest.webmanifest'];
-const FOLDERS = [['src', /\.js$/], ['vendor', /\.js$/], ['icons', /\.(png|svg)$/]];
+const FOLDERS = [['src', /\.js$/], ['vendor', /\.js$/], ['icons', /\.(png|svg)$/], ['assets/models', /\.glb$/]];
 
 function walk(dir, pattern) {
   return readdirSync(dir).flatMap((name) => { const p = join(dir, name); return statSync(p).isDirectory() ? walk(p, pattern) : pattern.test(name) ? [p] : []; });

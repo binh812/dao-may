@@ -5,12 +5,13 @@ import { scene } from '../core/stage.js';
 // ---------------------------------------------------------------- character
 const chr = new THREE.Group(), squash = new THREE.Group(), sprout = new THREE.Group(); chr.add(squash); scene.add(chr);
 const eyes = [];
+const body = [];   // cac luoi cua than bong cu; actors/hero.js an chung di khi mo hinh dang nguoi nap xong
 {
   const plush = new THREE.MeshPhysicalMaterial({ color: 0xfff3e2, roughness: 0.92, sheen: 1, sheenRoughness: 0.45, sheenColor: new THREE.Color(0xffd0b0) });
   const orange = new THREE.MeshPhysicalMaterial({ color: 0xff9a3d, roughness: 0.6, sheen: 0.6, sheenColor: new THREE.Color(0xffd0a0) });
   const eyeMat = new THREE.MeshPhysicalMaterial({ color: 0x1a1320, roughness: 0.08, clearcoat: 1, clearcoatRoughness: 0.05 });
   const leaf = new THREE.MeshPhysicalMaterial({ color: 0x66d06a, roughness: 0.45, clearcoat: 0.5 });
-  const add = (parent, geo, mat, px, py, pz, sx = 1, sy = sx, sz = sx, rz = 0) => { const m = new THREE.Mesh(geo, mat); m.position.set(px, py, pz); m.scale.set(sx, sy, sz); m.rotation.z = rz; m.castShadow = true; m.receiveShadow = true; parent.add(m); return m; };
+  const add = (parent, geo, mat, px, py, pz, sx = 1, sy = sx, sz = sx, rz = 0) => { const m = new THREE.Mesh(geo, mat); m.position.set(px, py, pz); m.scale.set(sx, sy, sz); m.rotation.z = rz; m.castShadow = true; m.receiveShadow = true; parent.add(m); if (parent === squash) body.push(m); return m; };
   const sph = (r) => new THREE.SphereGeometry(r, 32, 24);
   add(squash, sph(0.5), plush, 0, 0.5, 0, 1, 0.93, 0.95);
   add(squash, sph(0.3), new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.95, sheen: 1, sheenColor: new THREE.Color(0xffe8d8) }), 0, 0.4, 0.26, 1, 1, 0.75);
@@ -29,4 +30,4 @@ const eyes = [];
   add(sprout, sph(0.11), leaf, -0.1, 0.23, 0, 1, 0.16, 0.5, -0.55);
 }
 
-export { chr, eyes, sprout, squash };
+export { body, chr, eyes, sprout, squash };
