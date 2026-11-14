@@ -10,15 +10,16 @@ function node(tag, css, text = '') {
 }
 
 export function createHud({ onLeaf, onSkill, onAction, worldLabel, onSwitchWorld }) {
-  const hearts = node('div', PILL + 'left:max(96px,env(safe-area-inset-left));top:max(10px,env(safe-area-inset-top));letter-spacing:2px;');
-  const progress = node('div', PILL + 'right:max(12px,env(safe-area-inset-right));top:max(10px,env(safe-area-inset-top));font-weight:600;font-size:13px;');
+  // Man hinh hep (dien thoai 350 diem anh): hang tren cung chi du cho o fps va o tien do, nen trai tim nam ngay duoi o fps.
+  const hearts = node('div', PILL + 'left:max(14px,env(safe-area-inset-left));top:calc(max(10px,env(safe-area-inset-top)) + 50px);letter-spacing:2px;');
+  const progress = node('div', PILL + 'right:max(12px,env(safe-area-inset-right));top:max(10px,env(safe-area-inset-top));font-weight:600;font-size:12px;box-sizing:border-box;max-width:calc(100vw - 112px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;');
   const leaf = node('div', BUTTON + 'right:max(122px,env(safe-area-inset-right));bottom:max(34px,env(safe-area-inset-bottom));width:68px;height:68px;background:rgba(80,190,90,.75);', 'Lá');
   const skill = node('div', BUTTON + 'right:max(64px,env(safe-area-inset-right));bottom:max(128px,env(safe-area-inset-bottom));width:84px;height:84px;background:rgba(255,180,40,.88);font-size:14px;line-height:1.25;text-align:center;white-space:pre-line;', 'Nạp nắng');
   const toastBox = node('div', 'position:fixed;z-index:6;left:50%;top:30%;transform:translateX(-50%);max-width:86vw;padding:10px 16px;border-radius:16px;background:rgba(28,22,34,.62);color:#fff;font:700 17px/1.35 system-ui,sans-serif;text-align:center;pointer-events:none;opacity:0;transition:opacity .35s;');
   const switcher = node('div', PILL + 'right:max(12px,env(safe-area-inset-right));top:calc(max(10px,env(safe-area-inset-top)) + 82px);pointer-events:auto;cursor:pointer;background:rgba(255,250,240,.9);color:#3a2a4a;font-size:13px;', `Sang ${worldLabel}`);
   switcher.addEventListener('pointerdown', (e) => { e.preventDefault(); onSwitchWorld(); });
   const seeds = node('div', PILL + 'left:max(96px,env(safe-area-inset-left));top:calc(max(10px,env(safe-area-inset-top)) + 40px);display:none;font-size:14px;color:#ffe9a8;');
-  const guide = node('div', PILL + 'left:max(14px,env(safe-area-inset-left));bottom:max(18px,env(safe-area-inset-bottom));display:none;font-size:14px;');
+  const guide = node('div', PILL + 'left:max(14px,env(safe-area-inset-left));bottom:max(18px,env(safe-area-inset-bottom));display:none;font-size:14px;box-sizing:border-box;max-width:calc(100vw - 214px);line-height:1.25;border-radius:18px;');   // khong lan sang nut La
   const arrow = node('span', 'display:inline-block;margin-right:8px;font-size:18px;', '▲'), guideText = node('span', '');
   guide.append(arrow, guideText);
   const action = node('div', PILL + 'left:50%;transform:translateX(-50%);bottom:max(40px,env(safe-area-inset-bottom));display:none;pointer-events:auto;cursor:pointer;padding:14px 22px;background:rgba(255,180,77,.96);color:#3a2408;font-size:17px;box-shadow:0 4px 14px rgba(40,20,60,.3);');
