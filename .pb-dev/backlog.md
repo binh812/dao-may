@@ -177,3 +177,9 @@ Mẫu: `- [ ] <tiêu đề> — Khi <tình huống> thì app phải <kết quả
 - [ ] Lưng váy công chúa vẫn có vệt màu da (trong bản vẽ phía sau, cánh tay che lên váy). Cần bản vẽ tay dang rộng hơn.
 - [ ] Vành mũ dựng nằm ngang, bản vẽ thì nghiêng; Nhím vẫn là bản dựng tay cũ (khối tròn, màu trơn).
 - [ ] Bấm vào Nhím chưa mở bàn ô ăn quan (vẫn dùng nút hành động khi đứng gần chiếu).
+
+## Dân làng kể chuyện theo chặng (14/11/2026)
+- Xong: câu chuyện sáu mẩu "tiếng sáo của thung lũng" (Nhím, hoàng tử, công chúa mỗi người hai mẩu). Mỗi chuyến đi mỗi người kể một mẩu mới khi Mầm lại gần; nghe đủ sáu mẩu thì có lời báo. Luật ở `story-core.js`, 8 test.
+- Xong: ô thông báo giữa màn hình không còn bị bó còn nửa bề ngang.
+- [ ] Chưa có chỗ xem lại các mẩu đã nghe (ví dụ một trang trong Sổ học). Chưa có tiếng đọc cho bé chưa biết chữ.
+- [ ] Không id mẩu chuyện nào được đổi sau khi phát hành (tiến độ lưu theo id).

@@ -12,6 +12,7 @@ import { createOanQuan } from '../ui/oanquan.js';
 import { createJuice } from './juice.js';
 import { createPlayground } from './playground-view.js';
 import { createVillagers } from './villagers.js';
+import { nextBeat, serializeStory, tell } from './story-core.js';
 import { ADAPTIVE, changeGrade, createProfile, masteredCount, pickSkill, recordAnswer, recordMistake } from '../learn/adaptive.js';
 import { createEnemyViews } from './enemy-views.js';
 import { createHud } from '../ui/hud.js';
@@ -25,7 +26,7 @@ import { CATALOG, SLOTS, balance, buy, catalogTotal, cheapestPrice, serializeWar
 import { createShopPanel } from '../ui/shop.js';
 import { canStart, cancelJob, finishJob, startJob } from './mill-core.js';
 import { applyOutfit } from '../actors/outfit.js';
-import { BONUS_KEY, MUTE_KEY, POUCH_KEY, SEED_KEY, WARDROBE_KEY, eraseProgress, loadMill, loadPouch, loadProfile, loadSeeds, loadWardrobe, saveProfile, store } from './save.js';
+import { BONUS_KEY, MUTE_KEY, POUCH_KEY, SEED_KEY, STORY_KEY, WARDROBE_KEY, eraseProgress, loadMill, loadPouch, loadProfile, loadSeeds, loadStory, loadWardrobe, saveProfile, store } from './save.js';
 import { createLoot } from './loot.js';
 
 const groundAt = (x, z) => realm.groundAt(x, z);
@@ -37,6 +38,7 @@ const CHARGE_PRAISE = { first: 'Giỏi quá!', later: 'Bé làm được rồi!'
 const MAX_START_WAVE = 99;
 const MILL_SPIN_BOOST = 5, SPLASH_EVERY = 0.34, SPLASH_MIN_SPEED = 1.5, STEP_LENGTH = 1.55;   // STEP_LENGTH: quang duong (m) giua hai tieng buoc chan   // coi xay quay nhanh sau me bot; nhip tieng nuoc khi loi
 const SHOP_HINT_DELAY_MS = 3600;
+const STORY_TOAST_MS = 6500;   // mau chuyen dai hon cau chao: de be kip doc
 const GUIDE_FROM = 25; // xa hon khoang nay (m) thi hien mui ten chi huong
 
 /** Cho dung hop le cho Bong Lang: co dat, khong nam trong vat can, khong sat cho Mam dang dung. */
@@ -70,7 +72,7 @@ export function createSession(play) {
   const wardrobe = loadWardrobe(), mill = loadMill(), millSpot = realm.mill ?? null;
   const juice = createJuice(camera), yardSpot = realm.playground ?? null;
   const yard = yardSpot ? createPlayground(scene, toon, groundAt, yardSpot) : null;
-  const villagers = realm.villagers ? createVillagers(scene, realm.villagers, groundAt, realm.colliders) : null;
+  const villagers = realm.villagers ? createVillagers(scene, realm.villagers, groundAt, realm.colliders) : null, story = loadStory();
   const oanquan = createOanQuan({ onSound: (kind) => { if (kind === 'capture') sfx.correct(1); else if (kind === 'win') sfx.cleared(); else if (kind === 'end') sfx.wrong(); else sfx.pebble(); } });
   const popAt = (enemy, text, style) => juice.pop(enemy.x, groundAt(enemy.x, enemy.z) + POP_HEIGHT * (enemy.big ? 1.5 : 1), enemy.z, text, style);
   let streak = 0, streakAge = 0;
@@ -92,6 +94,19 @@ export function createSession(play) {
   }) : null;
   let splashWait = 0, stepLeft = 0, leftFoot = false;
   let shopHinted = wardrobe.owned.size > 0;   // da tung doi do thi be biet quay hang roi
+  // Dan lang chao; neu nguoi do con mau chuyen chua ke trong chuyen di nay thi ke mau do thay cho cau chao (doc lau hon)
+  function greet(hello) {
+    const beat = nextBeat(story, hello.id, state.wave);
+    if (!beat) { hud.toast(`${hello.name}: ${hello.text}`, 3400); return; }
+    // Chi tinh la da nghe khi mau chuyen hien du thoi gian. Bi thong bao khac chen ngang thi lan sau nguoi do ke lai, be khong mat mau nao.
+    const journey = state.wave;
+    villagers.hush(STORY_TOAST_MS / 1000 + 1);
+    hud.toast(`${hello.name} kể: ${beat.text}`, STORY_TOAST_MS, () => {
+      const { finished } = tell(story, beat, journey);
+      store(STORY_KEY, serializeStory(story));
+      if (finished && !busy()) hud.toast('Bé đã nghe trọn câu chuyện về tiếng sáo của thung lũng!', 3600);
+    });
+  }
   const near = (spot) => Boolean(spot) && Math.hypot(player.x - spot.x, player.z - spot.z) < spot.reach;
   const busy = () => notebook.isOpen() || state.asking || Boolean(shopPanel?.isOpen()) || loot.isOpen();
   // tui do, vat hai luom, vat lieu roi ra, Hat Nang moc lai (xem loot.js)
@@ -306,7 +321,7 @@ export function createSession(play) {
       tree.update(dt, state.time);
       if (yard) yard.update(state.time);
       const hello = villagers?.update(dt, player, Boolean(state.profile) && !busy());
-      if (hello) hud.toast(`${hello.name}: ${hello.text}`, 3400);
+      if (hello) greet(hello);
       streakAge += dt; if (streakAge > STREAK_GAP) streak = 0;
       if (seeds) {
         if (state.profile && !busy()) collectSeeds();
