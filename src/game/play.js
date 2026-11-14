@@ -70,7 +70,7 @@ export function createPlay() {
     sprout.scale.set(leaf, 1, leaf);
     anim.blink -= dt; if (anim.blink < 0) anim.blink = 2 + Math.random() * 3;
     const lid = anim.blink < 0.12 ? 0.12 : 1.15; eyes.forEach((e) => { e.scale.y = lid; });
-    updateHero(dt, speed, player.grounded);
+    updateHero(dt, speed, player.grounded, player.gliding);
     U.player.value.set(player.x, player.y, player.z);
   }
 

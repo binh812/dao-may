@@ -7,7 +7,7 @@ import numpy as np
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from kit2 import Sculpt, X, Y, Z   # noqa: E402
 from anh_phan_tich import load, mask_of, runs   # noqa: E402
-from nguoi_chung import SIDES, TAU, body_motion   # noqa: E402
+from nguoi_chung import SIDES, TAU, air_motion, body_motion   # noqa: E402
 
 argv = sys.argv[sys.argv.index('--') + 1:]
 CONFIG_PATH, REVIEW_DIR, GLB_PATH = argv[0], argv[1], argv[2]
@@ -260,6 +260,7 @@ if SCARF: s.layer('khan', 'anh', SCARF, voxel=0, power=3.0); s.strip(SCARF, 0.04
 s.build()
 turn = s.turn
 idle, walk, spin = body_motion(turn)
+jump, glide = air_motion(turn)
 
 
 def cloth(t, mode):
@@ -273,6 +274,8 @@ def cloth(t, mode):
     return pose
 
 
-s.animate({'Idle': (lambda t: {**idle(t), **cloth(t, 'idle')}, 2.0), 'Walk': (lambda t: {**walk(t), **cloth(t, 'walk')}, 1.0), 'Turn': (lambda t: {**spin(t), **cloth(t, 'turn')}, 1.5)})
-s.review(REVIEW_DIR, [('Idle', 1, 'truoc'), ('Idle', 1, 'mat'), ('Idle', 1, 'sau'), ('Idle', 1, 'ngang'), ('Walk', 7, 'ngang'), ('Walk', 7, 'truoc'), ('Turn', 10, 'truoc'), ('Turn', 16, 'truoc')])
+s.animate({'Idle': (lambda t: {**idle(t), **cloth(t, 'idle')}, 2.0), 'Walk': (lambda t: {**walk(t), **cloth(t, 'walk')}, 1.0), 'Turn': (lambda t: {**spin(t), **cloth(t, 'turn')}, 1.5),
+           'Jump': (lambda t: {**jump(t), **cloth(t, 'walk')}, 1.0), 'Glide': (lambda t: {**glide(t), **cloth(t, 'walk')}, 1.2)})
+s.review(REVIEW_DIR, [('Idle', 1, 'truoc'), ('Idle', 1, 'mat'), ('Idle', 1, 'sau'), ('Idle', 1, 'ngang'), ('Walk', 7, 'ngang'), ('Walk', 7, 'truoc'), ('Turn', 10, 'truoc'), ('Turn', 16, 'truoc'),
+                      ('Jump', 5, 'truoc'), ('Jump', 5, 'ngang'), ('Glide', 5, 'truoc'), ('Glide', 5, 'ngang')])
 s.export(GLB_PATH)

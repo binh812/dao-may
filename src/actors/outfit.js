@@ -85,6 +85,13 @@ export function applyOutfit(worn) {
   lastWorn = worn;
 }
 
+/** Chuyen mu va choi sang nhom `head`, khan sang nhom `neck` (hai nhom bam theo xuong cua mo hinh); cho dat trong nhom giu nguyen. */
+export function carryOutfit(head, neck) {
+  for (const id of HATS) head.add(pieces[id][1]);
+  for (const id of SCARVES) neck.add(pieces[id][1]);
+  head.add(sprout);
+}
+
 /**
  * Dat lai mu, khan, choi cho mot dang than khac: hatY/scarfY la do cao dinh dau va co (m), hatScale/scarfScale la ti le
  * so voi than bong cu. Goi lai applyOutfit de choi nam dung cho.
