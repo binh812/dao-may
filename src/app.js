@@ -51,7 +51,7 @@ function tick() {
 
   realm.update(dt, t, { playing: Boolean(play), wind: weatherNow.wind, player: play ? play.player : null });
   dofPass.uniforms.uFocus.value = play ? play.focusDistance() : camera.position.distanceTo(controls.target);
-  dofPass.uniforms.uRange.value = dofPass.uniforms.uFocus.value * 0.5;
+  dofPass.uniforms.uRange.value = dofPass.uniforms.uFocus.value * 0.8;   // vung net rong hon: vat cach nhan vat vai met van ro
 
   updateWeather(dt);
   renderer.info.reset();
