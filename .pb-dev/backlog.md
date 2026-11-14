@@ -158,3 +158,8 @@ Mẫu: `- [ ] <tiêu đề> — Khi <tình huống> thì app phải <kết quả
 - Xong: ô fps thu gọn không còn đè ô trái tim và Hạt Nắng; dòng hướng dẫn đầu game nằm dưới hàng nút.
 - Xong: mép mây hết bậc thang ngang. Nguyên nhân: bước đi tia lúc nướng mây thưa hơn chi tiết mây nên mỗi hàng ảnh lệch pha; giờ độ dày lấy mẫu dày gấp 4, bóng vẫn tính một lần mỗi bước. Thời gian nướng lúc mở game tăng khoảng 1,6 lần (chưa đo trên điện thoại).
 - [ ] Đỉnh mũ trùm của Mầm còn hơi phẳng (chồi lá che). Bàn tay vẫn là khối cụt, chưa có ngón.
+
+## Mầm nhảy và lượn (14/11/2026)
+- Xong: `mam.glb` có thêm hai đoạn Jump (co chân, tay giơ ngang) và Glide (dang tay, chân duỗi ra sau); `hero.js` trộn sang khi rời đất / khi lượn. Tư thế dùng chung ở `nguoi_chung.air_motion`.
+- Đã xem: ảnh dựng trong Blender của hai tư thế; một ảnh trong game lúc đang lượn. Chưa xem chuyển động liên tục (máy chụp không quay phim).
+- [ ] Mũ và khăn vẫn gắn vào khung `squash`, chưa theo xương đầu.

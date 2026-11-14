@@ -46,7 +46,7 @@ file `.glb` do kịch bản trong repo sinh ra từ bản vẽ (xem `tools/blend
   (3/2/1 viên theo cách giải), mỗi viên 8 điểm lan 4 m; Bóng Lặng thường 4 điểm, Bóng Lặng lớn 12 điểm (mỗi trại một con từ chuyến 2); `game/session.js` nối trận đấu, học tập, giao diện, âm thanh;
   `game/enemy-views.js`, `game/heart-tree.js`, `game/sfx.js` là phần nhìn và nghe. `ui/hud.js`, `ui/question-card.js`, `ui/notebook.js`.
 - `actors/` nhân vật và sinh vật của đảo. `mam.js` giữ khung của Mầm (`chr` → `squash` → thân, chồi lá) và thân bông cũ làm dự phòng;
-  `hero.js` nạp `assets/models/mam.glb` (Mầm dạng người), ẩn thân cũ, chạy hoạt ảnh Idle/Walk theo tốc độ; `outfit.js` có `fitOutfit` để mũ,
+  `hero.js` nạp `assets/models/mam.glb` (Mầm dạng người), ẩn thân cũ, chạy hoạt ảnh Idle/Walk theo tốc độ, trên không thì Jump, đang lượn thì Glide (hai đoạn này tùy chọn: mô hình không có thì bỏ qua); `outfit.js` có `fitOutfit` để mũ,
   khăn, chồi khớp dáng mới. Không nạp được mô hình thì game vẫn chạy với thân cũ.
 - `tools/blender/` (không nằm trong game): `tu_anh.py` + `kit2.py` dựng nhân vật từ bản vẽ ba góc nhìn (`assets/concept/`) theo file
   `nhan_vat/<tên>.json`, xuất `assets/models/<tên>.glb`. Cần Blender 5.2; ảnh ghép `*-ghep.png` tạo bằng ffmpeg từ hai tờ bản vẽ. Quy trình: skill `blender-nhan-vat-glb`.
