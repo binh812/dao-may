@@ -305,8 +305,8 @@ export function createSession(play) {
       state.time += dt;
       tree.update(dt, state.time);
       if (yard) yard.update(state.time);
-      const hello = villagers?.update(dt, player);
-      if (hello && !busy()) hud.toast(`${hello.name}: ${hello.text}`, 3400);
+      const hello = villagers?.update(dt, player, Boolean(state.profile) && !busy());
+      if (hello) hud.toast(`${hello.name}: ${hello.text}`, 3400);
       streakAge += dt; if (streakAge > STREAK_GAP) streak = 0;
       if (seeds) {
         if (state.profile && !busy()) collectSeeds();
