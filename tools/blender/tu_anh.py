@@ -35,17 +35,35 @@ CUT = int(round(H * SPLIT))
 mask = np.concatenate([mask_of(px[:CUT])[0], mask_of(px[CUT:])[0]])          # moi to co mau nen rieng
 
 
-def padded_texture(path, spread=40, trim=3):
+NEAR = ((0, 1), (0, -1), (1, 0), (-1, 0))
+
+
+def grown(area):
+    """Vung `area` no ra mot diem anh theo bon huong."""
+    out = area.copy()
+    for step in NEAR: out |= np.roll(area, step, axis=(0, 1))
+    return out
+
+
+def padded_texture(path, spread=40, trim=2):
     """To lan mau nhan vat ra ngoai vien `spread` diem anh roi luu thanh anh hoa tiet: mat luoi o sat mep lay mau nhan vat thay vi mau nen."""
     import bpy
-    colour, filled = px.copy(), mask.copy()
-    for _ in range(trim):                                # got bo vien khu rang cua: o do mau nhan vat da pha mau nen, to lan ra se thanh vet sam (ban tay, dinh mu)
-        core = filled.copy()
-        for dy, dx in ((0, 1), (0, -1), (1, 0), (-1, 0)): core &= np.roll(filled, (dy, dx), axis=(0, 1))
-        filled = core
+    colour = px.copy()
+    # Nen that = phan ngoai hinh noi lien voi mep anh. Lo thung ben trong hinh (vung sang trung mau nen: long trang mat, hoa trang)
+    # KHONG phai nen: giu nguyen mau goc, khong to de len.
+    outside = np.zeros_like(mask); outside[0, :] = outside[-1, :] = outside[:, 0] = outside[:, -1] = True
+    outside &= ~mask
+    while True:
+        more = grown(outside) & ~mask
+        if more.sum() == outside.sum(): break
+        outside = more
+    # Got bo vien khu rang cua sat nen: o do mau nhan vat da pha mau nen, to lan ra se thanh vet sam (ban tay, dinh mu)
+    rim = outside
+    for _ in range(trim): rim = grown(rim)
+    filled = ~rim
     for _ in range(spread):
         total, count = np.zeros_like(colour), np.zeros(filled.shape, dtype=np.float32)
-        for dy, dx in ((0, 1), (0, -1), (1, 0), (-1, 0)):
+        for dy, dx in NEAR:
             total += np.roll(colour * filled[..., None], (dy, dx), axis=(0, 1)); count += np.roll(filled, (dy, dx), axis=(0, 1))
         grow = (~filled) & (count > 0)
         colour[grow] = total[grow] / count[grow][:, None]
@@ -203,18 +221,23 @@ for i, name in enumerate(SCARF):                         # khan sau lung: bam sa
 
 
 def on_arm(co):
-    return Z_HAND - 0.03 <= co.z <= Z_ARMPIT + 0.08 and abs(co.x) > at(trunk, co.z)[3]
+    """Diem nam trong ong tay (theo chinh cac vong da dung tay), khong doan theo be rong than."""
+    for S in arms:
+        if not arms[S][-1][0] - 0.01 <= co.z <= arms[S][0][0] + 0.01: continue
+        z, cx, cy, rx, ry = at(arms[S], co.z)
+        if ((co.x - cx) / (rx * 1.15)) ** 2 + ((co.y - cy) / (ry * 1.15)) ** 2 <= 1.0: return True
+    return False
 
 
 def sideways(normal, co):
     """Muc do quay sang ngang (0 = thang truoc/sau, 1 = thang sang ben). Voi dau va than, tinh theo goc quanh truc than thay vi
     phap tuyen cua mat: vien toc lom chom lam phap tuyen doi lien tuc giua cac hang, gay soc ngang."""
+    if not ARM_SIDE and on_arm(co): return 0.0
     if co.z >= Z_CROTCH:
         z, cx, cy, rx, ry = at(trunk, co.z)
         if abs(co.x - cx) <= rx * 1.03:
             ex, ey = (co.x - cx) / rx, (co.y - cy) / ry
             return abs(ex) / max(math.hypot(ex, ey), 1e-6)
-    if not ARM_SIDE and on_arm(co): return 0.0
     return abs(normal.x)
 
 
