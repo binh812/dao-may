@@ -147,14 +147,16 @@ const paintPass = new ShaderPass(new THREE.ShaderMaterial({
     }
     void main(){
       vec4 src = texture2D(tDiffuse, vUv);
-      if (texture2D(tDepth, vUv).x >= 0.99999) { gl_FragColor = src; return; }
+      float z = texture2D(tDepth, vUv).x;
+      if (z >= 0.99999) { gl_FragColor = src; return; }
       vec3 best = src.rgb; float bestVar = 1e9;
       region(vec2(1., 1.), best, bestVar); region(vec2(-1., 1.), best, bestVar); region(vec2(1., -1.), best, bestVar); region(vec2(-1., -1.), best, bestVar);
       // vung giu net (nhan vat): trong hinh elip uKeep tren man hinh VA o dung khoang cach cua nhan vat thi tra lai diem anh goc
       float keep = 0.;
-      if (uKeep.z > 0.) {
-        float z = texture2D(tDepth, vUv).x, dist = uNearFar.x * uNearFar.y / (uNearFar.y - z * (uNearFar.y - uNearFar.x));
-        keep = (1. - smoothstep(0.8, 1., length((vUv - uKeep.xy) / uKeep.zw))) * (1. - smoothstep(uKeepDist.y * 0.6, uKeepDist.y, abs(dist - uKeepDist.x)));
+      float inside = uKeep.z > 0. ? length((vUv - uKeep.xy) / uKeep.zw) : 2.;
+      if (inside < 1.) {
+        float dist = uNearFar.x * uNearFar.y / (uNearFar.y - z * (uNearFar.y - uNearFar.x));
+        keep = (1. - smoothstep(0.8, 1., inside)) * (1. - smoothstep(uKeepDist.y * 0.6, uKeepDist.y, abs(dist - uKeepDist.x)));
       }
       gl_FragColor = vec4(mix(best, src.rgb, keep), src.a);
     }`,
@@ -166,13 +168,15 @@ const _keep = new THREE.Vector3();
  */
 export function keepSharp(centre, halfWidth, halfHeight) {
   const keep = paintPass.uniforms.uKeep.value;
+  if (!paintPass.enabled) return;
+  camera.updateMatrixWorld();                         // may quay vua duoc dat lai trong khung nay: khong cap nhat thi elip di sau nhan vat mot khung
   _keep.copy(centre).applyMatrix4(camera.matrixWorldInverse);
   const dist = -_keep.z;
   if (!(halfHeight > 0) || dist <= camera.near) { keep.set(0, 0, 0, 0); return; }
   const span = 2 * dist * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2);      // chieu cao khung nhin (m) o khoang cach do
   _keep.copy(centre).project(camera);
   keep.set(_keep.x * 0.5 + 0.5, _keep.y * 0.5 + 0.5, halfWidth / (span * camera.aspect), halfHeight / span);
-  paintPass.uniforms.uKeepDist.value.set(dist, Math.max(halfWidth, halfHeight) * 1.3);
+  paintPass.uniforms.uKeepDist.value.set(dist, halfWidth * 1.6);            // chi giu net nhung gi o gan dung khoang cach cua nhan vat
   paintPass.uniforms.uNearFar.value.set(camera.near, camera.far);
 }
 paintPass.enabled = Boolean(realm.paint) && Q.paintRadius > 0;

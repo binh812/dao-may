@@ -46,7 +46,7 @@ function tick() {
   if (play) { play.update(dt * session.timeScale()); session.update(dt); } else { controls.update(); updateHero(dt, 0, true); }   // ngam canh: Mam van tho, khong dung cung o tu the goc
   realm.sky.position.copy(camera.position);
   // Mam khong qua lop loc net co: mat va trang phuc giu net (nua be ngang va nua chieu cao tinh ca mu, choi la)
-  keepSharp(sharpCentre.set(chr.position.x, chr.position.y + HERO_HEIGHT * 0.56, chr.position.z), HERO_HEIGHT * 0.55, HERO_HEIGHT * 0.72);
+  keepSharp(sharpCentre.set(chr.position.x, chr.position.y + HERO_HEIGHT * 0.56, chr.position.z), HERO_HEIGHT * 0.42, HERO_HEIGHT * 0.72);
   U.sunView.value.copy(SUN_DIR).transformDirection(camera.matrixWorldInverse);
 
   realm.update(dt, t, { playing: Boolean(play), wind: weatherNow.wind, player: play ? play.player : null });

@@ -70,7 +70,7 @@ export default {
   wading: false,                       // Mam dang loi trong ho (phan choi dung de phat tieng nuoc)
   gatherables: gatherSpots(groundAt, scenery.colliders),   // hoa, nam, go, da pha le quanh cac trai; moc lai moi chuyen
   collectibles: seedSpots(groundAt, scenery.colliders),   // Hat Nang rai doc duong, quanh ho va coi xay
-  cameraYaw: Number(qs.get('yaw')) || -0.92, cameraPitch: 0.04, cameraLookHeight: 3.0, fogScale: 0.18, paint: true,
+  cameraYaw: Number(qs.get('yaw')) || -0.92, cameraPitch: 0.04, cameraLookHeight: 2.5, fogScale: 0.18, paint: true,
   sky: sky.mesh,
   setGrassVisible(visible) { grass.group.visible = visible; },
   update(dt, time, ctx) {

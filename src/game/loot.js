@@ -13,7 +13,7 @@ import { createBagUi } from '../ui/bag.js';
 const DROPS = ['hoa', 'go', 'nam'], BIG_DROP = { id: 'da', amount: 2 };   // Bong Lang thuc giac de lai vat lieu; con lon de lai da pha le
 const REGROW = 6;          // moi chuyen moi, ngan nay Hat Nang da nhat moc lai (nhat lan nua thi tinh la hat thuong)
 const OVERFLOW_SEEDS = 1;  // tui day loai do: moi lan nhat doi thang thanh ngan nay Hat Nang, de khong vat nao bi mat
-const DROP_HEIGHT = 0.9, PICK_HEIGHT = 1.2, SEED_POP_HEIGHT = 1.6;
+const DROP_HEIGHT = 0.9, PICK_HEIGHT = 1.2, SEED_POP_HEIGHT = 1.9;
 const ICON = Object.fromEntries(MATERIALS.map((m) => [m.id, m.icon]));
 
 /**
