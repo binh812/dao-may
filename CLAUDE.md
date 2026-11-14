@@ -37,11 +37,13 @@ file `.glb` do kịch bản trong repo sinh ra từ bản vẽ (xem `tools/blend
 - `game/bag-core.js` luật túi đồ (thuần, có test): bốn vật liệu (cánh hoa, nấm, gỗ, đá pha lê), đổi ở quầy hàng theo tỉ lệ cố định lấy Hạt Nắng.
   `game/loot.js` nối túi đồ với vật hái lượm (`realm.gatherables`, mọc lại mỗi chuyến; hình ở `game/gather-views.js`), vật liệu Bóng Lặng để lại,
   và Hạt Nắng mọc lại (từ chuyến thứ hai của lần chơi, 6 hạt đã nhặt mọc lại, nhặt lần nữa tính là hạt thưởng). `ui/bag.js` nút và bảng túi đồ.
-- `game/save.js` đọc/ghi `localStorage` (hồ sơ, Hạt Nắng, tủ đồ, hạt thưởng, Túi Nắng, túi đồ `daomay.bag.v1`); thêm khóa mới thì thêm vào `eraseProgress`.
+- `game/save.js` đọc/ghi `localStorage` (hồ sơ, Hạt Nắng, tủ đồ, hạt thưởng, Túi Nắng, túi đồ `daomay.bag.v1`, chuyện đã nghe `daomay.story.v1`); thêm khóa mới thì thêm vào `eraseProgress`.
 - `game/oanquan-core.js` luật trò chơi dân gian Ô ăn quan (thuần, có test); `ui/oanquan.js` bàn chơi với bạn Nhím (Nhím dễ dần khi bé thua);
   `game/playground-view.js` chiếu chơi ở chỗ thế giới đặt `realm.playground`. Chơi hết ván được 1–3 Hạt Nắng.
 - `game/villagers.js` dân làng (thế giới khai báo ở `realm.villagers`: mô hình, chỗ đứng, câu chào): đứng thở, quay mặt về phía Mầm khi bé
   lại gần và chào một câu qua `hud.toast`. Chỉ chào hỏi, không giao việc. Mỗi người là một vật cản tròn (thêm vào `realm.colliders`). Mô hình ở `assets/models/`: hoàng tử, công chúa dựng bằng `tu_anh.py`; bạn Nhím (`nhim.glb`, tô màu trơn, dựng bằng `nhim.py`) ngồi cạnh chiếu ô ăn quan.
+- `game/story-core.js` chuyện kể của dân làng (thuần, có test): một câu chuyện sáu mẩu về tiếng sáo của thung lũng, mỗi người giữ vài mẩu;
+  mỗi chuyến đi mỗi người kể một mẩu mới thay cho câu chào, mẩu đã nghe lưu ở `daomay.story.v1`. Nghe chuyện không có thưởng, không bắt buộc.
 - `game/juice.js` phản hồi của mọi hành động: số bay, chớp sáng màn hình, rung máy quay (`shake`, `play.js` đọc), bảng "Liên hoàn".
   Máy đặt giảm chuyển động thì bỏ rung và chớp. Hiệu ứng 3D của trận đấu (nổ hoa, vòng sáng, địch nảy và chớp) ở `game/enemy-views.js`.
 - `game/battle-core.js` luật đối đầu (thuần, có test): chiêu Lá giữ nút là bắn liên tục, không cần bài; Túi Nắng nạp bằng một câu đố tự nguyện
@@ -95,6 +97,7 @@ Danh sách trong `.pb-dev.json` → `protected`. Chỉ đổi khi anh Ben duyệ
 | Đổi đồ: đủ hạt mới đổi, không trừ hai lần, món đã đổi không mất, số dư không âm; tổng giá cả quầy ≤ số hạt của thế giới | `tests/shop-core.test.mjs` (luật đổi); riêng "tổng giá ≤ số hạt" chưa có cổng tự động: `session.js` chỉ ghi `console.error` lúc mở, đổi giá hay chỗ đặt hạt thì đếm lại tay | 13/11/2026 |
 | Túi đồ: nhặt thì tăng, đổi trừ đúng tỉ lệ, thiếu thì không đổi, không bao giờ âm, dữ liệu lưu hỏng không làm vỡ túi | `tests/bag-core.test.mjs` | 13/11/2026 |
 | Ô ăn quan: rải và ăn đúng luật, không mất viên sỏi nào (tổng luôn 70), ván nào cũng kết thúc, nước sai bị từ chối | `tests/oanquan-core.test.mjs` (300 ván ngẫu nhiên) | 13/11/2026 |
+| Chuyện kể: mỗi người kể theo thứ tự của mình, mỗi chuyến một mẩu mới, mẩu đã nghe không kể lại và không mất, lời kể không giục, dữ liệu lưu hỏng không làm vỡ | `tests/story-core.test.mjs` | 14/11/2026 |
 | Cân bột: mỗi chuyến một mẻ, xem cách giải vẫn xong mẻ và vẫn có công, để sau thì làm lại được, không thưởng hai lần | `tests/mill-core.test.mjs` | 13/11/2026 |
 | Trang phải mở được không lỗi runtime | `scripts/smoke.mjs` | shader treo lúc biên dịch, 12/11/2026 |
 | Shader không biên dịch được phải làm cổng đỏ | `renderer.debug.onShaderError` trong `core/stage.js` đưa lỗi lên hộp lỗi của trang, `smoke.mjs` đọc hộp đó | hoa thung lũng vắng mặt vì biến tên `patch`, 13/11/2026 |

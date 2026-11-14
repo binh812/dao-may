@@ -1,4 +1,4 @@
-// Doc va ghi tien do trong localStorage: ho so hoc, Hat Nang, tu do, hat thuong, Tui Nang, tui do. Khong chua luat.
+// Doc va ghi tien do trong localStorage: ho so hoc, Hat Nang, tu do, hat thuong, Tui Nang, tui do, chuyen da nghe. Khong chua luat.
 // Doc hong thi tra ve gia tri trong (va ghi canh bao), khong bao gio lam game dung.
 import { realm } from '../world/realm.js';
 import { reviveProfile } from '../learn/adaptive.js';
@@ -7,6 +7,7 @@ import { createCollection } from './collect-core.js';
 import { createWardrobe } from './shop-core.js';
 import { createMill } from './mill-core.js';
 import { createBag } from './bag-core.js';
+import { createStory } from './story-core.js';
 
 export const SAVE_KEY = 'daomay.profile.v1';
 export const MUTE_KEY = 'daomay.muted';
@@ -15,6 +16,7 @@ export const WARDROBE_KEY = 'daomay.wardrobe.v1';
 export const BONUS_KEY = 'daomay.bonus.v1';
 export const POUCH_KEY = 'daomay.pouch.v1';
 export const BAG_KEY = 'daomay.bag.v1';
+export const STORY_KEY = 'daomay.story.v1';
 const SEED_PREFIX = 'daomay.seeds.';
 export const SEED_KEY = `${SEED_PREFIX}${realm.name}.v1`;   // Hat Nang da nhat, luu rieng cho tung the gioi
 
@@ -22,6 +24,11 @@ export const SEED_KEY = `${SEED_PREFIX}${realm.name}.v1`;   // Hat Nang da nhat,
 export function store(key, value) {
   try { localStorage.setItem(key, JSON.stringify(value)); return true; }
   catch (error) { console.warn(`Khong luu duoc ${key}:`, error); return false; }
+}
+/** Cac mau chuyen da nghe; khong doc duoc thi coi nhu chua nghe mau nao. */
+export function loadStory() {
+  try { return createStory(JSON.parse(localStorage.getItem(STORY_KEY) ?? 'null')); }
+  catch (error) { console.warn('Khong doc duoc chuyen da nghe:', error); return createStory(); }
 }
 /** Tui do da luu; khong doc duoc thi coi nhu tui rong. */
 export function loadBag() {
@@ -78,5 +85,5 @@ export function loadPouch() {
 export function eraseProgress() {
   const seedKeys = [];
   for (let i = 0; i < localStorage.length; i++) { const key = localStorage.key(i); if (key?.startsWith(SEED_PREFIX)) seedKeys.push(key); }
-  for (const key of [SAVE_KEY, WARDROBE_KEY, BONUS_KEY, POUCH_KEY, BAG_KEY, ...seedKeys]) localStorage.removeItem(key);
+  for (const key of [SAVE_KEY, WARDROBE_KEY, BONUS_KEY, POUCH_KEY, BAG_KEY, STORY_KEY, ...seedKeys]) localStorage.removeItem(key);
 }

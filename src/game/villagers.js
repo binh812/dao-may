@@ -42,7 +42,7 @@ export function createVillagers(scene, spots, groundAt, colliders) {
   }
   return {
     /**
-     * Goi moi khung hinh. Tra ve { name, text } khi mot nguoi vua chao Mam, nguoc lai null. `canGreet` = false (dang mo bang, dang
+     * Goi moi khung hinh. Tra ve { id, name, text } khi mot nguoi vua chao Mam, nguoc lai null. `canGreet` = false (dang mo bang, dang
      * giai do) thi chua chao: loi chao de danh den khi be nhin thay duoc.
      */
     update(dt, player, canGreet = true) {
@@ -58,7 +58,7 @@ export function createVillagers(scene, spots, groundAt, colliders) {
         if (far > FORGET) person.greeted = false;
         if (far < GREET && !person.greeted && canGreet && quiet === 0) {
           person.greeted = true; quiet = BETWEEN_GREETINGS;
-          said = { name: person.spot.name, text: person.spot.lines[person.next++ % person.spot.lines.length] };
+          said = { id: person.spot.id, name: person.spot.name, text: person.spot.lines[person.next++ % person.spot.lines.length] };
         }
       }
       return said;

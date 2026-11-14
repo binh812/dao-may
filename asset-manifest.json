@@ -38,6 +38,7 @@
     "src/game/session.js",
     "src/game/sfx.js",
     "src/game/shop-core.js",
+    "src/game/story-core.js",
     "src/game/touch-controls.js",
     "src/game/villagers.js",
     "src/learn/adaptive.js",
