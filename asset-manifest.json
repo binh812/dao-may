@@ -23,6 +23,7 @@
     "src/game/battle-core.js",
     "src/game/collect-core.js",
     "src/game/enemy-views.js",
+    "src/game/errand-core.js",
     "src/game/gather-views.js",
     "src/game/heart-tree.js",
     "src/game/input-core.js",

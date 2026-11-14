@@ -38,6 +38,7 @@ const CHARGE_PRAISE = { first: 'Giỏi quá!', later: 'Bé làm được rồi!'
 const MAX_START_WAVE = 99;
 const MILL_SPIN_BOOST = 5, SPLASH_EVERY = 0.34, SPLASH_MIN_SPEED = 1.5, STEP_LENGTH = 1.55;   // STEP_LENGTH: quang duong (m) giua hai tieng buoc chan   // coi xay quay nhanh sau me bot; nhip tieng nuoc khi loi
 const SHOP_HINT_DELAY_MS = 3600;
+const GIFT_REACH = 4.2;        // (m) dung gan dan lang chung nay thi hien nut tang do (bang khoang cach chao)
 const STORY_TOAST_MS = 6500;   // mau chuyen dai hon cau chao: de be kip doc
 const GUIDE_FROM = 25; // xa hon khoang nay (m) thi hien mui ten chi huong
 
@@ -97,14 +98,19 @@ export function createSession(play) {
   // Dan lang chao; neu nguoi do con mau chuyen chua ke trong chuyen di nay thi ke mau do thay cho cau chao (doc lau hon)
   function greet(hello) {
     const beat = nextBeat(story, hello.id, state.wave);
-    if (!beat) { hud.toast(`${hello.name}: ${hello.text}`, 3400); return; }
+    // khong con chuyen de ke thi nho viec cua chuyen di nay (neu co), khong thi chao binh thuong
+    if (!beat) { const errand = loot.errandOf(hello.id, state.wave); hud.toast(`${hello.name}: ${errand ? errand.ask : hello.text}`, errand ? 4600 : 3400); return; }
     // Chi tinh la da nghe khi mau chuyen hien du thoi gian. Bi thong bao khac chen ngang thi lan sau nguoi do ke lai, be khong mat mau nao.
     const journey = state.wave;
     villagers.hush(STORY_TOAST_MS / 1000 + 1);
     hud.toast(`${hello.name} kể: ${beat.text}`, STORY_TOAST_MS, () => {
       const { finished } = tell(story, beat, journey);
       store(STORY_KEY, serializeStory(story));
-      if (finished && !busy()) hud.toast('Bé đã nghe trọn câu chuyện về tiếng sáo của thung lũng!', 3600);
+      if (busy()) return;
+      // ke xong thi noi luon viec dang can giup, de be khong thay nut "Tặng" ma chua biet tang de lam gi
+      const errand = loot.errandOf(hello.id, state.wave);
+      if (finished) hud.toast('Bé đã nghe trọn câu chuyện về tiếng sáo của thung lũng!', 3600);
+      else if (errand) { villagers.hush(5); hud.toast(`${hello.name}: ${errand.ask}`, 4600); }
     });
   }
   const near = (spot) => Boolean(spot) && Math.hypot(player.x - spot.x, player.z - spot.z) < spot.reach;
@@ -166,13 +172,19 @@ export function createSession(play) {
     if (near(stall)) return 'Vào quầy hàng';
     if (near(yardSpot)) return 'Chơi ô ăn quan';
     if (near(millSpot) && !state.cleared) return canStart(mill, state.wave) ? 'Cân bột' : 'Bột đã cân xong ✓';
-    return null;
+    const pal = friend();
+    return pal ? loot.giftLabel(pal, state.wave) : null;
   }
+  /** Dan lang gan Mam nhat ma be dang co du do de tang (dung giua hai nguoi thi khong bi nguoi dung truoc che mat nguoi kia), hoac null. */
+  const far = (v) => Math.hypot(player.x - v.x, player.z - v.z);
+  const friend = () => (realm.villagers ?? []).filter((v) => far(v) < GIFT_REACH && loot.giftLabel(v, state.wave)).sort((a, b) => far(a) - far(b))[0] ?? null;
   function useAction() {
     if (!state.profile || busy()) return;
+    const pal = friend();
     if (near(stall)) shopPanel.open();
     else if (near(yardSpot)) startOanQuan();
     else if (near(millSpot) && !state.cleared) { if (canStart(mill, state.wave)) startMill(); else hud.toast('Mẻ bột chuyến này xong rồi. Chuyến sau cối xay lại có mẻ mới nhé!', 2600); }
+    else if (pal) { const done = loot.gift(pal, state.wave); if (done) { villagers.hush(4); hud.toast(`${pal.name}: ${done.thanks}`, 3800); } }
   }
 
   /** Cham diem mot bai da tra loi: cap nhat ho so, bai sai, luu. Tra ve true neu be vua thanh thao ky nang. */
