@@ -19,19 +19,21 @@ let mixer = null, idle = null, walk = null, moving = 0;
 
 new GLTFLoader().load(MODEL_URL, (gltf) => {
   const model = gltf.scene;
+  // kiem du doan hoat anh TRUOC khi dung vao canh: thieu thi nem loi o day, than cu van con nguyen
+  const clips = Object.fromEntries(['Idle', 'Walk'].map((name) => [name, gltf.animations.find((a) => a.name === name)]));
+  for (const [name, found] of Object.entries(clips)) if (!found) throw new Error(`mam.glb thieu doan hoat anh ${name}`);
   model.scale.setScalar(HEIGHT);
   model.traverse((node) => {
     if (!node.isMesh) return;
     // anh da ve san sang toi: dung vat lieu Lambert de van chiu den va bong cua canh (dem thi toi di) ma khong bong lay
-    node.material = new THREE.MeshLambertMaterial({ map: node.material.map, emissiveMap: node.material.map, emissive: new THREE.Color(BAKED_GLOW, BAKED_GLOW, BAKED_GLOW) });
+    node.material = new THREE.MeshLambertMaterial({ map: node.material.map, emissiveMap: node.material.map, emissive: new THREE.Color(BAKED_GLOW, BAKED_GLOW, BAKED_GLOW), side: THREE.DoubleSide });
     node.castShadow = true; node.receiveShadow = false; node.frustumCulled = false;   // luoi co xuong: khung bao khong theo hoat anh
   });
   squash.add(model);
   for (const mesh of body) mesh.visible = false;
   fitOutfit(FIT);
   mixer = new THREE.AnimationMixer(model);
-  const clip = (name) => { const found = gltf.animations.find((a) => a.name === name); if (!found) throw new Error(`mam.glb thieu doan hoat anh ${name}`); return mixer.clipAction(found); };
-  idle = clip('Idle'); walk = clip('Walk');
+  idle = mixer.clipAction(clips.Idle); walk = mixer.clipAction(clips.Walk);
   idle.play(); walk.play(); walk.setEffectiveWeight(0);
   hero.ready = true;
 }, undefined, (error) => {
@@ -41,7 +43,7 @@ new GLTFLoader().load(MODEL_URL, (gltf) => {
 
 /** Goi moi khung hinh: tron giua dung yen va di bo theo toc do ngang; tren khong thi chan dua cham. */
 export function updateHero(dt, speed, grounded) {
-  if (!hero.ready) return;
+  if (!hero.ready || !Number.isFinite(dt) || !Number.isFinite(speed)) return;   // so hong ma lot vao mixer thi luoi bien mat han
   const target = speed > MOVING_FROM ? 1 : 0;
   moving += (target - moving) * (1 - Math.exp(-dt * BLEND_RATE));
   walk.setEffectiveWeight(moving); idle.setEffectiveWeight(1 - moving);

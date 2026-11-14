@@ -9,6 +9,7 @@ import { SUN_DIR, U, camera, controls, motesScale, renderer, scene, sun } from '
 import { aoQuad, aoRT, combinePass, composer, dofPass, fxaaPass, rtScene, volMat, volQuad, volRT } from './render/post.js';
 import { realm } from './world/realm.js';
 import { createPlay } from './game/play.js';
+import { updateHero } from './actors/hero.js';
 import { createSession } from './game/session.js';
 import { updateWeather, weatherNow } from './fx/weather.js';
 
@@ -40,7 +41,7 @@ const clock = new THREE.Clock(), fpsEl = document.getElementById('fps'), infoEl 
 let frames = 0, accTime = 0, slow = 0;
 function tick() {
   const dt = Math.min(clock.getDelta(), 0.05), t = (U.time.value += dt);
-  if (play) { play.update(dt * session.timeScale()); session.update(dt); } else controls.update();
+  if (play) { play.update(dt * session.timeScale()); session.update(dt); } else { controls.update(); updateHero(dt, 0, true); }   // ngam canh: Mam van tho, khong dung cung o tu the goc
   realm.sky.position.copy(camera.position);
   U.sunView.value.copy(SUN_DIR).transformDirection(camera.matrixWorldInverse);
 
