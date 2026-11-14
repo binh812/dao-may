@@ -1,0 +1,48 @@
+{
+ "name": "Mam",
+ "image": "../../../assets/concept/mam-ghep.png",
+ "split": 0.5,
+ "side_faces": "right",
+ "body_x": {
+  "side": [
+   0.1,
+   0.285
+  ],
+  "front": [
+   0.365,
+   0.652
+  ],
+  "back": [
+   0.682,
+   0.965
+  ]
+ },
+ "head_x": {
+  "side": [
+   0.025,
+   0.335
+  ],
+  "front": [
+   0.34,
+   0.668
+  ],
+  "back": [
+   0.675,
+   0.99
+  ]
+ },
+ "head_chin": 0.692,
+ "z": {
+  "chin": 0.714,
+  "neck": 0.7,
+  "armpit": 0.425,
+  "hand": 0.365,
+  "crotch": 0.305,
+  "foot": 0.02,
+  "hip": 0.4
+ },
+ "scarf": false,
+ "body_gap": 0.011,
+ "envelope": 1,
+ "head_envelope": 1
+}

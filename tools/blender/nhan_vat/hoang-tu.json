@@ -1,0 +1,43 @@
+{
+ "name": "HoangTu",
+ "image": "../../../assets/concept/hoang-tu-ghep.png",
+ "split": 0.5,
+ "body_x": {
+  "side": [
+   0.124,
+   0.264
+  ],
+  "front": [
+   0.363,
+   0.606
+  ],
+  "back": [
+   0.701,
+   0.908
+  ]
+ },
+ "head_x": {
+  "side": [
+   0.04,
+   0.345
+  ],
+  "front": [
+   0.35,
+   0.65
+  ],
+  "back": [
+   0.66,
+   0.955
+  ]
+ },
+ "head_chin": 0.672,
+ "z": {
+  "chin": 0.755,
+  "neck": 0.742,
+  "armpit": 0.575,
+  "hand": 0.335,
+  "crotch": 0.335,
+  "foot": 0.045
+ },
+ "scarf": true
+}

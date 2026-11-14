@@ -1,7 +1,7 @@
 // Service worker: de game chay khi khong co mang.
 // Chien luoc: luc cai dat thi luu san moi file trong asset-manifest.json; khi chay thi hoi mang truoc
 // (de ban moi luon duoc dung khi co mang), mang loi hoac cham qua NETWORK_TIMEOUT_MS thi lay ban da luu.
-const CACHE = 'daomay-cache-c97ad3c0f9';
+const CACHE = 'daomay-cache-8b63d66a6d';
 const NETWORK_TIMEOUT_MS = 3000;
 
 self.addEventListener('install', (event) => {

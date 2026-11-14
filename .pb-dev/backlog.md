@@ -121,3 +121,12 @@ Mẫu: `- [ ] <tiêu đề> — Khi <tình huống> thì app phải <kết quả
 - Xong: Mầm chạy thì có tiếng bước chân theo quãng đường đã đi (mỗi 1,55 m một tiếng, hai chân hơi lệch giọng); trên đường mòn tiếng gọn và cao, trên cỏ êm và trầm; lội nước giữ tiếng nước cũ.
 - Kiểm chứng: 116 test xanh, trang mở không lỗi. Chưa ai nghe thử: âm thanh không kiểm được bằng trình duyệt không màn hình.
 - [ ] Nghe thử trên điện thoại rồi chỉnh cao độ, âm lượng, nhịp.
+
+## Mầm dạng người (14/11/2026)
+- Xong: anh Ben quyết đổi Mầm thành hình người. Thiết kế: em bé áo choàng bông trắng trùm mũ tròn, quần áo xanh lá, bốt nâu; chồi lá vẫn trên đỉnh mũ. Bản vẽ ba góc (toàn thân + cận cảnh đầu) do Gemini vẽ; mô hình dựng bằng `tools/blender/tu_anh.py` (đo hình bóng, chiếu bản vẽ lên lưới): 19.500 tam giác, 18 xương, ba đoạn hoạt ảnh.
+- Xong: game nạp `assets/models/mam.glb` bằng GLTFLoader 0.180 (đã vendor), hoạt ảnh đứng yên/đi bộ trộn theo tốc độ; mũ, khăn, chồi của quầy hàng đặt lại theo dáng mới; nạp lỗi thì giữ thân bông cũ.
+- Kiểm chứng: 116 test xanh, ci.ps1 xanh, ảnh trong game (có và không có mũ khăn) đã tự xem.
+- [ ] Chưa đo fps và thời gian mở game trên điện thoại sau khi thêm mô hình (~1 MB) và lưới có xương.
+- [ ] Chưa có hoạt ảnh nhảy và lượn riêng (đang dùng dáng đi chậm khi ở trên không); mắt không chớp; tay ngắn vì áo choàng che.
+- [ ] Hoàng tử và công chúa còn ở nhánh `spike/blender-nhan-vat`, chưa vào game; vành mũ nghiêng của công chúa chưa dựng đúng.
+- [ ] Mầm chưa được anh Ben duyệt thiết kế (do Claude đề xuất).
