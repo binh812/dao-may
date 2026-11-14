@@ -147,3 +147,8 @@ Mẫu: `- [ ] <tiêu đề> — Khi <tình huống> thì app phải <kết quả
 ## Đẩy độ nét lên mức gốc của màn hình (14/11/2026)
 - Anh Ben báo bản 2,25 "ok hơn, tốc độ vẫn ok" và hỏi đẩy thêm. Xong: mức "Vừa" dùng đúng độ phân giải gốc của màn hình (trần 3,0), cỏ 42.000 → 64.000 ngọn, lá 90 → 120, hoa đồng 3.500 → 5.000.
 - [ ] Cần anh Ben đo lại fps và để ý máy nóng, hao pin; game tự hạ độ phân giải nếu dưới 42 khung hình.
+
+## Mức Cao trên điện thoại (14/11/2026)
+- Anh Ben báo: để mức "Cao" trên điện thoại vẫn 60 fps, 100% (34 lệnh vẽ, 2.082k tam giác).
+- Xong: mức "Cao" cũng dùng độ phân giải gốc của màn hình (trần 2,0 → 3,0; trước đó còn thấp hơn mức "Vừa"); mức đồ họa người chơi chọn trong bảng được nhớ lại ở `daomay.tier` cho các lần mở sau.
+- [ ] Mặc định cho điện thoại vẫn là "Vừa" (chưa biết máy khác kham nổi mức "Cao" không). Nếu muốn tự nâng mức khi máy đủ khỏe thì cần thêm đo đạc lúc chạy.

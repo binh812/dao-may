@@ -1,7 +1,7 @@
 import { controls, flatAmbient, hemi, scene, sun } from '../core/stage.js';
 import { T, WEATHER, weatherState } from '../fx/weather.js';
 import { bloomPass, combinePass, dofPass, paintPass } from '../render/post.js';
-import { Q, TIERS, qs, tierName } from '../core/quality.js';
+import { Q, TIERS, qs, rememberTier, tierName } from '../core/quality.js';
 import { realm } from '../world/realm.js';
 
 // ---------------------------------------------------------------- UI / toggles
@@ -24,7 +24,7 @@ function applyToggles() {
   for (const [id, label] of WORLD_LABELS) { const b = document.createElement('button'); b.textContent = label; b.classList.toggle('on', id === realm.name); b.onclick = () => { qs.set('world', id); location.search = qs.toString(); }; worlds.append(b); }
   if (realm.paint && Q.paintRadius > 0) { const b = document.createElement('button'); b.textContent = 'Nét cọ'; b.classList.add('on'); b.onclick = () => { paintPass.enabled = !paintPass.enabled; b.classList.toggle('on', paintPass.enabled); }; worlds.append(b); }
   for (const k of Object.keys(T)) { const b = document.createElement('button'); b.textContent = LABEL[k]; b.dataset.k = k; b.onclick = () => { T[k] = !T[k]; applyToggles(); }; tg.append(b); }
-  for (const k of Object.keys(TIERS)) { const b = document.createElement('button'); b.textContent = TIERS[k].label; b.classList.toggle('on', k === tierName); b.onclick = () => { qs.set('q', k); location.search = qs.toString(); }; tiers.append(b); }
+  for (const k of Object.keys(TIERS)) { const b = document.createElement('button'); b.textContent = TIERS[k].label; b.classList.toggle('on', k === tierName); b.onclick = () => { rememberTier(k); qs.set('q', k); location.search = qs.toString(); }; tiers.append(b); }
   const wr = document.getElementById('weather');
   for (const k of Object.keys(WEATHER)) { const b = document.createElement('button'); b.textContent = WEATHER[k].label; b.dataset.w = k; b.classList.toggle('on', k === weatherState.name); b.onclick = () => { weatherState.name = k; wr.querySelectorAll('button').forEach(x => x.classList.toggle('on', x.dataset.w === k)); }; wr.append(b); }
   let saved = null;
