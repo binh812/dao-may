@@ -136,3 +136,10 @@ Mẫu: `- [ ] <tiêu đề> — Khi <tình huống> thì app phải <kết quả
 - Xong: lớp lọc nét cọ (Kuwahara) không còn áp lên Mầm (`keepSharp` trong `render/post.js`: giữ nguyên điểm ảnh trong một hình elip quanh nhân vật và ở đúng khoảng cách của nhân vật); máy quay lại gần hơn (dọc 10,5 → 8,4 m, ngang 8,5 → 7,6 m); Mầm cao 1,5 m thay vì 1,3 m; bật lọc dị hướng cho ảnh của Mầm.
 - Kiểm chứng: ảnh trước/sau ở màn dọc mức đồ họa cao đã tự xem; 116 test xanh.
 - [ ] Đầu ngón tay và đỉnh mũ còn chấm màu nền xanh đậm; cỏ sát chân Mầm cũng không qua lớp lọc (cùng khoảng cách), cần anh Ben xem có lộ không.
+
+## Cả cảnh nét hơn trên điện thoại (14/11/2026)
+- Anh Ben: "nếu nét được hơn nữa thì tốt hơn, cả mọi thứ xung quanh nữa"; ảnh thứ hai của anh vẫn 60 fps (62 lệnh vẽ, 2.087k tam giác).
+- Xong: trần độ phân giải mức "Vừa" (điện thoại) 1,5 → 2,25; lớp lọc nét cọ nhẹ ở gần (40%) và đậm dần ra xa (82% từ 45 m), bước lấy mẫu 1,35 → 1,0; độ mờ xa/gần còn 55% và vùng nét rộng hơn; ảnh mây mức "Vừa" 1280×448 → 1792×640.
+- Kiểm chứng: ảnh trước/sau chụp ở mật độ điểm ảnh 2,625 (giả lập điện thoại) đã tự xem; 116 test xanh; trang mở không lỗi ở ba mức đồ họa.
+- [ ] Số điểm ảnh phải vẽ tăng khoảng 2,25 lần: CẦN anh Ben đo lại fps. Nếu dưới 42 khung hình, game tự hạ độ phân giải từng nấc 10% (tối thiểu 60%).
+- [ ] Thay đổi này chưa qua agent soát độc lập (chỉ đổi hằng số và một dòng shader).

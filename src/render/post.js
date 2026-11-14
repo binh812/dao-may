@@ -129,7 +129,9 @@ composer.addPass(new OutputPass());
 
 // Net co: bo loc Kuwahara chon vung it bien dong nhat quanh moi diem anh, lam hinh tron lai thanh tung mang nhu son.
 // Chi bat o the gioi co phong cach tranh ve (realm.paint) va khi muc do hoa cho phep. Bau troi duoc de nguyen.
-const PAINT_STEP = 1.35;
+const PAINT_STEP = 1.0;
+// Do dam cua net co theo khoang cach (m): gan thi giu chi tiet (co, hoa, da quanh nhan vat), xa thi thanh mang mau nhu tranh.
+const PAINT_NEAR = { dist: 6, amount: 0.4 }, PAINT_FAR = { dist: 45, amount: 0.82 };
 const paintPass = new ShaderPass(new THREE.ShaderMaterial({
   defines: { RADIUS: Math.max(Q.paintRadius, 1) },
   uniforms: { tDiffuse: { value: null }, tDepth: { value: rtScene.depthTexture }, uTexel: { value: new THREE.Vector2() },
@@ -153,9 +155,10 @@ const paintPass = new ShaderPass(new THREE.ShaderMaterial({
       region(vec2(1., 1.), best, bestVar); region(vec2(-1., 1.), best, bestVar); region(vec2(1., -1.), best, bestVar); region(vec2(-1., -1.), best, bestVar);
       // vung giu net (nhan vat): trong hinh elip uKeep tren man hinh VA o dung khoang cach cua nhan vat thi tra lai diem anh goc
       float keep = 0.;
+      float dist = uNearFar.x * uNearFar.y / (uNearFar.y - z * (uNearFar.y - uNearFar.x));
+      best = mix(src.rgb, best, mix(${PAINT_NEAR.amount.toFixed(2)}, ${PAINT_FAR.amount.toFixed(2)}, smoothstep(${PAINT_NEAR.dist.toFixed(1)}, ${PAINT_FAR.dist.toFixed(1)}, dist)));
       float inside = uKeep.z > 0. ? length((vUv - uKeep.xy) / uKeep.zw) : 2.;
       if (inside < 1.) {
-        float dist = uNearFar.x * uNearFar.y / (uNearFar.y - z * (uNearFar.y - uNearFar.x));
         keep = (1. - smoothstep(0.8, 1., inside)) * (1. - smoothstep(uKeepDist.y * 0.6, uKeepDist.y, abs(dist - uKeepDist.x)));
       }
       gl_FragColor = vec4(mix(best, src.rgb, keep), src.a);
@@ -169,6 +172,7 @@ const _keep = new THREE.Vector3();
 export function keepSharp(centre, halfWidth, halfHeight) {
   const keep = paintPass.uniforms.uKeep.value;
   if (!paintPass.enabled) return;
+  paintPass.uniforms.uNearFar.value.set(camera.near, camera.far);   // shader luon can de tinh khoang cach, ke ca khi khong co vung giu net
   camera.updateMatrixWorld();                         // may quay vua duoc dat lai trong khung nay: khong cap nhat thi elip di sau nhan vat mot khung
   _keep.copy(centre).applyMatrix4(camera.matrixWorldInverse);
   const dist = -_keep.z;

@@ -6,13 +6,14 @@ import { realm } from '../world/realm.js';
 
 // ---------------------------------------------------------------- UI / toggles
 const WORLD_LABELS = [['island', 'Đảo Mây'], ['valley', 'Thung lũng']];
+const DOF_STRENGTH = 0.55;   // do mo cua canh xa/gan; 1 la muc cu, lam lang va nui mo qua tay
 const LABEL = { vol: 'Tia nắng + sương', shadow: 'Bóng đổ', ao: 'AO', bloom: 'Bloom', dof: 'Xa gần', grass: 'Cỏ', env: 'Ánh sáng trời', spin: 'Tự xoay' };
 function applyToggles() {
   sun.castShadow = T.shadow;
   combinePass.uniforms.uAO.value = T.ao && Q.aoTaps > 0 ? 1 : 0;
   bloomPass.enabled = T.bloom;
   combinePass.uniforms.uVolOn.value = T.vol && Q.volSteps > 0 ? 1 : 0;
-  dofPass.uniforms.uMaxBlur.value = T.dof && Q.dofTaps > 0 ? 1 : 0;
+  dofPass.uniforms.uMaxBlur.value = T.dof && Q.dofTaps > 0 ? DOF_STRENGTH : 0;
   realm.setGrassVisible(T.grass);
   scene.environmentIntensity = T.env ? 0.4 : 0; hemi.visible = T.env; flatAmbient.visible = !T.env;
   controls.autoRotate = T.spin;

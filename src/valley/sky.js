@@ -10,7 +10,7 @@ import { tierName } from '../core/quality.js';
 const NOISE_SIZE = 64;                                   // canh texture nhieu 3D
 const BAKE = {                                           // do phan giai anh may va so buoc tia theo muc do hoa
   low: { width: 1024, height: 384, steps: 36 },
-  medium: { width: 1280, height: 448, steps: 40 },
+  medium: { width: 1792, height: 640, steps: 40 },
   high: { width: 2048, height: 768, steps: 64 },
 }[tierName];
 const PAINT_BACK_LEAN = 0.9;                             // do nghieng ra phia sau cua anh sang ve may (0 = thang tu tren xuong)
