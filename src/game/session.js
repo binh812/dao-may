@@ -12,6 +12,8 @@ import { createOanQuan } from '../ui/oanquan.js';
 import { createJuice } from './juice.js';
 import { createPlayground } from './playground-view.js';
 import { createVillagers } from './villagers.js';
+import { createZone, stepZone } from './sleep-core.js';
+import { setSleepZone } from '../render/post.js';
 import { nextBeat, serializeStory, tell } from './story-core.js';
 import { ADAPTIVE, changeGrade, createProfile, masteredCount, pickSkill, recordAnswer, recordMistake } from '../learn/adaptive.js';
 import { createEnemyViews } from './enemy-views.js';
@@ -120,11 +122,13 @@ export function createSession(play) {
   // ?wave=N bat dau tu chuyen thu N (de thu va chup anh kiem tra cac diem xa)
   const askedWave = Math.floor(Number(new URLSearchParams(location.search).get('wave')));
   const firstWave = Number.isFinite(askedWave) && askedWave >= 1 ? Math.min(askedWave, MAX_START_WAVE) : 1;
+  let zone = null;
   const state = { profile: loadProfile(), battle: null, wave: firstWave - 1, asking: false, cleared: false, answered: 0, correct: 0, puzzles: 0, lastKind: null, time: 0 };
 
   function startWave() {
     state.wave += 1; state.cleared = false; state.answered = 0; state.correct = 0; state.puzzles = 0;
     state.battle = createBattle(spawnEnemies(state.wave, player, rng), state.battle ? state.battle.faints : 0, state.battle ? state.battle.pouch : loadPouch());
+    zone = state.battle.enemies.length ? createZone(state.battle.enemies) : null;   // quanh trai dang ngu, canh nhat mau cho toi khi be danh thuc
     views.reset(state.battle);
     loot.newJourney(state.wave > firstWave);
     refreshHud();
@@ -331,6 +335,7 @@ export function createSession(play) {
     update(dt) {
       state.time += dt;
       tree.update(dt, state.time);
+      if (zone && state.battle) setSleepZone(stepZone(zone, dt, state.battle.enemies.filter((e) => e.awake).length, state.battle.enemies.length));
       if (yard) yard.update(state.time);
       const hello = villagers?.update(dt, player, Boolean(state.profile) && !busy());
       if (hello) greet(hello);

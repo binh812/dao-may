@@ -189,3 +189,9 @@ Mẫu: `- [ ] <tiêu đề> — Khi <tình huống> thì app phải <kết quả
 - [ ] Việc đã giúp chỉ nhớ trong một lần mở game (tải lại trang là có việc lại; vật liệu có hạn nên không cày vô hạn được).
 - [ ] Khi bé còn thiếu đồ chưa có lời nhắc "còn thiếu mấy"; chưa có việc "mang đồ từ người này sang người kia", "dẫn đường". Nhím chưa có việc (đứng trong tầm nút ô ăn quan).
 - [ ] Giúp xong thế giới chưa đổi gì (chưa hiện vòng hoa, đèn lồng, hàng rào mới).
+
+## Vùng ngủ và thức (14/11/2026)
+- Xong: quanh trại Bóng Lặng đang ngủ cảnh nhạt màu (bán kính trùm cả trại + 20 m), mỗi con thức thì bớt nhạt, thức hết thì màu loang từ tâm ra trong 3,2 giây. Mầm không bị nhạt. Luật ở `sleep-core.js`, 7 test.
+- Đã xem bằng ảnh: lúc cả trại còn ngủ (cỏ gần nhạt, làng xa vẫn tươi). Chưa xem được lúc màu loang ra (máy chụp không quay phim) và chưa đo tốc độ khung hình trên điện thoại sau khi thêm phép tính này vào lớp hậu kỳ.
+- [ ] Mức đồ họa Thấp không có lớp lọc nét cọ nên không có hiệu ứng này. Đảo Mây cũng không có.
+- [ ] Dân làng chưa "ngủ gật" khi vùng còn ngủ; tiệm chưa đóng/mở theo vùng; chưa có tiếng nhạc trở lại khi vùng thức.

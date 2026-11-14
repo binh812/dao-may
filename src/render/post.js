@@ -135,10 +135,11 @@ const PAINT_NEAR = { dist: 6, amount: 0.4 }, PAINT_FAR = { dist: 45, amount: 0.8
 const paintPass = new ShaderPass(new THREE.ShaderMaterial({
   defines: { RADIUS: Math.max(Q.paintRadius, 1) },
   uniforms: { tDiffuse: { value: null }, tDepth: { value: rtScene.depthTexture }, uTexel: { value: new THREE.Vector2() },
-    uKeep: { value: new THREE.Vector4(0, 0, 0, 0) }, uKeepDist: { value: new THREE.Vector2(0, 1) }, uNearFar: { value: new THREE.Vector2(0.1, 1000) } },
+    uKeep: { value: new THREE.Vector4(0, 0, 0, 0) }, uKeepDist: { value: new THREE.Vector2(0, 1) }, uNearFar: { value: new THREE.Vector2(0.1, 1000) },
+    uSleep: { value: new THREE.Vector4(0, 0, 1, 0) }, uSleepClear: { value: 0 }, uInvProj: { value: new THREE.Matrix4() }, uCamWorld: { value: new THREE.Matrix4() } },
   vertexShader: VS,
   fragmentShader: /* glsl */`
-    uniform sampler2D tDiffuse, tDepth; uniform vec2 uTexel, uKeepDist, uNearFar; uniform vec4 uKeep; varying vec2 vUv;
+    uniform sampler2D tDiffuse, tDepth; uniform vec2 uTexel, uKeepDist, uNearFar; uniform vec4 uKeep, uSleep; uniform float uSleepClear; uniform mat4 uInvProj, uCamWorld; varying vec2 vUv;
     void region(vec2 dir, inout vec3 best, inout float bestVar){
       vec3 sum = vec3(0.), sq = vec3(0.);
       for (int i = 0; i <= RADIUS; i++) for (int j = 0; j <= RADIUS; j++) {
@@ -161,7 +162,17 @@ const paintPass = new ShaderPass(new THREE.ShaderMaterial({
       if (inside < 1.) {
         keep = (1. - smoothstep(0.8, 1., inside)) * (1. - smoothstep(uKeepDist.y * 0.6, uKeepDist.y, abs(dist - uKeepDist.x)));
       }
-      gl_FragColor = vec4(mix(best, src.rgb, keep), src.a);
+      vec3 col = mix(best, src.rgb, keep);
+      // vung dang ngu (uSleep: tam x, tam z, ban kinh, do nhat): nhat mau quanh trai Bong Lang; uSleepClear la ban kinh phan da thuc,
+      // loang tu tam ra. Mep lon xon theo vi tri tren mat dat de giong mau nuoc tham giay. Nhan vat (vung giu net) khong bi nhat.
+      if (uSleep.w > 0.001) {
+        vec4 view = uInvProj * vec4(vUv * 2. - 1., z * 2. - 1., 1.); vec3 world = (uCamWorld * vec4(view.xyz / view.w, 1.)).xyz;
+        float d = length(world.xz - uSleep.xy) + (sin(world.x * 0.9) + sin(world.z * 1.1 + world.x * 0.4)) * 1.3;
+        float asleep = uSleep.w * (1. - smoothstep(uSleep.z * 0.72, uSleep.z, d)) * smoothstep(uSleepClear - 4., uSleepClear, d) * (1. - keep);
+        float lum = dot(col, vec3(0.30, 0.59, 0.11));
+        col = mix(col, mix(vec3(lum) * vec3(0.95, 0.98, 1.04), col, 0.25) * 0.94 + 0.04, asleep);
+      }
+      gl_FragColor = vec4(col, src.a);
     }`,
 }));
 const _keep = new THREE.Vector3();
@@ -169,11 +180,18 @@ const _keep = new THREE.Vector3();
  * Giu net mot vat giua lop loc net co: tam (toa do the gioi), nua be ngang va nua chieu cao (m). Bo loc lam tron moi thu thanh
  * mang mau, hop voi canh nhung lam nhoe khuon mat va trang phuc cua nhan vat. Goi moi khung hinh; halfHeight = 0 de tat.
  */
+/** Vung dang ngu de lam nhat mau (xem sleep-core.js): { x, z, radius, amount, clear }, hoac null de tat. */
+export function setSleepZone(zone) {
+  if (zone) { paintPass.uniforms.uSleep.value.set(zone.x, zone.z, zone.radius, zone.amount); paintPass.uniforms.uSleepClear.value = zone.clear; }
+  else paintPass.uniforms.uSleep.value.w = 0;
+}
+
 export function keepSharp(centre, halfWidth, halfHeight) {
   const keep = paintPass.uniforms.uKeep.value;
   if (!paintPass.enabled) return;
   paintPass.uniforms.uNearFar.value.set(camera.near, camera.far);   // shader luon can de tinh khoang cach, ke ca khi khong co vung giu net
   camera.updateMatrixWorld();                         // may quay vua duoc dat lai trong khung nay: khong cap nhat thi elip di sau nhan vat mot khung
+  paintPass.uniforms.uInvProj.value.copy(camera.projectionMatrixInverse); paintPass.uniforms.uCamWorld.value.copy(camera.matrixWorld);   // de vung ngu tinh duoc vi tri tren mat dat
   _keep.copy(centre).applyMatrix4(camera.matrixWorldInverse);
   const dist = -_keep.z;
   if (!(halfHeight > 0) || dist <= camera.near) { keep.set(0, 0, 0, 0); return; }
