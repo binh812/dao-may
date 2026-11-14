@@ -162,4 +162,4 @@ Mẫu: `- [ ] <tiêu đề> — Khi <tình huống> thì app phải <kết quả
 ## Mầm nhảy và lượn (14/11/2026)
 - Xong: `mam.glb` có thêm hai đoạn Jump (co chân, tay giơ ngang) và Glide (dang tay, chân duỗi ra sau); `hero.js` trộn sang khi rời đất / khi lượn. Tư thế dùng chung ở `nguoi_chung.air_motion`.
 - Đã xem: ảnh dựng trong Blender của hai tư thế; một ảnh trong game lúc đang lượn. Chưa xem chuyển động liên tục (máy chụp không quay phim).
-- [ ] Mũ và khăn vẫn gắn vào khung `squash`, chưa theo xương đầu.
+- Xong: mũ và chồi lá bám theo xương đầu, khăn theo xương ngực (`hero.js` + `outfit.carryOutfit`).
