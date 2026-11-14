@@ -45,6 +45,8 @@ export function createVillagers(scene, spots, groundAt, colliders) {
      * Goi moi khung hinh. Tra ve { id, name, text } khi mot nguoi vua chao Mam, nguoc lai null. `canGreet` = false (dang mo bang, dang
      * giai do) thi chua chao: loi chao de danh den khi be nhin thay duoc.
      */
+    /** Moi nguoi giu im lang it nhat `seconds` giay nua (dang co nguoi ke chuyen). */
+    hush(seconds) { quiet = Math.max(quiet, seconds); },
     update(dt, player, canGreet = true) {
       let said = null;
       if (Number.isFinite(dt)) quiet = Math.max(0, quiet - dt);

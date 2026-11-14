@@ -55,7 +55,8 @@ export function createHud({ onLeaf, onSkill, onAction, worldLabel, onSwitchWorld
       guide.style.display = 'block'; arrow.style.transform = `rotate(${angle}rad)`;
       guideText.textContent = `Bóng Lặng cách ${Math.round(meters / 5) * 5} m`;
     },
-    toast(text, ms = 1800) { toastBox.textContent = text; toastBox.style.opacity = '1'; clearTimeout(toastTimer); toastTimer = setTimeout(() => { toastBox.style.opacity = '0'; }, ms); },
+    /** Thong bao giua man hinh. `onShown` chi duoc goi khi thong bao hien DU thoi gian; bi thong bao khac chen ngang thi khong goi. */
+    toast(text, ms = 1800, onShown = null) { toastBox.textContent = text; toastBox.style.opacity = '1'; clearTimeout(toastTimer); toastTimer = setTimeout(() => { toastBox.style.opacity = '0'; onShown?.(); }, ms); },
     /** Bang giua man hinh co mot nut; goi lai voi null de go. */
     banner(title, lines, buttonLabel, onClick) {
       if (bannerEl) { bannerEl.remove(); bannerEl = null; }

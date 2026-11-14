@@ -98,10 +98,14 @@ export function createSession(play) {
   function greet(hello) {
     const beat = nextBeat(story, hello.id, state.wave);
     if (!beat) { hud.toast(`${hello.name}: ${hello.text}`, 3400); return; }
-    const { finished } = tell(story, beat, state.wave);
-    store(STORY_KEY, serializeStory(story));
-    hud.toast(`${hello.name} kể: ${beat.text}`, STORY_TOAST_MS);
-    if (finished) setTimeout(() => hud.toast('Bé đã nghe trọn câu chuyện về tiếng sáo của thung lũng!', 3600), STORY_TOAST_MS + 400);
+    // Chi tinh la da nghe khi mau chuyen hien du thoi gian. Bi thong bao khac chen ngang thi lan sau nguoi do ke lai, be khong mat mau nao.
+    const journey = state.wave;
+    villagers.hush(STORY_TOAST_MS / 1000 + 1);
+    hud.toast(`${hello.name} kể: ${beat.text}`, STORY_TOAST_MS, () => {
+      const { finished } = tell(story, beat, journey);
+      store(STORY_KEY, serializeStory(story));
+      if (finished && !busy()) hud.toast('Bé đã nghe trọn câu chuyện về tiếng sáo của thung lũng!', 3600);
+    });
   }
   const near = (spot) => Boolean(spot) && Math.hypot(player.x - spot.x, player.z - spot.z) < spot.reach;
   const busy = () => notebook.isOpen() || state.asking || Boolean(shopPanel?.isOpen()) || loot.isOpen();

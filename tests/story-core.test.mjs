@@ -1,6 +1,7 @@
 // Chuyen ke cua dan lang: moi nguoi ke theo thu tu cua minh, moi chuyen di mot mau moi, mau da nghe khong mat, du lieu luu hong khong lam vo.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { STORY, createStory, nextBeat, serializeStory, tell } from '../src/game/story-core.js';
 
 const TELLERS = [...new Set(STORY.map((beat) => beat.teller))];
@@ -10,7 +11,7 @@ test('every beat has a unique id, a teller, and a short text that neither nags n
   for (const beat of STORY) {
     assert.ok(beat.teller.length > 1, beat.id);
     assert.ok(beat.text.length >= 30 && beat.text.length <= 130, `${beat.id}: ${beat.text.length} ky tu`);   // vua mot o thong bao tren dien thoai
-    assert.doesNotMatch(beat.text, /chưa\?|phải |nhanh lên|mau lên/i, beat.id);
+    assert.doesNotMatch(beat.text, /chưa\?|phải |nhanh lên|mau lên|đáng sợ|sợ hãi|lỗi của|tại bạn|tại Mầm|hư |dở /i, beat.id);
   }
 });
 
@@ -62,6 +63,16 @@ test('a broken or foreign save is ignored instead of breaking the story', () => 
 test('telling an unknown beat is refused loudly', () => {
   assert.throws(() => tell(createStory(), { id: 'bia', teller: 'nhim' }, 1), RangeError);
   assert.throws(() => tell(createStory(), null, 1), RangeError);
+});
+
+test('every teller is a villager the valley actually declares, so no beat is silently unreachable', () => {
+  const valley = readFileSync(new URL('../src/worlds/valley.js', import.meta.url), 'utf8');
+  for (const teller of TELLERS) assert.ok(valley.includes(`{ id: '${teller}', model:`), `khong thay dan lang ${teller} trong valley.js`);
+});
+
+test('telling a beat that was already heard does not finish the story a second time', () => {
+  const story = createStory(STORY.map((beat) => beat.id));
+  assert.equal(tell(story, STORY[STORY.length - 1], 9).finished, false);
 });
 
 test('an unknown teller simply has nothing to tell', () => {
