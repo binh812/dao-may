@@ -57,7 +57,8 @@ export function createLoot({ enabled, player, seeds, atStall, canOpen, addBonus,
       if (!errand) return null;
       const result = help(errands, bag, errand, journey);
       if (!result.ok) return null;
-      store(BAG_KEY, serializeBag(bag)); bagUi.refresh(); addBonus(result.seeds); sfx.buy();
+      addBonus(result.seeds);                        // cong thuong TRUOC khi luu tui: co truc trac giua chung thi be khong mat do ma khong duoc gi
+      store(BAG_KEY, serializeBag(bag)); bagUi.refresh(); sfx.buy();
       juice.pop(friend.x, groundAt(friend.x, friend.z) + SEED_POP_HEIGHT, friend.z, `+${result.seeds} ✦`, { color: '#ffe27a', size: 26 });
       return errand;
     },

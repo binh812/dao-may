@@ -106,7 +106,11 @@ export function createSession(play) {
     hud.toast(`${hello.name} kể: ${beat.text}`, STORY_TOAST_MS, () => {
       const { finished } = tell(story, beat, journey);
       store(STORY_KEY, serializeStory(story));
-      if (finished && !busy()) hud.toast('Bé đã nghe trọn câu chuyện về tiếng sáo của thung lũng!', 3600);
+      if (busy()) return;
+      // ke xong thi noi luon viec dang can giup, de be khong thay nut "Tặng" ma chua biet tang de lam gi
+      const errand = loot.errandOf(hello.id, state.wave);
+      if (finished) hud.toast('Bé đã nghe trọn câu chuyện về tiếng sáo của thung lũng!', 3600);
+      else if (errand) { villagers.hush(5); hud.toast(`${hello.name}: ${errand.ask}`, 4600); }
     });
   }
   const near = (spot) => Boolean(spot) && Math.hypot(player.x - spot.x, player.z - spot.z) < spot.reach;
@@ -171,8 +175,9 @@ export function createSession(play) {
     const pal = friend();
     return pal ? loot.giftLabel(pal, state.wave) : null;
   }
-  /** Dan lang dang dung ngay canh Mam (de tang do), hoac null. */
-  const friend = () => realm.villagers?.find((v) => Math.hypot(player.x - v.x, player.z - v.z) < GIFT_REACH) ?? null;
+  /** Dan lang gan Mam nhat ma be dang co du do de tang (dung giua hai nguoi thi khong bi nguoi dung truoc che mat nguoi kia), hoac null. */
+  const far = (v) => Math.hypot(player.x - v.x, player.z - v.z);
+  const friend = () => (realm.villagers ?? []).filter((v) => far(v) < GIFT_REACH && loot.giftLabel(v, state.wave)).sort((a, b) => far(a) - far(b))[0] ?? null;
   function useAction() {
     if (!state.profile || busy()) return;
     const pal = friend();
