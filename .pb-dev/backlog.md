@@ -143,3 +143,7 @@ Mẫu: `- [ ] <tiêu đề> — Khi <tình huống> thì app phải <kết quả
 - Kiểm chứng: ảnh trước/sau chụp ở mật độ điểm ảnh 2,625 (giả lập điện thoại) đã tự xem; 116 test xanh; trang mở không lỗi ở ba mức đồ họa.
 - [ ] Số điểm ảnh phải vẽ tăng khoảng 2,25 lần: CẦN anh Ben đo lại fps. Nếu dưới 42 khung hình, game tự hạ độ phân giải từng nấc 10% (tối thiểu 60%).
 - [ ] Thay đổi này chưa qua agent soát độc lập (chỉ đổi hằng số và một dòng shader).
+
+## Đẩy độ nét lên mức gốc của màn hình (14/11/2026)
+- Anh Ben báo bản 2,25 "ok hơn, tốc độ vẫn ok" và hỏi đẩy thêm. Xong: mức "Vừa" dùng đúng độ phân giải gốc của màn hình (trần 3,0), cỏ 42.000 → 64.000 ngọn, lá 90 → 120, hoa đồng 3.500 → 5.000.
+- [ ] Cần anh Ben đo lại fps và để ý máy nóng, hao pin; game tự hạ độ phân giải nếu dưới 42 khung hình.
