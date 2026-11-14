@@ -183,3 +183,9 @@ Mẫu: `- [ ] <tiêu đề> — Khi <tình huống> thì app phải <kết quả
 - Xong: ô thông báo giữa màn hình không còn bị bó còn nửa bề ngang.
 - [ ] Chưa có chỗ xem lại các mẩu đã nghe (ví dụ một trang trong Sổ học). Chưa có tiếng đọc cho bé chưa biết chữ.
 - [ ] Không id mẩu chuyện nào được đổi sau khi phát hành (tiến độ lưu theo id).
+
+## Việc giúp ngắn của dân làng (14/11/2026)
+- Xong: hoàng tử (gỗ, đá pha lê) và công chúa (cánh hoa, nấm) mỗi chuyến nhờ một việc; trong túi có đủ thì hiện nút "Tặng N … cho …", tặng được 2–3 Hạt Nắng và lời cảm ơn. Luật ở `errand-core.js`, 9 test. Đã thử trọn lượt trong trang thật (túi 3 gỗ → 1, hạt thưởng 0 → 2).
+- [ ] Việc đã giúp chỉ nhớ trong một lần mở game (tải lại trang là có việc lại; vật liệu có hạn nên không cày vô hạn được).
+- [ ] Khi bé còn thiếu đồ chưa có lời nhắc "còn thiếu mấy"; chưa có việc "mang đồ từ người này sang người kia", "dẫn đường". Nhím chưa có việc (đứng trong tầm nút ô ăn quan).
+- [ ] Giúp xong thế giới chưa đổi gì (chưa hiện vòng hoa, đèn lồng, hàng rào mới).

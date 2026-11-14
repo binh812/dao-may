@@ -1,10 +1,12 @@
 // Do nhat duoc ngoai Hat Nang chinh: tui do, vat hai luom (hoa, nam, go, da pha le), vat lieu Bong Lang de lai,
-// va Hat Nang moc lai. Noi luat (bag-core, collect-core) voi hinh, tieng va luu tru; khong chua luat.
+// Hat Nang moc lai, va viec giup dan lang (tang vat lieu trong tui). Noi luat (bag-core, collect-core, errand-core) voi hinh,
+// tieng va luu tru; khong chua luat.
 import { scene } from '../core/stage.js';
 import { toon } from '../world/materials.js';
 import { realm } from '../world/realm.js';
 import { MATERIALS, addItem, bagTotal, bagView, serializeBag, trade } from './bag-core.js';
 import { createCollection, stepCollection } from './collect-core.js';
+import { createErrands, errandFor, giftLabel, help, missingFor } from './errand-core.js';
 import { createGatherViews } from './gather-views.js';
 import { createSeedViews } from './seed-views.js';
 import { BAG_KEY, loadBag, store } from './save.js';
@@ -22,8 +24,8 @@ const ICON = Object.fromEntries(MATERIALS.map((m) => [m.id, m.icon]));
  * canOpen(): luc nay mo tui duoc khong; addBonus(n): cong Hat Nang thuong; juice, hud, sfx, rng: phan hoi va ngau nhien.
  */
 export function createLoot({ enabled, player, seeds, atStall, canOpen, addBonus, juice, sfx, rng }) {
-  if (!enabled) return { isOpen: () => false, newJourney() {}, drop() {}, update: () => false };
-  const bag = loadBag(), groundAt = (x, z) => realm.groundAt(x, z);
+  if (!enabled) return { isOpen: () => false, newJourney() {}, drop() {}, update: () => false, errandOf: () => null, giftLabel: () => null, gift: () => null };
+  const bag = loadBag(), errands = createErrands(), groundAt = (x, z) => realm.groundAt(x, z);
   // vat hai luom moc lai moi chuyen di nen khong luu
   const wild = realm.gatherables?.length ? createCollection(realm.gatherables) : null, wildViews = wild ? createGatherViews(scene, toon, wild) : null;
   let sprouts = null, sproutViews = null;
@@ -42,6 +44,23 @@ export function createLoot({ enabled, player, seeds, atStall, canOpen, addBonus,
 
   return {
     isOpen: () => bagUi.isOpen(),
+    /** Viec ma dan lang `giver` nho o chuyen di nay, hoac null. */
+    errandOf: (giver, journey) => errandFor(errands, giver, journey),
+    /** Chu tren nut tang do khi be dung canh `friend` va trong tui co du; khong thi null. */
+    giftLabel(friend, journey) {
+      const errand = errandFor(errands, friend.id, journey);
+      return errand && missingFor(bag, errand) === 0 ? giftLabel(errand, friend.name) : null;
+    },
+    /** Be bam tang: tru vat lieu, cong Hat Nang, hien so bay. Tra ve viec vua giup (de noi loi cam on) hoac null neu khong tang duoc. */
+    gift(friend, journey) {
+      const errand = errandFor(errands, friend.id, journey);
+      if (!errand) return null;
+      const result = help(errands, bag, errand, journey);
+      if (!result.ok) return null;
+      store(BAG_KEY, serializeBag(bag)); bagUi.refresh(); addBonus(result.seeds); sfx.buy();
+      juice.pop(friend.x, groundAt(friend.x, friend.z) + SEED_POP_HEIGHT, friend.z, `+${result.seeds} ✦`, { color: '#ffe27a', size: 26 });
+      return errand;
+    },
     /** Dau moi chuyen di: vat hai luom moc lai; tu chuyen thu hai cua lan choi, vai Hat Nang da nhat moc lai dung cho cu. */
     newJourney(regrowSeeds) {
       if (wild) for (const item of wild.items) item.taken = false;
