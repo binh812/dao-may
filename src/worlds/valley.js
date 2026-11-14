@@ -63,8 +63,10 @@ export default {
   treeSpot: { x: 3.5, z: -9 },
   shop: SHOP,
   playground: { x: -6, z: -19, yaw: 0.5, reach: 5.5 },   // chieu o an quan canh Cay Tam, ngay cho be bat dau
-  // dan lang dung hai ben duong vao lang; chi chao hoi, khong giao viec
+  // ban Nhim ngoi canh chieu o an quan; hoang tu va cong chua dung hai ben duong vao lang. Chi chao hoi, khong giao viec
   villagers: [
+    { id: 'nhim', model: 'nhim', name: 'Nhím', height: 1.3, radius: 0.5, x: -6.6, z: -20.9, yaw: 0.31,
+      lines: ['Chào Mầm! Mình là Nhím đây.', 'Chiếu ô ăn quan trải sẵn ở đây nè!', 'Hôm nay trời đẹp ghê, Mầm ha!'] },
     { id: 'hoang-tu', model: 'hoang-tu', name: 'Hoàng tử', height: 1.85, x: 313.6, z: -224.5, yaw: -0.76,
       lines: ['Chào Mầm! Bạn đi đường xa có mệt không?', 'Nhờ bạn mà cả thung lũng tỉnh giấc đấy!', 'Cối xay gió phía đông quay đẹp lắm!'] },
     { id: 'cong-chua', model: 'cong-chua', name: 'Công chúa', height: 1.7, x: 308.4, z: -229.6, yaw: -0.76,

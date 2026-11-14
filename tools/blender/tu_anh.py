@@ -180,6 +180,23 @@ def leg_run(z, sign):
 head_rings = column(0.988, Z_NECK + 0.001, lambda z: head['front'].main(z))                     # bo may hang tren cung: qua hep, hay dinh mau nen
 head_rings = [(head_rings[0][0] + rise, head_rings[0][1], head_rings[0][2], head_rings[0][3] * k, head_rings[0][4] * k) for rise, k in ((0.011, 0.15), (0.009, 0.45), (0.005, 0.75))] + head_rings   # bo tron dinh dau
 head_rings += [(z - 0.03, cx, cy, rx * 0.9, ry * 0.9) for z, cx, cy, rx, ry in head_rings[-1:]]      # co thut vao trong than
+# Mu vanh rong: hinh bong cua mu (vanh nghieng, rong hon dau) khong xep vong ngang duoc, len hinh thanh soc. Khi cau hinh co `hat`:
+# dau chi giu phan so duoi mu, con mu dung thanh khoi rieng (chom tron + vanh phang) va to bang mau lay tai hai diem cua ban ve.
+HAT = CFG.get('hat')            # { z: do cao vanh, brim: ban kinh vanh, crown: ban kinh chom, top: dinh chom, head_r: ban kinh dau duoi vanh, from: tu do cao nay bop dau lai, white_z, band_z: cho lay mau }
+hat_rings = []
+if HAT:
+    zb, crown, top = HAT['z'], HAT['crown'], HAT['top']
+    skull = []
+    for z, cx, cy, rx, ry in head_rings:
+        if z > zb + 0.03: continue
+        cap = crown * 0.85 if z > zb else HAT['head_r'] if z > HAT['from'] else None
+        skull.append((z, cx, cy, min(rx, cap), min(ry, cap * 1.08)) if cap else (z, cx, cy, rx, ry))
+    z0, cx0, cy0, rx0, ry0 = skull[0]
+    head_rings = [(z0 + 0.008, cx0, cy0, rx0 * 0.3, ry0 * 0.3)] + skull
+    hat_y = at_hat = min(skull, key=lambda r: abs(r[0] - zb))[2]
+    dome = [(top - (top - zb) * (1 - math.cos(a)) * 0.55, crown * math.sin(a)) for a in (0.15, 0.5, 0.9, 1.25, math.pi / 2)]
+    shape = dome + [(zb + 0.014, crown), (zb + 0.006, crown * 1.02), (zb + 0.004, HAT['brim'] * 0.7), (zb + 0.001, HAT['brim']), (zb - 0.004, HAT['brim']), (zb - 0.006, HAT['brim'] * 0.7), (zb - 0.007, crown * 0.8)]
+    hat_rings = [(z, 0.0, hat_y, r, r) for z, r in shape]
 body_rings = column(Z_NECK - 0.012, Z_CROTCH, lambda z: body['front'].main(z))                  # bat dau duoi cam: tren do la toc, mu
 trunk = head_rings + body_rings
 arms = {S: column(Z_ARMPIT, Z_HAND, lambda z, sx=sx: side_runs(z, sx), round_depth=0.9) for sx, S in SIDES}
@@ -241,17 +258,33 @@ def sideways(normal, co):
     return abs(normal.x)
 
 
+def flat_uv(z):
+    """Toa do anh cua diem giua mat truoc o do cao z tren to can canh dau: dung de to mot mau phang."""
+    view = head['front']
+    return (view.axis / W, 1.0 - (view.row0 - (z - view.z0) * view.scale) / H)
+
+
 def project(normal, co, centre):
     """Chon goc nhin theo huong CA MAT: hai ben lay anh goc ngang, phia truoc lay anh truoc, phia sau lay anh sau; dau dung to can canh."""
+    if HAT and centre.z >= HAT['z'] - 0.008:                 # mu: mot mau trang, rieng dai bang quanh chan chom lay mau bang
+        on_band = HAT['z'] + 0.006 < centre.z < HAT['z'] + 0.026 and math.hypot(centre.x, centre.y - hat_y) < HAT['crown'] * 1.1
+        return flat_uv(HAT['band_z'] if on_band else HAT['white_z'])
     views = views_at(centre.z)
     if sideways(normal, centre) > (SIDE_FACING_HEAD if centre.z > Z_NECK else SIDE_FACING): view, u = views['side'], views['side'].axis + SIDE_FLIP * co.y * INSET * views['side'].scale
     elif normal.y < 0 or (not ARM_SIDE and on_arm(centre)): view, u = views['front'], views['front'].axis + co.x * INSET * views['front'].scale
     else: view, u = views['back'], views['back'].axis - co.x * INSET * views['back'].scale
-    return (u / W, 1.0 - (view.row0 - (co.z - view.z0) * view.scale) / H)
+    z = co.z
+    if HAT and centre.z > HAT['hair_z']:
+        # Trong ban ve, vanh mu che mat phan toc nay. Lay mau hang toc ngay duoi vanh keo thang len (toc la soi doc nen khong lo);
+        # rieng giua tran o hinh truoc thi mai toc con thay duoc toi `fringe_z`.
+        fringe = view is views['front'] and abs(co.x) < HAT['fringe_x']
+        z = min(z, HAT['fringe_z'] if fringe else HAT['hair_z'])
+    return (u / W, 1.0 - (view.row0 - (z - view.z0) * view.scale) / H)
 
 
 s = Sculpt(NAME, {'anh': (1, 1, 1)}, BONES, texture=TEXTURE, projector=project)
 s.layer('dau', 'anh', ['head', 'neck'], voxel=0); s.stack(head_rings, nu=56, power=2.0)      # dau tiet dien elip de mat cong deu
+if hat_rings: s.stack(hat_rings, nu=48, power=2.0)
 s.layer('than', 'anh', ['neck', 'chest', 'spine', 'hips'], voxel=0); s.stack(body_rings, nu=44)
 for sx, S in SIDES:
     s.layer(f'tay{S}', 'anh', [f'upperarm.{S}', f'forearm.{S}', f'hand.{S}'], voxel=0); s.stack(arms[S], nu=20, power=2.0)
