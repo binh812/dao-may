@@ -193,7 +193,7 @@ if HAT:
         skull.append((z, cx, cy, min(rx, cap), min(ry, cap * 1.08)) if cap else (z, cx, cy, rx, ry))
     z0, cx0, cy0, rx0, ry0 = skull[0]
     head_rings = [(z0 + 0.008, cx0, cy0, rx0 * 0.3, ry0 * 0.3)] + skull
-    hat_y = at_hat = min(skull, key=lambda r: abs(r[0] - zb))[2]
+    hat_y = min(skull, key=lambda r: abs(r[0] - zb))[2]
     dome = [(top - (top - zb) * (1 - math.cos(a)) * 0.55, crown * math.sin(a)) for a in (0.15, 0.5, 0.9, 1.25, math.pi / 2)]
     shape = dome + [(zb + 0.014, crown), (zb + 0.006, crown * 1.02), (zb + 0.004, HAT['brim'] * 0.7), (zb + 0.001, HAT['brim']), (zb - 0.004, HAT['brim']), (zb - 0.006, HAT['brim'] * 0.7), (zb - 0.007, crown * 0.8)]
     hat_rings = [(z, 0.0, hat_y, r, r) for z, r in shape]
@@ -277,7 +277,7 @@ def project(normal, co, centre):
     if HAT and centre.z > HAT['hair_z']:
         # Trong ban ve, vanh mu che mat phan toc nay. Lay mau hang toc ngay duoi vanh keo thang len (toc la soi doc nen khong lo);
         # rieng giua tran o hinh truoc thi mai toc con thay duoc toi `fringe_z`.
-        fringe = view is views['front'] and abs(co.x) < HAT['fringe_x']
+        fringe = view is views['front'] and abs(centre.x) < HAT['fringe_x']   # xet theo tam mat luoi: xet tung dinh thi mat nam vat qua ranh bi lem
         z = min(z, HAT['fringe_z'] if fringe else HAT['hair_z'])
     return (u / W, 1.0 - (view.row0 - (z - view.z0) * view.scale) / H)
 

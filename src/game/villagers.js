@@ -13,7 +13,7 @@ const BETWEEN_GREETINGS = 4;             // (giay) hai nguoi dung gan nhau khong
 function angleDelta(from, to) { return Math.atan2(Math.sin(to - from), Math.cos(to - from)); }
 
 /**
- * spots: [{ id, model, name, height, x, z, yaw, lines: [cau chao...] }]; `colliders` la mang vat can cua the gioi (them vao tai cho). Tra ve { update(dt, player, canGreet) -> cau chao moi hoac null }.
+ * spots: [{ id, model, name, height, x, z, yaw, radius?, lines: [cau chao...] }]; `colliders` la mang vat can cua the gioi (them vao tai cho). Tra ve { update(dt, player, canGreet) -> cau chao moi hoac null }.
  */
 export function createVillagers(scene, spots, groundAt, colliders) {
   const people = [], loader = new GLTFLoader();
@@ -22,7 +22,6 @@ export function createVillagers(scene, spots, groundAt, colliders) {
     const person = { spot, root: new THREE.Group(), mixer: null, yaw: spot.yaw ?? 0, greeted: false, next: 0 };
     person.root.position.set(spot.x, groundAt(spot.x, spot.z), spot.z); person.root.rotation.y = person.yaw;
     scene.add(person.root); people.push(person);
-    colliders.push({ x: spot.x, z: spot.z, r: spot.radius ?? BODY_RADIUS });
     loader.load(new URL(`../../assets/models/${spot.model}.glb`, import.meta.url).href, (gltf) => {
       const idle = gltf.animations.find((clip) => clip.name === 'Idle');
       if (!idle) { console.error(`Mo hinh ${spot.model} thieu doan Idle, bo qua nguoi nay`); return; }
@@ -36,6 +35,7 @@ export function createVillagers(scene, spots, groundAt, colliders) {
         node.castShadow = true; node.frustumCulled = false;
       });
       person.root.add(model);
+      colliders.push({ x: spot.x, z: spot.z, r: spot.radius ?? BODY_RADIUS });   // chi thanh vat can khi da hien hinh: nap loi thi khong de lai buc tuong vo hinh
       person.mixer = new THREE.AnimationMixer(model);
       const action = person.mixer.clipAction(idle); action.time = people.indexOf(person) * 0.7; action.play();   // lech nhip de hai nguoi khong tho deu tam tap
     }, undefined, (error) => console.error(`Khong nap duoc mo hinh ${spot.model}:`, error));
