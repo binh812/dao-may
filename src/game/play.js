@@ -10,7 +10,7 @@ import { cameraRelative, steerYaw } from './input-core.js';
 import { createTouchControls } from './touch-controls.js';
 import { shake } from './juice.js';
 
-const CAMERA = { distance: 8.5, portraitDistance: 10.5, pitch: 0.42, minPitch: 0.12, maxPitch: 1.1, lookHeight: 1.1, clearance: 0.6, follow: 9, yawPerPixel: 0.006, pitchPerPixel: 0.004, steerAfter: 1.5, steerRate: 0.8 };
+const CAMERA = { distance: 7.6, portraitDistance: 8.4, pitch: 0.42, minPitch: 0.12, maxPitch: 1.1, lookHeight: 1.1, clearance: 0.6, follow: 9, yawPerPixel: 0.006, pitchPerPixel: 0.004, steerAfter: 1.5, steerRate: 0.8 };
 const HINT_SECONDS = 6, SHAKE_FADE = 9;
 const WALL_HEIGHT = 1e5; // the gioi tra do cao tu muc nay tro len cho vung khong duoc vao
 

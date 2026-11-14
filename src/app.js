@@ -6,10 +6,11 @@ import './ui/panel.js';
 import * as THREE from 'three';
 import { Q, qs } from './core/quality.js';
 import { SUN_DIR, U, camera, controls, motesScale, renderer, scene, sun } from './core/stage.js';
-import { aoQuad, aoRT, combinePass, composer, dofPass, fxaaPass, rtScene, volMat, volQuad, volRT } from './render/post.js';
+import { aoQuad, aoRT, combinePass, composer, dofPass, fxaaPass, keepSharp, rtScene, volMat, volQuad, volRT } from './render/post.js';
 import { realm } from './world/realm.js';
 import { createPlay } from './game/play.js';
-import { updateHero } from './actors/hero.js';
+import { HERO_HEIGHT, updateHero } from './actors/hero.js';
+import { chr } from './actors/mam.js';
 import { createSession } from './game/session.js';
 import { updateWeather, weatherNow } from './fx/weather.js';
 
@@ -39,10 +40,13 @@ if (session && qs.has('oanquan')) setTimeout(() => session.debugOanQuan(), 600);
 if (session && qs.has('ask')) setTimeout(() => session.debugAsk(), 600); // chi de chup anh kiem tra the bai tap
 const clock = new THREE.Clock(), fpsEl = document.getElementById('fps'), infoEl = document.getElementById('info');
 let frames = 0, accTime = 0, slow = 0;
+const sharpCentre = new THREE.Vector3();
 function tick() {
   const dt = Math.min(clock.getDelta(), 0.05), t = (U.time.value += dt);
   if (play) { play.update(dt * session.timeScale()); session.update(dt); } else { controls.update(); updateHero(dt, 0, true); }   // ngam canh: Mam van tho, khong dung cung o tu the goc
   realm.sky.position.copy(camera.position);
+  // Mam khong qua lop loc net co: mat va trang phuc giu net (nua be ngang va nua chieu cao tinh ca mu, choi la)
+  keepSharp(sharpCentre.set(chr.position.x, chr.position.y + HERO_HEIGHT * 0.56, chr.position.z), HERO_HEIGHT * 0.42, HERO_HEIGHT * 0.72);
   U.sunView.value.copy(SUN_DIR).transformDirection(camera.matrixWorldInverse);
 
   realm.update(dt, t, { playing: Boolean(play), wind: weatherNow.wind, player: play ? play.player : null });
