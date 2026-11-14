@@ -46,6 +46,8 @@ file `.glb` do kịch bản trong repo sinh ra từ bản vẽ (xem `tools/blend
   mỗi chuyến đi mỗi người kể một mẩu mới thay cho câu chào, mẩu đã nghe lưu ở `daomay.story.v1`. Nghe chuyện không có thưởng, không bắt buộc.
 - `game/errand-core.js` việc giúp ngắn (thuần, có test): mỗi chuyến đi mỗi người nhờ một việc bằng vật liệu trong túi ("3 cánh hoa để kết vòng hoa");
   đứng cạnh mà trong túi có đủ thì hiện nút "Tặng …", tặng xong được cảm ơn và Hạt Nắng thưởng. Phần nối với túi đồ nằm trong `game/loot.js`.
+- `game/sleep-core.js` vùng ngủ và thức (thuần, có test): quanh trại Bóng Lặng đang ngủ cảnh nhạt màu, mỗi con thức thì bớt nhạt, con cuối thức thì
+  màu loang từ tâm ra hết vùng. `session.js` gọi `setSleepZone` của `render/post.js` (hiệu ứng nằm trong lớp lọc nét cọ, nên chỉ có ở thế giới đặt `paint` và mức đồ họa có lớp đó).
 - `game/juice.js` phản hồi của mọi hành động: số bay, chớp sáng màn hình, rung máy quay (`shake`, `play.js` đọc), bảng "Liên hoàn".
   Máy đặt giảm chuyển động thì bỏ rung và chớp. Hiệu ứng 3D của trận đấu (nổ hoa, vòng sáng, địch nảy và chớp) ở `game/enemy-views.js`.
 - `game/battle-core.js` luật đối đầu (thuần, có test): chiêu Lá giữ nút là bắn liên tục, không cần bài; Túi Nắng nạp bằng một câu đố tự nguyện
@@ -101,6 +103,7 @@ Danh sách trong `.pb-dev.json` → `protected`. Chỉ đổi khi anh Ben duyệ
 | Ô ăn quan: rải và ăn đúng luật, không mất viên sỏi nào (tổng luôn 70), ván nào cũng kết thúc, nước sai bị từ chối | `tests/oanquan-core.test.mjs` (300 ván ngẫu nhiên) | 13/11/2026 |
 | Chuyện kể: mỗi người kể theo thứ tự của mình, mỗi chuyến một mẩu mới, mẩu đã nghe không kể lại và không mất, lời kể không giục, dữ liệu lưu hỏng không làm vỡ | `tests/story-core.test.mjs` | 14/11/2026 |
 | Việc giúp: mỗi chuyến mỗi người một việc, đủ đồ mới tặng được, trừ đúng và thưởng đúng, không tặng hai lần, luôn lợi hơn đổi ở quầy, túi không âm, lời nhờ nói rõ số lượng và không giục | `tests/errand-core.test.mjs` | 14/11/2026 |
+| Vùng ngủ: trùm hết các Bóng Lặng, càng nhiều con thức càng bớt nhạt, không bao giờ mất hẳn màu, thức hết thì màu loang ra rồi hết hẳn, game tạm dừng thì đứng yên | `tests/sleep-core.test.mjs` | 14/11/2026 |
 | Cân bột: mỗi chuyến một mẻ, xem cách giải vẫn xong mẻ và vẫn có công, để sau thì làm lại được, không thưởng hai lần | `tests/mill-core.test.mjs` | 13/11/2026 |
 | Trang phải mở được không lỗi runtime | `scripts/smoke.mjs` | shader treo lúc biên dịch, 12/11/2026 |
 | Shader không biên dịch được phải làm cổng đỏ | `renderer.debug.onShaderError` trong `core/stage.js` đưa lỗi lên hộp lỗi của trang, `smoke.mjs` đọc hộp đó | hoa thung lũng vắng mặt vì biến tên `patch`, 13/11/2026 |
