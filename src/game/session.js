@@ -128,7 +128,8 @@ export function createSession(play) {
   function startWave() {
     state.wave += 1; state.cleared = false; state.answered = 0; state.correct = 0; state.puzzles = 0;
     state.battle = createBattle(spawnEnemies(state.wave, player, rng), state.battle ? state.battle.faints : 0, state.battle ? state.battle.pouch : loadPouch());
-    zone = state.battle.enemies.length ? createZone(state.battle.enemies) : null;   // quanh trai dang ngu, canh nhat mau cho toi khi be danh thuc
+    zone = state.battle.enemies.length ? createZone(state.battle.enemies) : null;
+    if (!zone) setSleepZone(null);   // quanh trai dang ngu, canh nhat mau cho toi khi be danh thuc
     views.reset(state.battle);
     loot.newJourney(state.wave > firstWave);
     refreshHud();
@@ -335,7 +336,8 @@ export function createSession(play) {
     update(dt) {
       state.time += dt;
       tree.update(dt, state.time);
-      if (zone && state.battle) setSleepZone(stepZone(zone, dt, state.battle.enemies.filter((e) => e.awake).length, state.battle.enemies.length));
+      // dang mo bang thi dung yen: mau loang ra la phan thuong cho mat, khong de no chay sau lung tam the
+      if (zone && state.battle) setSleepZone(stepZone(zone, busy() ? 0 : dt, state.battle.enemies.filter((e) => e.awake).length, state.battle.enemies.length));
       if (yard) yard.update(state.time);
       const hello = villagers?.update(dt, player, Boolean(state.profile) && !busy());
       if (hello) greet(hello);

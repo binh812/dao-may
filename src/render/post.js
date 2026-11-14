@@ -8,6 +8,7 @@ import { FXAAShader } from 'three/addons/shaders/FXAAShader.js';
 import { Q } from '../core/quality.js';
 import { SUN_DIR, U, camera, renderer, sun } from '../core/stage.js';
 import { realm } from '../world/realm.js';
+import { SLEEP } from '../game/sleep-core.js';
 
 // ---------------------------------------------------------------- post-processing
 const rtScene = new THREE.WebGLRenderTarget(4, 4, { type: THREE.HalfFloatType, samples: Q.msaa, depthTexture: new THREE.DepthTexture(4, 4) });
@@ -168,7 +169,9 @@ const paintPass = new ShaderPass(new THREE.ShaderMaterial({
       if (uSleep.w > 0.001) {
         vec4 view = uInvProj * vec4(vUv * 2. - 1., z * 2. - 1., 1.); vec3 world = (uCamWorld * vec4(view.xyz / view.w, 1.)).xyz;
         float d = length(world.xz - uSleep.xy) + (sin(world.x * 0.9) + sin(world.z * 1.1 + world.x * 0.4)) * 1.3;
-        float asleep = uSleep.w * (1. - smoothstep(uSleep.z * 0.72, uSleep.z, d)) * smoothstep(uSleepClear - 4., uSleepClear, d) * (1. - keep);
+        // chua co phan nao thuc (uSleepClear = 0) thi ca vung nhat; neu khong, mep lon xon lam giua trai lom dom mau truoc khi be danh thuc con nao
+        float washed = uSleepClear > 0.01 ? 1. - smoothstep(uSleepClear - ${SLEEP.washEdge.toFixed(1)}, uSleepClear, d) : 0.;
+        float asleep = uSleep.w * (1. - smoothstep(uSleep.z * 0.72, uSleep.z, d)) * (1. - washed) * (1. - keep);
         float lum = dot(col, vec3(0.30, 0.59, 0.11));
         col = mix(col, mix(vec3(lum) * vec3(0.95, 0.98, 1.04), col, 0.25) * 0.94 + 0.04, asleep);
       }
@@ -176,16 +179,16 @@ const paintPass = new ShaderPass(new THREE.ShaderMaterial({
     }`,
 }));
 const _keep = new THREE.Vector3();
-/**
- * Giu net mot vat giua lop loc net co: tam (toa do the gioi), nua be ngang va nua chieu cao (m). Bo loc lam tron moi thu thanh
- * mang mau, hop voi canh nhung lam nhoe khuon mat va trang phuc cua nhan vat. Goi moi khung hinh; halfHeight = 0 de tat.
- */
 /** Vung dang ngu de lam nhat mau (xem sleep-core.js): { x, z, radius, amount, clear }, hoac null de tat. */
 export function setSleepZone(zone) {
   if (zone) { paintPass.uniforms.uSleep.value.set(zone.x, zone.z, zone.radius, zone.amount); paintPass.uniforms.uSleepClear.value = zone.clear; }
   else paintPass.uniforms.uSleep.value.w = 0;
 }
 
+/**
+ * Giu net mot vat giua lop loc net co: tam (toa do the gioi), nua be ngang va nua chieu cao (m). Bo loc lam tron moi thu thanh
+ * mang mau, hop voi canh nhung lam nhoe khuon mat va trang phuc cua nhan vat. Goi moi khung hinh; halfHeight = 0 de tat.
+ */
 export function keepSharp(centre, halfWidth, halfHeight) {
   const keep = paintPass.uniforms.uKeep.value;
   if (!paintPass.enabled) return;

@@ -9,6 +9,7 @@ export const SLEEP = Object.freeze({
   easeRate: 1.6,     // toc do do nhat doi theo so con da thuc (1/giay)
   washSeconds: 3.2,  // mau loang het vung trong ngan nay giay sau khi con cuoi thuc
   washOvershoot: 1.15,
+  washEdge: 4,       // (m) be rong mep loang (shader dung). Phai co minRadius * washOvershoot - washEdge >= minRadius, neu khong luc tat se giat mau
 });
 
 /** Vung quanh cac cho Bong Lang ngu: tam la trung binh cac cho, ban kinh trum het cong them le. `spots`: [{ x, z }]. */

@@ -51,6 +51,10 @@ test('when the last sleeper wakes, colour washes outward from the centre and the
   assert.equal(zone.amount, 0);
 });
 
+test('the wash ends past the edge of even the smallest zone, so switching the effect off never pops', () => {
+  assert.ok(SLEEP.minRadius * SLEEP.washOvershoot - SLEEP.washEdge >= SLEEP.minRadius, 'mep loang phai ra khoi vung truoc khi tat');
+});
+
 test('a camp with a single sleeper is pale until it wakes, then washes clean', () => {
   const zone = settle(createZone([{ x: 0, z: 0 }]), 0, 1);
   assert.ok(Math.abs(zone.amount - SLEEP.deepest) < 1e-3);
@@ -61,6 +65,6 @@ test('bad time steps and odd counts leave the zone sane', () => {
   const zone = createZone(CAMP), snapshot = { ...zone };
   for (const dt of [NaN, -1, Infinity, undefined]) assert.deepEqual({ ...stepZone(zone, dt, 1, 3) }, snapshot);
   stepZone(zone, 0, 1, 3);
-  assert.deepEqual({ ...zone }, snapshot, 'dt = 0 (game tam dung) khong doi gi');
+  assert.deepEqual({ ...zone }, snapshot, 'dt = 0 (dang mo bang: session truyen 0) khong doi gi');
   for (const [awake, total] of [[5, 3], [-2, 3], [0, 0]]) { const z = settle(createZone(CAMP), awake, total, 1); assert.ok(z.amount >= 0 && z.amount <= SLEEP.deepest && Number.isFinite(z.clear)); }
 });
