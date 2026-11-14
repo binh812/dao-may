@@ -32,7 +32,7 @@ function noiseTexture() {
 const BAKE_FRAGMENT = /* glsl */`
   precision highp float; precision highp sampler3D;
   uniform sampler3D uNoise; uniform float uBackLean; varying vec2 vUv;
-  const float BASE = 1.0, TOP = 3.0, SPAN = 14.0, LIGHT_STEP = 0.19;
+  const float BASE = 1.0, TOP = 3.0, SPAN = 14.0, LIGHT_STEP = 0.19; const int SUB = 4;
   // nhieu gia tri muot: lam tron phan le truoc khi de GPU noi suy
   float n3(vec3 p){ p *= ${NOISE_SIZE.toFixed(1)}; vec3 i = floor(p), f = fract(p); f = f * f * (3. - 2. * f); return textureLod(uNoise, (i + f + 0.5) / ${NOISE_SIZE.toFixed(1)}, 0.).r; }
   float density(vec3 p){
@@ -53,13 +53,18 @@ const BAKE_FRAGMENT = /* glsl */`
     // de co mep sac net nhu net co du anh nuong co do phan giai thap.
     vec3 sum = vec3(0.); float alpha = 0.;
     for (int i = 0; i < STEPS; i++) {
-      float t = t0 + (float(i) + 0.5) * dt; vec3 p = d * t;
-      float dens = density(p);
+      vec3 mid = d * (t0 + (float(i) + 0.5) * dt);
       float shadow = 0.;
-      for (int k = 1; k <= 4; k++) shadow += density(p + light * LIGHT_STEP * float(k) * (1. + 0.4 * float(k)));
-      float hf = clamp((p.y - BASE) / (TOP - BASE), 0., 1.);
-      float ai = clamp(dens * dt * 5., 0., 1.) * (1. - alpha);
-      sum += vec3(exp(-shadow * 0.8), hf, 1. - exp(-t * 0.02)) * ai; alpha += ai;
+      for (int k = 1; k <= 4; k++) shadow += density(mid + light * LIGHT_STEP * float(k) * (1. + 0.4 * float(k)));
+      float lit = exp(-shadow * 0.8);
+      // Do day lay mau day gap SUB lan so voi bong: buoc thua hon chi tiet cua may thi moi hang anh lech pha mot kieu,
+      // mep may thanh bac thang ngang. Bong bien thien cham nen moi buoc lon tinh mot lan la du.
+      for (int j = 0; j < SUB; j++) {
+        float t = t0 + (float(i) + (float(j) + 0.5) / float(SUB)) * dt; vec3 p = d * t;
+        float hf = clamp((p.y - BASE) / (TOP - BASE), 0., 1.);
+        float ai = clamp(density(p) * dt / float(SUB) * 5., 0., 1.) * (1. - alpha);
+        sum += vec3(lit, hf, 1. - exp(-t * 0.02)) * ai; alpha += ai;
+      }
     }
     vec3 fields = mix(vec3(1., 0.6, 1. - exp(-t0 * 0.02)), sum / max(alpha, 1e-4), smoothstep(0., 0.05, alpha));
     gl_FragColor = vec4(fields, alpha * (1. - smoothstep(26., 44., t0)));   // may rat xa tan vao chan troi

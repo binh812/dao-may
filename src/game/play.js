@@ -30,7 +30,7 @@ export function createPlay() {
   if (panel) { panel.style.zIndex = '5'; panel.classList.add('min'); }
   const hint = document.createElement('div');
   hint.textContent = 'Kéo bên trái để chạy · Chạm Nhảy để bật lên · Giữ Nhảy trên không để lượn';
-  hint.style.cssText = 'position:fixed;left:50%;top:calc(max(10px,env(safe-area-inset-top)) + 46px);transform:translateX(-50%);z-index:4;max-width:86vw;padding:9px 14px;border-radius:14px;background:rgba(28,22,34,.55);color:#fff;font:600 14px/1.35 system-ui,sans-serif;text-align:center;pointer-events:none;transition:opacity .8s;';
+  hint.style.cssText = `position:fixed;left:50%;top:calc(max(10px,env(safe-area-inset-top)) + 134px);transform:translateX(-50%);z-index:4;max-width:${innerHeight > innerWidth ? '86vw' : 'calc(100vw - 340px)'};padding:9px 14px;border-radius:14px;background:rgba(28,22,34,.55);color:#fff;font:600 14px/1.35 system-ui,sans-serif;text-align:center;pointer-events:none;transition:opacity .8s;`;   // man ngang: thu hep de khong de len nut chieu ben phai
   document.body.append(hint);
   let hintLeft = HINT_SECONDS;
 

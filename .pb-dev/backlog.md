@@ -152,3 +152,9 @@ Mẫu: `- [ ] <tiêu đề> — Khi <tình huống> thì app phải <kết quả
 - Anh Ben báo: để mức "Cao" trên điện thoại vẫn 60 fps, 100% (34 lệnh vẽ, 2.082k tam giác).
 - Xong: mức "Cao" cũng dùng độ phân giải gốc của màn hình (trần 2,0 → 3,0; trước đó còn thấp hơn mức "Vừa"); mức đồ họa người chơi chọn trong bảng được nhớ lại ở `daomay.tier` cho các lần mở sau.
 - [ ] Mặc định cho điện thoại vẫn là "Vừa" (chưa biết máy khác kham nổi mức "Cao" không). Nếu muốn tự nâng mức khi máy đủ khỏe thì cần thêm đo đạc lúc chạy.
+
+## Tay Mầm, ô fps, mép mây (14/11/2026)
+- Xong: bàn tay và đỉnh mũ Mầm hết vệt sẫm. Nguyên nhân: viền khử răng cưa của bản vẽ (da pha màu nền) bị tô lan ra ngoài; `tu_anh.py` giờ gọt 3 điểm ảnh viền trước khi tô lan 40 điểm ảnh. Cả cánh tay lấy màu từ hình phía trước (`arm_side: false`).
+- Xong: ô fps thu gọn không còn đè ô trái tim và Hạt Nắng; dòng hướng dẫn đầu game nằm dưới hàng nút.
+- Xong: mép mây hết bậc thang ngang. Nguyên nhân: bước đi tia lúc nướng mây thưa hơn chi tiết mây nên mỗi hàng ảnh lệch pha; giờ độ dày lấy mẫu dày gấp 4, bóng vẫn tính một lần mỗi bước. Thời gian nướng lúc mở game tăng khoảng 1,6 lần (chưa đo trên điện thoại).
+- [ ] Đỉnh mũ trùm của Mầm còn hơi phẳng (chồi lá che). Bàn tay vẫn là khối cụt, chưa có ngón.

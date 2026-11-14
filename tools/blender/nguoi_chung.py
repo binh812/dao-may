@@ -119,3 +119,29 @@ def body_motion(turn):
         ease = t * t * (3 - 2 * t)
         return {'root': {'rot': turn('root', Z, ease * TAU)}}
     return idle, walk, spin
+
+
+def air_motion(turn):
+    """Hai tu the tren khong (lap lai, chi rung nhe): jump(t) co chan, tay gio ngang; glide(t) dang rong tay, chan duoi ra sau.
+    Truc quay la truc the gioi: nhan vat nhin ve -Y, ben L o +X. Quanh Y goc am thi tay ben +X gio len; quanh X goc am thi dua ra truoc."""
+    def jump(t):
+        flutter = math.sin(t * TAU)
+        pose = {'chest': {'rot': turn('chest', X, -0.06)}, 'head': {'rot': turn('head', X, -0.10)}}
+        for (sx, S), lift, bend in zip(SIDES, (-0.70, -0.15), (1.05, 0.55)):                                # chan trai co cao, chan phai tha long
+            pose[f'thigh.{S}'] = {'rot': turn(f'thigh.{S}', X, lift + 0.04 * flutter)}
+            pose[f'shin.{S}'] = {'rot': turn(f'shin.{S}', X, bend)}
+            pose[f'upperarm.{S}'] = {'rot': turn(f'upperarm.{S}', Y, -sx * (0.75 + 0.06 * flutter))}
+            pose[f'forearm.{S}'] = {'rot': turn(f'forearm.{S}', X, -0.25)}
+        return pose
+
+    def glide(t):
+        flutter = math.sin(t * TAU)
+        pose = {'chest': {'rot': turn('chest', X, 0.10)}, 'head': {'rot': turn('head', X, -0.28)},
+                'hips': {'rot': turn('hips', Z, 0.03 * flutter)}}
+        for (sx, S), lag in zip(SIDES, (0.0, 0.9)):
+            pose[f'thigh.{S}'] = {'rot': turn(f'thigh.{S}', X, 0.38 + 0.05 * math.sin(t * TAU + lag))}      # chan duoi ra sau, hai chan lech nhip
+            pose[f'shin.{S}'] = {'rot': turn(f'shin.{S}', X, 0.30)}
+            pose[f'foot.{S}'] = {'rot': turn(f'foot.{S}', X, 0.35)}
+            pose[f'upperarm.{S}'] = {'rot': turn(f'upperarm.{S}', Y, -sx * (0.95 + 0.05 * flutter))}       # tay dang ngang nhu canh
+        return pose
+    return jump, glide

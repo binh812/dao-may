@@ -44,5 +44,6 @@
  "scarf": false,
  "body_gap": 0.011,
  "envelope": 1,
- "head_envelope": 1
+ "head_envelope": 1,
+ "arm_side": false
 }
