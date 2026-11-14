@@ -23,6 +23,8 @@ Z_CHIN, Z_NECK, Z_ARMPIT, Z_HAND, Z_CROTCH, Z_FOOT = (CFG['z'][k] for k in ('chi
 BODY_GAP, ENVELOPE, HEAD_ENVELOPE = CFG.get('body_gap', 0.0), CFG.get('envelope', 0), CFG.get('head_envelope', 0)   # va lo thung o mep (hoa trang tren vay trung mau nen): gop doan gan nhau, lay duong bao +-n hang
 Z_HIP = CFG['z'].get('hip')                       # khop hang (neu quan, vay che mat phan tren cua chan)
 SIDE_FLIP = -1.0 if CFG.get('side_faces') == 'right' else 1.0   # goc ngang trong ban ve quay mat sang phai thi dao chieu truoc sau
+ARM_SIDE = CFG.get('arm_side', True)              # False: ca canh tay lay mau tu hinh phia truoc (hinh dung de dung khoi tay nen chac chan khop;
+                                                  # o hinh ngang va hinh sau ban tay nam lech, lay vao se dinh mau khe toi giua tay va ao)
 MANUAL_LEGS = CFG.get('manual_legs')             # chan dat tay (x, cac vong) khi chan trung mau nen nen khong do duoc hinh bong
 DZ, SMOOTH, INSET = 0.0055, 2, 0.94               # buoc lay mau theo chieu cao; lam muot +-2 vong; co anh vao trong de mep khong dinh mau nen
 SIDE_FACING, SIDE_FACING_HEAD = 0.62, 0.86        # mat lech sang ngang hon muc nay thi lay anh goc ngang
@@ -33,10 +35,14 @@ CUT = int(round(H * SPLIT))
 mask = np.concatenate([mask_of(px[:CUT])[0], mask_of(px[CUT:])[0]])          # moi to co mau nen rieng
 
 
-def padded_texture(path, spread=14):
+def padded_texture(path, spread=40, trim=3):
     """To lan mau nhan vat ra ngoai vien `spread` diem anh roi luu thanh anh hoa tiet: mat luoi o sat mep lay mau nhan vat thay vi mau nen."""
     import bpy
     colour, filled = px.copy(), mask.copy()
+    for _ in range(trim):                                # got bo vien khu rang cua: o do mau nhan vat da pha mau nen, to lan ra se thanh vet sam (ban tay, dinh mu)
+        core = filled.copy()
+        for dy, dx in ((0, 1), (0, -1), (1, 0), (-1, 0)): core &= np.roll(filled, (dy, dx), axis=(0, 1))
+        filled = core
     for _ in range(spread):
         total, count = np.zeros_like(colour), np.zeros(filled.shape, dtype=np.float32)
         for dy, dx in ((0, 1), (0, -1), (1, 0), (-1, 0)):
@@ -153,7 +159,8 @@ def leg_run(z, sign):
     return (min(r[0] for r in found), max(r[1] for r in found)) if found else None
 
 
-head_rings = column(0.997, Z_NECK + 0.001, lambda z: head['front'].main(z))
+head_rings = column(0.988, Z_NECK + 0.001, lambda z: head['front'].main(z))                     # bo may hang tren cung: qua hep, hay dinh mau nen
+head_rings = [(head_rings[0][0] + rise, head_rings[0][1], head_rings[0][2], head_rings[0][3] * k, head_rings[0][4] * k) for rise, k in ((0.011, 0.15), (0.009, 0.45), (0.005, 0.75))] + head_rings   # bo tron dinh dau
 head_rings += [(z - 0.03, cx, cy, rx * 0.9, ry * 0.9) for z, cx, cy, rx, ry in head_rings[-1:]]      # co thut vao trong than
 body_rings = column(Z_NECK - 0.012, Z_CROTCH, lambda z: body['front'].main(z))                  # bat dau duoi cam: tren do la toc, mu
 trunk = head_rings + body_rings
@@ -195,6 +202,10 @@ for i, name in enumerate(SCARF):                         # khan sau lung: bam sa
     BONES[name] = ((0, ya, za), (0, yb, zb), SCARF[i - 1] if i else 'chest')
 
 
+def on_arm(co):
+    return Z_HAND - 0.03 <= co.z <= Z_ARMPIT + 0.08 and abs(co.x) > at(trunk, co.z)[3]
+
+
 def sideways(normal, co):
     """Muc do quay sang ngang (0 = thang truoc/sau, 1 = thang sang ben). Voi dau va than, tinh theo goc quanh truc than thay vi
     phap tuyen cua mat: vien toc lom chom lam phap tuyen doi lien tuc giua cac hang, gay soc ngang."""
@@ -203,6 +214,7 @@ def sideways(normal, co):
         if abs(co.x - cx) <= rx * 1.03:
             ex, ey = (co.x - cx) / rx, (co.y - cy) / ry
             return abs(ex) / max(math.hypot(ex, ey), 1e-6)
+    if not ARM_SIDE and on_arm(co): return 0.0
     return abs(normal.x)
 
 
@@ -210,7 +222,7 @@ def project(normal, co, centre):
     """Chon goc nhin theo huong CA MAT: hai ben lay anh goc ngang, phia truoc lay anh truoc, phia sau lay anh sau; dau dung to can canh."""
     views = views_at(centre.z)
     if sideways(normal, centre) > (SIDE_FACING_HEAD if centre.z > Z_NECK else SIDE_FACING): view, u = views['side'], views['side'].axis + SIDE_FLIP * co.y * INSET * views['side'].scale
-    elif normal.y < 0: view, u = views['front'], views['front'].axis + co.x * INSET * views['front'].scale
+    elif normal.y < 0 or (not ARM_SIDE and on_arm(centre)): view, u = views['front'], views['front'].axis + co.x * INSET * views['front'].scale
     else: view, u = views['back'], views['back'].axis - co.x * INSET * views['back'].scale
     return (u / W, 1.0 - (view.row0 - (co.z - view.z0) * view.scale) / H)
 
